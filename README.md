@@ -31,6 +31,10 @@ source
 └─_posts                        # blog posts' markdown file store here
 ~~~
 
+## Acknowledgement
+
+❤️Thanks to [Yttehs](https://github.com/Yttehs-HDX) for providing technical support for building this website. 
+
 ## License
 
 - this project use MIT license
