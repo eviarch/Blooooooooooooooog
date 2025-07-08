@@ -33,7 +33,7 @@ source
 
 ## Acknowledgement
 
-❤️Thanks to [Yttehs](https://github.com/Yttehs-HDX) for providing technical support for building this website. 
+❤️Thanks to [Shetty Yttehs](https://github.com/Yttehs-HDX) for providing technical support for building this website. 
 
 ## License
 
