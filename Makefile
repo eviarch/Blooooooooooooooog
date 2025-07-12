@@ -1,4 +1,4 @@
-.PHONY : all deploy
+.PHONY : all deploy dependencies deploy preview clean
 
 all: deploy
 
