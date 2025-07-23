@@ -475,14 +475,15 @@ plugins:
     enable: false # Whether to enable
   # Aplayer. See https://github.com/DIYgod/APlayer
   aplayer:
-    enable: false # Whether to enable
+    enable: true # Whether to enable
     type: fixed # fixed, mini
     audios:
-      - name: # audio name
-        artist: # audio artist
-        url: # audio url
-        cover: # audio cover url
-        lrc: # audio cover lrc
+      audios:
+        - name: 深藍
+          artist: ルルティア
+          url: https://music.163.com/song/media/outer/url?id=22724676.mp3
+          cover: https://p2.music.126.net/kprSJv0yHoiwyJ7pbuEVxg==/834529325505669.jpg
+          lrc: https://gist.githubusercontent.com/Yttehs-HDX/6f133b5a8f35475404e1c581f3045b4a/raw/80a621dc3efdfdaa5bb161ce705904bf4d8080b0/22724676.lrc
 #      - name: # audio name
 #        artist: # audio artist
 #        url: # audio url
