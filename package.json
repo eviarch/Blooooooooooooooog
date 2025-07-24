@@ -12,7 +12,7 @@
     "version": "7.3.0"
   },
   "dependencies": {
-    "stylus": "github:stylus/stylus#0.62.0",
+    "stylus": "github:stylus/stylus#0.64.0",
     "hexo": "^7.3.0",
     "hexo-all-minifier": "^0.5.7",
     "hexo-filter-mathjax": "^0.9.1",
