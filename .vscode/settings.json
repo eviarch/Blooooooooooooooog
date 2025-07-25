@@ -1,4 +1,5 @@
 {
     "editor.fontFamily": "JetBrains Mono NL,'仿宋',monospace",
-    "files.autoSave": "afterDelay"
+    "files.autoSave": "afterDelay",
+    "markdown.validate.enabled": false
 }
