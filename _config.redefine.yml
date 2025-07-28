@@ -10,7 +10,7 @@
 # Gather all variables that will frequently change together.
 data_set:
   info_subtitle: &info_subtitle "Stay with me."
-  sidebar_announcement: &sidebar_announcement "Everything I touch, I lose"
+  sidebar_announcement: &sidebar_announcement "君の膵臓をたべたい"
   subtitle_string: &subtitle_string
     - "求知若渴，虚心若愚"
     - "你所做的事情或许无人在意，但只要你仍追求完美，你就终将掌握连专家也望而兴叹的技能"
@@ -25,6 +25,7 @@ data_set:
     - "总有一天我会没办法继续照顾你，你必须自己做出决定，决定自己究竟是谁，这个世界不喜欢与众不同的人马库斯，不要让别人告诉你，该成为什么样的人。 --Detroit Become Human"
     - "\"Life is a tragedy when seen in close-up, but a comedy in long-shot.\" ― Charlie Chaplin "
     - "行ってきます！"
+    - "「大切な人といつかまた巡り合えますように」时光流逝，愿你与重要的人再次重逢"
 
 
 # BASIC INFORMATION >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> start
