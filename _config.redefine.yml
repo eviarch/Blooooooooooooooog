@@ -10,7 +10,7 @@
 # Gather all variables that will frequently change together.
 data_set:
   info_subtitle: &info_subtitle "Stay with me."
-  sidebar_announcement: &sidebar_announcement "Just like a dream"
+  sidebar_announcement: &sidebar_announcement "君の膵臓をたべたい"
   subtitle_string: &subtitle_string
     - "求知若渴，虚心若愚"
     - "你所做的事情或许无人在意，但只要你仍追求完美，你就终将掌握连专家也望而兴叹的技能"
