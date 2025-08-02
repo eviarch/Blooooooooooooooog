@@ -147,7 +147,7 @@ home_banner:
   style: fixed # static or fixed
   # Home banner image
   image: 
-    light: /source/post_images/background.jpg # light mode
+    light: /post_images/background.jpg # light mode
     dark: /images/wallhaven-wqery6-dark.webp # dark mode
   # Home banner title
   title: "It's Eviarch's blog, sharing things about study and daily life"
