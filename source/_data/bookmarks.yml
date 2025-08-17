@@ -59,3 +59,11 @@
       link: https://learningos.cn/rCore-Tutorial-Guide-2025S/index.html
       description: This tutorial shows how to write a Unix-like kernel based on the RISC-V architecture from scratch in Rust.
       image: 
+
+- category: Language
+  icon: fa-language
+  items:
+    - name: 漢字辞典オンライン
+      link: https://kanji.jitenon.jp/
+      description: 漢字の部首・画数・読み方・筆順・意味などを調べることができる漢字辞典サイトです。各漢字のページでは、漢字の基本情報のほか、難読読み、その字を含む熟語、四字熟語、ことわざなども掲載しています。
+      image: https://kanji.jitenon.jp/images/top-logo.svg
