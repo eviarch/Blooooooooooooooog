@@ -61,7 +61,7 @@
       image: 
 
 - category: Language
-  icon: fa-language
+  icon: fa-language # 语言类学习工具
   items:
     - name: 漢字辞典オンライン
       link: https://kanji.jitenon.jp/
