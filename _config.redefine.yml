@@ -149,8 +149,8 @@ home_banner:
   # Home banner image
   image: 
     # light: /post_images/background1.jpg # light mode
-    light: /images/wallhaven-wqery6-light.webp # light mode
-    dark: /images/wallhaven-wqery6-dark.webp # dark mode
+    light: /post_images/background_image/fujisan.png # light mode
+    dark: /post_images/background_image/fujisan.png # dark mode
   # Home banner title
   title: "It's Eviarch's blog, sharing things about study and daily life"
   # Home banner subtitle
