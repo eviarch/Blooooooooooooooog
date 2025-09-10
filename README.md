@@ -33,7 +33,9 @@ source
 
 ## Acknowledgement
 
-❤️Thanks to [Shetty Yttehs](https://github.com/Yttehs-HDX) for providing technical support for building this website. 
+🩵Thanks to [Shetty Yttehs](https://github.com/Yttehs-HDX) for providing technical support for building this website. 
+
+❤️Thanks to [AeRonMeri](https://x.com/Aeronmeri_19198) for providing the background image. And his/her bilibili account id is [AERONM](https://space.bilibili.com/1151788364). Welcome everyone to support his/her.
 
 ## License
 
