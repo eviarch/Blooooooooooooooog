@@ -149,8 +149,8 @@ home_banner:
   # Home banner image
   image: 
     # light: /post_images/background1.jpg # light mode
-    light: /post_images/background_image/fujisan.png # light mode
-    dark: /post_images/background_image/fujisan.png # dark mode
+    light: /post_images/background_image/goldenglow_light.png # light mode
+    dark: /post_images/background_image/goldenglow_dark.png # dark mode
   # Home banner title
   title: "It's Eviarch's blog, sharing things about study and daily life"
   # Home banner subtitle
