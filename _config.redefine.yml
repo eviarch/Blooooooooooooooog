@@ -228,9 +228,9 @@ navbar:
       path: / 
       icon: fa-regular fa-house # can be empty
 
-    Moments:
-        path: /essays
-        icon: fa-regular fa-comment
+    # Moments:
+    #     path: /essays
+    #     icon: fa-regular fa-comment
 
     # Archives: 
     #   path: /archives 
@@ -291,6 +291,9 @@ home:
     announcement: *sidebar_announcement # Announcement text
     show_on_mobile: true # Whether to show sidebar navigation on mobile sheet menu
     links:
+      Moments:
+        path: /essays
+        icon: fa-regular fa-comment
       Archives: 
         path: /archives 
         icon: fa-regular fa-archive # can be empty
