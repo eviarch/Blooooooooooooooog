@@ -47,6 +47,11 @@
       description: 319 free online tools
       image: https://www.tskau.com/favicon.ico
 
+    - name: Tide tables
+      link: https://www.chaoxibiao.net/
+      description: Tide table for national sea areas, accurate tide time query
+      image: https://www.chaoxibiao.net/favicon.ico
+
 - category: Tutorials
   icon: fa-book # 教程分类的图标
   items:
