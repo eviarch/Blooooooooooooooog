@@ -1,0 +1,2762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Hexo Theme Redefine">
+    
+    <meta name="author" content="Eviarch">
+    
+    <!-- Completely eliminate flash of wrong theme -->
+    <script>
+        (function() {
+            const THEME_KEY = "REDEFINE-THEME-STATUS";
+            const DARK = "dark", LIGHT = "light";
+            
+            // Get preferred theme
+            function getTheme() {
+                try {
+                    const saved = localStorage.getItem(THEME_KEY);
+                    if (saved) {
+                        const { isDark } = JSON.parse(saved);
+                        return isDark ? DARK : LIGHT;
+                    }
+                } catch (e) {}
+                
+                return matchMedia("(prefers-color-scheme: dark)").matches ? DARK : LIGHT;
+            }
+            
+            // Apply theme to document
+            function applyTheme(theme) {
+                const isDark = theme === DARK;
+                const root = document.documentElement;
+                
+                // Set data attribute for CSS variables
+                root.setAttribute("data-theme", theme);
+                
+                // Set classes for compatibility
+                root.classList.add(theme);
+                root.classList.remove(isDark ? LIGHT : DARK);
+                root.style.colorScheme = theme;
+            }
+            
+            // Initial application
+            const theme = getTheme();
+            applyTheme(theme);
+            
+            // Listen for system preference changes
+            matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ({ matches }) => {
+                // Only update if using system preference (no localStorage entry)
+                if (!localStorage.getItem(THEME_KEY)) {
+                    applyTheme(matches ? DARK : LIGHT);
+                }
+            });
+            
+            // Set body classes once DOM is ready
+            if (document.readyState !== "loading") {
+                document.body.classList.add(theme + "-mode");
+            } else {
+                document.addEventListener("DOMContentLoaded", () => {
+                    document.body.classList.add(theme + "-mode");
+                    document.body.classList.remove((theme === DARK ? LIGHT : DARK) + "-mode");
+                });
+            }
+        })();
+    </script>
+    
+    <!-- Critical CSS to prevent flash -->
+    <style>
+        :root[data-theme="dark"] {
+            --background-color: #202124;
+            --background-color-transparent: rgba(32, 33, 36, 0.6);
+            --second-background-color: #2d2e32;
+            --third-background-color: #34353a;
+            --third-background-color-transparent: rgba(32, 33, 36, 0.6);
+            --primary-color: #0066CC;
+            --first-text-color: #ffffff;
+            --second-text-color: #eeeeee;
+            --third-text-color: #bebec6;
+            --fourth-text-color: #999999;
+            --default-text-color: #bebec6;
+            --invert-text-color: #373D3F;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --selection-color: #0066CC;
+            --shadow-color-1: rgba(255, 255, 255, 0.08);
+            --shadow-color-2: rgba(255, 255, 255, 0.05);
+        }
+        
+        :root[data-theme="light"] {
+            --background-color: #fff;
+            --background-color-transparent: rgba(255, 255, 255, 0.6);
+            --second-background-color: #f8f8f8;
+            --third-background-color: #f2f2f2;
+            --third-background-color-transparent: rgba(241, 241, 241, 0.6);
+            --primary-color: #0066CC;
+            --first-text-color: #16171a;
+            --second-text-color: #2f3037;
+            --third-text-color: #5e5e5e;
+            --fourth-text-color: #eeeeee;
+            --default-text-color: #373D3F;
+            --invert-text-color: #bebec6;
+            --border-color: rgba(0, 0, 0, 0.08);
+            --selection-color: #0066CC;
+            --shadow-color-1: rgba(0, 0, 0, 0.08);
+            --shadow-color-2: rgba(0, 0, 0, 0.05);
+        }
+        
+        body {
+            background-color: var(--background-color);
+            color: var(--default-text-color);
+        }
+        
+        /* Apply body classes as soon as DOM is ready */
+        :root[data-theme="dark"] body {
+            background-color: var(--background-color);
+            color: var(--default-text-color);
+        }
+    </style>
+    
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="https://blog.eviarch.com/2025/07/02/日语勉强中/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+    
+    
+        
+        <meta name="description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="日语勉强中">
+<meta property="og:url" content="https://blog.eviarch.com/2025/07/02/%E6%97%A5%E8%AF%AD%E5%8B%89%E5%BC%BA%E4%B8%AD/index.html">
+<meta property="og:site_name" content="Eviarch&#39;s blog">
+<meta property="og:description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://blog.eviarch.com/images/redefine-og.webp">
+<meta property="article:published_time" content="2025-07-02T19:00:20.000Z">
+<meta property="article:modified_time" content="2025-09-12T00:15:12.000Z">
+<meta property="article:author" content="Eviarch">
+<meta property="article:tag" content="Hobbies">
+<meta property="article:tag" content="Part-time Study">
+<meta property="article:tag" content="日本語">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog.eviarch.com/images/redefine-og.webp">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="https://avatars.githubusercontent.com/u/148052580?v=4" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://avatars.githubusercontent.com/u/148052580?v=4">
+    <meta name="theme-color" content="#F6B8B8">
+    <link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/148052580?v=4">
+    <!--- Page Info-->
+    
+    <title>
+        
+            日语勉强中 | Eviarch&#39;s blog
+        
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/css/build/tailwind.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/GeistMono/geist-mono.css">
+
+    
+<link rel="stylesheet" href="/fonts/Geist/geist.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+    
+    
+        
+<script src="/js/build/libs/anime.min.js"></script>
+
+    
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"blog.eviarch.com","root":"/","language":"en","path":"search.json"};
+    window.theme = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"delete_mask":false,"title_alignment":"left","headings_top_spacing":{"h1":"3.2rem","h2":"2.4rem","h3":"1.9rem","h4":"1.6rem","h5":"1.4rem","h6":"1.3rem"}},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":true,"auto":false,"list":[]},"code_block":{"copy":true,"style":"mac","highlight_theme":{"light":"github","dark":"vs2015"},"font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":{"enable":true,"default":"cc_by_nc_sa"},"lazyload":true,"pangu_js":false,"recommendation":{"enable":false,"title":"Recommended article","limit":3,"mobile_limit":2,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#F6B8B8","secondary":null,"default_mode":"dark"},"global":{"fonts":{"chinese":{"enable":false,"family":"Noto Serif SC","url":"https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&display=swap\" rel=\"stylesheet"},"english":{"enable":false,"family":"Noto Serif SC","url":"https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&display=swap\" rel=\"stylesheet"},"title":{"enable":false,"family":"Noto Serif SC","url":"https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&display=swap\" rel=\"stylesheet"}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":true},"scroll_progress":{"bar":true,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":true,"site_pv":true,"site_uv":true,"post_pv":true},"single_page":true,"preloader":{"enable":true,"custom_message":"Eviarch's blog"},"side_tools":{"gear_rotation":true,"auto_expand":false},"open_graph":{"enable":true,"image":"/images/redefine-og.webp","description":"Hexo Theme Redefine, Redefine Your Hexo Journey."},"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/post_images/background_image/goldenglow_light.png","dark":"/post_images/background_image/goldenglow_dark.png"},"title":"It's Eviarch's blog, sharing things about study and daily life","subtitle":{"text":["求知若渴，虚心若愚","你所做的事情或许无人在意，但只要你仍追求完美，你就终将掌握连专家也望而兴叹的技能","\"拉绳子或者割断绳索，但无论你做什么，都不要犹豫\" --Death Stranding","共赴山海","回首望来路，尘埃映星河 --Zachary","天空越黑，星星越亮 --小农帽","青春就像月亮，时圆时缺，但是只要圆过一次，我们的青春就没有遗憾 --Zachary","不能信任那些 Terminal 或 Editor 用白底的人","软件靠重启，硬件靠插拔","\"绳索和棍棒是人类最早发明的工具。绳索可以留住美好，棍棒则可以驱赶危险。两者皆是我们最早的朋友，皆由我们创造。有人的地方，就有绳索与棍棒。--摘自 安部公房《绳》\"","总有一天我会没办法继续照顾你，你必须自己做出决定，决定自己究竟是谁，这个世界不喜欢与众不同的人马库斯，不要让别人告诉你，该成为什么样的人。 --Detroit Become Human","\"Life is a tragedy when seen in close-up, but a comedy in long-shot.\" ― Charlie Chaplin ","行ってきます！","「大切な人といつかまた巡り合えますように」时光流逝，愿你与重要的人再次重逢","君の膵臓をたべたい","因为万物都会坠落，所以攀登是我们必然的宿命"],"hitokoto":{"enable":false,"show_author":false,"api":"https://v1.hitokoto.cn"},"typing_speed":80,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":true,"style":"default","links":{"github":"https://github.com/eviarch","instagram":null,"zhihu":null,"twitter":"https://x.com/eviarch74703","email":"eviarch@gmail.com","fa-solid fa-tower-broadcast":"https://www.youtube.com/@eviarch"},"qrs":{"weixin":null}}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":{"audios":[{"name":"深藍","artist":"ルルティア","url":"https://music.163.com/song/media/outer/url?id=22724676.mp3","cover":"https://p2.music.126.net/kprSJv0yHoiwyJ7pbuEVxg==/834529325505669.jpg","lrc":"https://gist.githubusercontent.com/Yttehs-HDX/6f133b5a8f35475404e1c581f3045b4a/raw/80a621dc3efdfdaa5bb161ce705904bf4d8080b0/22724676.lrc"}]}},"mermaid":{"enable":false,"version":"11.4.1"}},"version":"2.8.5","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Bookmarks":{"path":"/bookmarks/","icon":"fa-regular fa-bookmark"},"Friends":{"path":"/links/","icon":"fa-solid fa-link"},"About":{"icon":"fa-regular fa-user","submenus":{"Blog Repo":"https://github.com/eviarch/Blooooooooooooooog"}}},"search":{"enable":true,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"blur"},"home":{"sidebar":{"enable":true,"position":"left","first_item":"info","announcement":"死は生の裏返しである","show_on_mobile":true,"links":{"Moments":{"path":"/essays","icon":"fa-regular fa-comment"},"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"Tags":{"path":"/tags/","icon":"fa-regular fa-tags"},"Categories":{"path":"/categories/","icon":"fa-regular fa-folder"}}},"article_date_format":"auto","excerpt_length":200,"categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footerStart":"2025/6/10 12:34:56"};
+    window.lang_ago = {"second":"%s seconds ago","minute":"%s minutes ago","hour":"%s hours ago","day":"%s days ago","week":"%s weeks ago","month":"%s months ago","year":"%s years ago"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+
+<body>
+	<div class="progress-bar-container">
+	
+	<span class="scroll-progress-bar"></span>
+	
+
+	
+	<span class="pjax-progress-bar"></span>
+	<!--        <span class="swup-progress-icon">-->
+	<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+	<!--        </span>-->
+	
+</div>
+
+<style>
+    :root {
+        --preloader-background-color: #fff;
+        --preloader-text-color: #000;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --preloader-background-color: #202124;
+            --preloader-text-color: #fff;
+        }
+    }
+
+    @media (prefers-color-scheme: light) {
+        :root {
+            --preloader-background-color: #fff;
+            --preloader-text-color: #000;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .ml13 {
+            font-size: 2.6rem !important; /* Adjust this value as needed */
+        }
+    }
+
+    .preloader {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem; /* Tailwind 'gap-4' is 1rem */
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        padding: 12px;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh; /* 'h-screen' is 100% of the viewport height */
+        background-color: var(--preloader-background-color);
+        z-index: 1100; /* 'z-[1100]' sets the z-index */
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .ml13 {
+        font-size: 3.2rem;
+        /* text-transform: uppercase; */
+        color: var(--preloader-text-color);
+        letter-spacing: -1px;
+        font-weight: 500;
+        font-family: 'Chillax-Variable', sans-serif;
+        text-align: center;
+    }
+
+    .ml13 .word {
+        display: inline-flex;
+        flex-wrap: wrap;
+        white-space: nowrap;
+    }
+
+    .ml13 .letter {
+        display: inline-block;
+        line-height: 1em;
+    }
+</style>
+
+<div class="preloader">
+    <h2 class="ml13">
+        Eviarch&#39;s blog
+    </h2>
+    <script>
+        var textWrapper = document.querySelector('.ml13');
+        // Split text into words
+        var words = textWrapper.textContent.trim().split(' ');
+
+        // Clear the existing content
+        textWrapper.innerHTML = '';
+
+        // Wrap each word and its letters in spans
+        words.forEach(function(word) {
+            var wordSpan = document.createElement('span');
+            wordSpan.classList.add('word');
+            wordSpan.innerHTML = word.replace(/\S/g, "<span class='letter'>$&</span>");
+            textWrapper.appendChild(wordSpan);
+            textWrapper.appendChild(document.createTextNode(' ')); // Add space between words
+        });
+
+        var animation = anime.timeline({ loop: true })
+            .add({
+                targets: '.ml13 .letter',
+                translateY: [20, 0],
+                translateZ: 0,
+                opacity: [0, 1],
+                filter: ['blur(5px)', 'blur(0px)'],
+                easing: "easeOutExpo",
+                duration: 1200,
+                delay: (el, i) => 300 + 20 * i,
+            })
+            .add({
+                targets: '.ml13 .letter',
+                translateY: [0, -20],
+                opacity: [1, 0],
+                filter: ['blur(0px)', 'blur(5px)'],
+                easing: "easeInExpo",
+                duration: 1000,
+                delay: (el, i) => 15 * i,
+                complete: function() {
+                    hidePreloader();
+                }
+            }, '-=700');
+
+
+        let themeStatus = JSON.parse(localStorage.getItem('REDEFINE-THEME-STATUS'))?.isDark;
+
+        // If the theme status is not found in local storage, check the preferred color scheme
+        if (themeStatus === undefined || themeStatus === null) {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                themeStatus = 'dark';
+            } else {
+                themeStatus = 'light';
+            }
+        }
+
+        // Now you can use the themeStatus variable in your code
+        if (themeStatus) {
+            document.documentElement.style.setProperty('--preloader-background-color', '#202124');
+            document.documentElement.style.setProperty('--preloader-text-color', '#fff');
+        } else {
+            document.documentElement.style.setProperty('--preloader-background-color', '#fff');
+            document.documentElement.style.setProperty('--preloader-text-color', '#000');
+        }
+
+        window.addEventListener('load', function () {
+            setTimeout(hidePreloader, 5000); // Call hidePreloader after 5000 milliseconds if not already called by animation
+        });
+
+        function hidePreloader() {
+            var preloader = document.querySelector('.preloader');
+            preloader.style.opacity = '0';
+            setTimeout(function () {
+                preloader.style.display = 'none';
+            }, 200);
+        }
+    </script>
+</div>
+
+<main class="page-container" id="swup">
+
+	
+
+	<div class="main-content-container flex flex-col justify-between min-h-dvh">
+		<div class="main-content-header">
+			<header class="navbar-container px-6 md:px-12">
+    <div class="navbar-content transition-navbar ">
+        <div class="left">
+            
+                <a class="logo-image h-8 w-8 sm:w-10 sm:h-10 mr-3" href="/">
+                    <img src="https://avatars.githubusercontent.com/u/148052580?v=4" class="w-full h-full rounded-xs">
+                </a>
+            
+            <a class="logo-title" href="/">
+                
+                Eviarch&#39;s blog
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    HOME
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/bookmarks/"
+                                        >
+                                    <i class="fa-regular fa-bookmark fa-fw"></i>
+                                    BOOKMARKS
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/links/"
+                                        >
+                                    <i class="fa-solid fa-link fa-fw"></i>
+                                    FRIENDS
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="has-dropdown"
+                                   href="#"
+                                        onClick=&#34;return false;&#34;>
+                                    <i class="fa-regular fa-user fa-fw"></i>
+                                    ABOUT
+                                    <i class="fa-solid fa-chevron-down fa-fw"></i>
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                                    <ul class="sub-menu">
+                                        
+                                            <li>
+                                                <a target="_blank" rel="noopener" href="https://github.com/eviarch/Blooooooooooooooog">
+                                                    BLOG REPO
+                                                </a>
+                                            </li>
+                                        
+                                    </ul>
+                                
+                            </li>
+                    
+                    
+                        <li class="navbar-item search search-popup-trigger">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </li>
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                    <div class="icon-item search search-popup-trigger"><i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-dvh w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                HOME
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/bookmarks/"
+                        >
+                            <span>
+                                BOOKMARKS
+                            </span>
+                            
+                                <i class="fa-regular fa-bookmark fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/links/"
+                        >
+                            <span>
+                                FRIENDS
+                            </span>
+                            
+                                <i class="fa-solid fa-link fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item-sub text-base my-1.5 flex flex-col w-full">
+                        
+                        <div class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary cursor-pointer text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                             navbar-data-toggle="submenu-About"
+                        >
+                            <span>
+                                ABOUT
+                            </span>
+                            
+                                <i class="fa-solid fa-chevron-right fa-sm fa-fw transition-all"></i>
+                            
+                        </div>
+                        
+
+                        
+                            <div class="flex-col items-start px-2 py-2 hidden" data-target="submenu-About">
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           target="_blank" rel="noopener" href="https://github.com/eviarch/Blooooooooooooooog">BLOG REPO</a>
+                                    </div>
+                                
+                            </div>
+                        
+                    </li>
+            
+
+            
+            
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/essays"
+                        >
+                            <span>Moments</span>
+                            <i class="fa-regular fa-comment fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/archives"
+                        >
+                            <span>Archives</span>
+                            <i class="fa-regular fa-archive fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/tags/"
+                        >
+                            <span>Tags</span>
+                            <i class="fa-regular fa-tags fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/categories/"
+                        >
+                            <span>Categories</span>
+                            <i class="fa-regular fa-folder fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">20</div>
+        <div class="label text-third-text-color text-sm">Tags</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">14</div>
+        <div class="label text-third-text-color text-sm">Categories</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">8</div>
+        <div class="label text-third-text-color text-sm">Posts</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+		</div>
+
+		<div class="main-content-body transition-fade-up">
+			
+
+			<div class="main-content">
+				<div class="post-page-container flex relative justify-between box-border w-full h-full">
+	<div class="article-content-container">
+
+		<div class="article-title relative w-full">
+			
+			
+			
+			<img src="/post_images/%E6%97%A5%E8%AF%AD%E5%8B%89%E5%BC%BA%E4%B8%AD/thumbnail.webp" alt="日语勉强中" class="w-full h-60 sm:h-72 md:h-80 object-cover sm:rounded-t-large dark:brightness-75" />
+			
+			<div class="w-full flex items-center absolute bottom-0 justify-start">
+				<h1 class="article-title-cover text-center mx-6 my-6 text-second-text-color bg-background-color-transparent px-4 py-3 text-3xl sm:text-4xl md:text-5xl font-semibold backdrop-blur-lg rounded-xl border border-border-color ">日语勉强中</h1>
+			</div>
+			
+		</div>
+
+		
+		<div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+			<div class="avatar w-[46px] h-[46px] flex-shrink-0 rounded-medium border border-border-color p-[1px]">
+				<img src="https://avatars.githubusercontent.com/u/148052580?v=4">
+			</div>
+			<div class="info flex flex-col justify-between">
+				<div class="author flex items-center">
+					<span class="name text-default-text-color text-lg font-semibold">Eviarch</span>
+					
+					<span class="author-label ml-1.5 text-xs px-2 py-0.5 rounded-small text-third-text-color border border-shadow-color-1">Lv2</span>
+					
+				</div>
+				<div class="meta-info">
+					<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2025-07-02 19:20</span>
+        <span class="mobile">2025-07-02 19:20</span>
+        <span class="hover-info">Created</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2025-09-12 00:15:12</span>
+            <span class="mobile">2025-09-12 00:15:12</span>
+            <span class="hover-info">Updated</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/Part-time-Study/">Part-time Study</a>&nbsp;
+                        </li>
+                    
+                    
+                
+                    
+                        
+                            <li>></li>
+                        
+                        <li>
+                            <a href="/categories/Part-time-Study/%E6%97%A5%E6%9C%AC%E8%AA%9E/">日本語</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/Part-time-Study/">Part-time Study</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/%E6%97%A5%E6%9C%AC%E8%AA%9E/">日本語</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/Hobbies/">Hobbies</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+        <span class="article-pv article-meta-item">
+            <i class="fa-regular fa-eye"></i>&nbsp;<span id="busuanzi_value_page_pv"></span>
+        </span>
+    
+</div>
+
+				</div>
+			</div>
+		</div>
+		
+
+		
+
+
+		<div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+			
+  <div class="note-large green">
+    <div class="notel-title rounded-t-lg p-3 font-bold text-lg flex flex-row gap-2 items-center">
+      <p>info</p>
+
+    </div>
+    <div class="notel-content markdown-body">
+      <p>本篇博客是学习日本語的笔记，博主目前是超级小小小白，如有错误还请各位佬批评指正orz。由于是笔记的原因，本篇博客停止更新，在<a
+href="/2025/09/04/%E6%97%A5%E6%9C%AC%E8%AA%9E%E3%82%92%E5%8B%89%E5%BC%B7%E3%81%97%E3%81%A6%E3%81%84%E3%81%BE%E3%81%99/">日本語を勉強しています</a>
+中继续更新。 君の日本語が本当に上手です😃</p>
+
+    </div>
+  </div>
+<h2 id="音图">音图</h2>
+<h3 id="五十音图清音">五十音图(清音)</h3>
+<p>五十音图中每行为同一子音下母音的变化，每列为同一母音下子音的变化。每行依序称为あ行、か行、さ行、た行、な行、は行、ま行、や行、ら行、わ行，每列依序称为あ段、い段、う段、え段、お段。五十音里一共有や行い段的い、や行え段的え、わ行う段的う是重复的，另外ゐ和ゑ在现代日语也不再使用，只有古文或是名字中才可能会见到。因此，加上拨音ん，日常生活所使用的假名只有46个。计上ゐ和ゑ有48个假名。不过，以发音来说，除了清音、拨音以外，还有浊音、半浊音、长音、促音、拗音等等，总数在100个以上。片假名有四十六个，但是其中有一个用不到</p>
+<ul>
+<li><strong>平假名</strong>由汉字的草书演变而成，书写较为圆润。</li>
+<li><strong>片假名</strong>由汉字楷书的偏旁、部首演变而成，书写有棱有角。</li>
+<li><strong>罗马音</strong>是对日文读音注释的一种称呼，类似于英文中的“音标”。</li>
+</ul>
+<p><strong>注意</strong>：日语里，大量采用<strong>片假名</strong>来表示外来语(
+非日语原有，而是源自于英语、法语、或其他外来语系的词汇
+)，所以熟记片假名是非常重要的。片假名常用于以下几种情况：</p>
+<ol type="1">
+<li>日本以外的国名、地名、人名</li>
+<li>源于英语法语等的生活词汇</li>
+<li>日本以外的货币、度量衡单位</li>
+<li>日语中的拟声词、拟态词</li>
+</ol>
+<figure>
+<img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="/post_images/日语勉强中/五十音.png"
+                      alt="五十音" 
+                >
+<figcaption aria-hidden="true">五十音</figcaption>
+</figure>
+<h3 id="浊音">浊音</h3>
+<p>在古时候，清音和浊音是没什么区分的，只能通过文章的上下文来推断是读清音还是浊音，或者用万叶假名表示，跟平片假名不同，万叶假名是没有简化过的用于表音的汉字。</p>
+<p>从平安时代开始，浊音符号才开始出现的，主要是大和尚用于标注佛经读音的。但是那个时候的浊音符号各种各样的都有，有一个大黑点「●」，有两个大黑点「●●」，还有三角形「△」，短横线「－」等等。而且位置也是不确定的，有放右上的，右中的，还有右下的，直到室町时代后期，浊音符号才逐渐统一成右上角的位置，形状也逐渐统一成类似于现在的两个小点。而浊音从这个时候才开始作为一个音素而单独存在。</p>
+<p>而半浊音符号据说是来日本的葡萄牙传教士发明的，感兴趣的可以看看「日本人の知らない日本語」这本漫画或者日剧。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">清音</th>
+<th style="text-align: center;">浊音</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">ka行</td>
+<td style="text-align: center;">ga行</td>
+</tr>
+<tr>
+<td style="text-align: center;">sa行</td>
+<td style="text-align: center;">za行</td>
+</tr>
+<tr>
+<td style="text-align: center;">ta行</td>
+<td style="text-align: center;">da行</td>
+</tr>
+<tr>
+<td style="text-align: center;">ha行</td>
+<td style="text-align: center;">ba行</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">清音</th>
+<th style="text-align: center;">半浊音</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">ha行</td>
+<td style="text-align: center;">pa行</td>
+</tr>
+</tbody>
+</table>
+<figure>
+<img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="/post_images/日语勉强中/浊音.png"
+                      alt="浊音" 
+                >
+<figcaption aria-hidden="true">浊音</figcaption>
+</figure>
+<h3 id="拗ǎo音">拗（ǎo）音</h3>
+<p>上古日语没有“拗音”。“拗音”的出现，是因为古代日本人在引入汉语借词时，需要新的音以扩充日语音系转写来自中古汉语的发音。因此，大部分的拗音出现在汉语词汇，亦或和制汉语词汇。</p>
+<blockquote>
+<p><strong>上古日语</strong>（日语：上代日本語／じょうだいにほんご Jōdai
+Nihon-go），指<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/奈良時代" >奈良时代<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>及其以前使用的日语古语。</p>
+</blockquote>
+<ul>
+<li><p>吴音
+开拗音在吴音里出现在有二等、三等、四等开介音的字中。合拗音出现在一等合介音的字中。</p>
+<blockquote>
+<p><strong>吴音</strong>（日语：呉音／ごおん Go On <a class="link" 
+ target="_blank" rel="noopener" href="https://ja.wikipedia.org/wiki/呉音" >*****<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a><strong>/</strong><a
+target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/Help:日語"><strong>?</strong></a>）是<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/日本漢字音" >日本汉字音<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>（<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/音讀" >音读<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>）的一种，指<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/日本" >日本<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>自<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/大和時代" >大和时代<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>从<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/南北朝" >南朝<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a><a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/建康" >建康<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>传入的在日本使用的汉字音。日本在吴音传入之后，到<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/奈良時代" >奈良时代<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>则从<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/唐朝" >唐朝<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a><a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/長安" >长安<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>传入新<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/漢音" >汉音<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>。吴音与汉音一样主要传承了<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/中古漢語" >中古汉语<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>的特征。</p>
+</blockquote></li>
+<li><p>唐音
+唐音一定程度上反映了晚期中古汉语的部分特征。唐音里的拗音出现在介音为/i/的字中。</p>
+<blockquote>
+<p><strong>唐音</strong>是<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/日本漢字音" >日本汉字音<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>（<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/音讀" >音读<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>）的一类。广义的“唐音”（<strong>唐宋音</strong>）指<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/鎌倉時代" >镰仓时代<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>以后直至近代传入<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/日本" >日本<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>的<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/漢字音" >汉字音<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>，也就是<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/明清" >明清时期<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>的南方标准语“<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/南京官話" >南京官话<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>”。包含<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/室町時代" >室町时代<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>传入的“<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/宋音" >宋音<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>”与狭义的“唐音”，即<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/江戶時代" >江户时代<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>（明清）传入的汉字音。“唐音”的“<strong>唐</strong>”与“<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/吳音" >吴音<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>”的“<strong>吴</strong>”和“<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/漢音" >汉音<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>”的“<strong>汉</strong>”一样，并非指<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/朝代" >朝代<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>，而是对<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/中國" >中国<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>的<a class="link" 
+ target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/中國的稱號" >泛称<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>。</p>
+</blockquote></li>
+</ul>
+<p>连接母音长音化
+在中世日语时，/iu/音演化成了/yuu/音，而/eu/音演化成了/yoo/音。[2]例子如下</p>
+<p><strong>拗音是某些行的第二个音，加上小一点的[ ゃ、ゅ、ょ
+]所组成的。同样也有清音，浊音和半浊音；分平假名和片假名</strong></p>
+<figure>
+<img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="/post_images/日语勉强中/拗音.png"
+                      alt="拗音" 
+                >
+<figcaption aria-hidden="true">拗音</figcaption>
+</figure>
+<h3 id="促音">促音</h3>
+<p>日语中有「つ」和「っ」两种日文字，有以下几个不同点：</p>
+<ol type="1">
+<li>大小不同：「つ」是正常大小，「っ」会小一点</li>
+<li>位置不同：「つ」与前面的假名齐高，「っ」跟在前面假名的右下角</li>
+<li>名称不同：「つ」是清音，「っ」是浊音</li>
+<li>发音不同：「つ」是正常的平假名发音，读tsu。「っ」不发音，停一拍，再念下一个音</li>
+</ol>
+<h3 id="长音">长音</h3>
+<p>日文里，「ー」表示片假名的长音，<strong>只会出现在片假名单词中</strong>。在发音时「ー」前面的假名的元音要拉长一拍，总长度为两拍。</p>
+<h3 id="日本汉字">日本汉字</h3>
+<h4 id="读音">读音</h4>
+<p>日语中除了平假名、片假名之外，还大量使用汉字。日语中的全部汉字有几万个之多，但是常用的则只有几千个。</p>
+<p>每个汉字一般都会有两种读法，一种叫做“音读”；另一种叫做“训读”：</p>
+<ol type="1">
+<li>训读「訓読み」(onyomi)：固有读法，从一开始就有的发音。是按照日本固有的语言来读这个汉字时的读法</li>
+<li>音读「音読み」(kunyomi)：有中文等语言传入的发音，受其他语言影响。模仿汉字的读音，根据汉字传入的时代和来源地的不同，大致可以分为“汉音”、“唐音”、“宋音”、“吴音”等几种。</li>
+</ol>
+<p>“音读”的词汇多是汉语的固有词汇。“训读”的词汇多是表达日本固有事物的固有词汇。</p>
+<p>水曜日（すいようび）和中国人（ちゅうごくじん）这样作为单词的一个语素出现时多是音读。「水（みず）
+人（ひと）」</p>
+<p>此外，还有些词汇的读音不对应单个汉字，而是对应于词语整体，属于特殊的惯用读法。也称作熟字訓（じゅくじくん）。</p>
+<blockquote>
+<p>例如</p>
+<p>梅雨（つゆ）/梅雨<br />
+海豚（いるか）/海豚<br />
+師走（しわす）/腊月<br />
+海老（えび）/虾<br />
+水母（くらげ）/海蜇</p>
+</blockquote>
+<h3 id="历史背景仅作了解">历史背景（仅作了解）</h3>
+<p>五十音以段和行作为排序的方式。现代五十音的顺序大概是在室町时代以后形成的。</p>
+<p>会以あいうえお这样的顺序排序，其中一个影响是根据当时梵文的音韵学——悉昙学。将当时梵文的母音用拉丁字母表示，会是a、â、i、ī、u、û、ri、ê、ai、ô、au、an、a’这样的顺序，对应到日文的顺序正好是あいうえお。あかさたな的顺序会把や‧ら‧わ行放到最后也有可能是受到悉昙学的影响。</p>
+<p>另一个影响来自中国的汉语音韵学。古代汉语的表音方式为反切，以这种方法所形成的五音、清浊、韵书、韵图等等方法也都传到日本。五十音图最初的提案应为天台宗的僧侣明觉。他的著作《反音作法》利用反切的方法，将同一子音的置于同一行，同一母音的置于同一段。此处母音的顺序为アイウエオ，而子音的顺序为アカヤ（喉音）サタナラ（舌音）ハマワ（唇音）；子音的排序方法是按照口腔发音的位置由内至外排列（当时的ハ行是唇音ɸ）。后来将ヤラワ行往后挪，除了可能受到悉昙学的影响以外，也有可能是y、r、w有半母音性质的原因。</p>
+<p>另亦有使用悉昙梵文拼写的五十音图，称为“悉昙五十字门”。</p>
+<p>日本的字面含义：</p>
+<p>日表示“太阳”，本表示“基础”或“起源”，因此顾名思义，日本表示太阳的起源。在其他语言中，日本也被称为日出之国。</p>
+<h4 id="字源">字源</h4>
+<p>注：除非特殊说明，平假名均由草体汉字演变而来，片假名由汉字演变而来</p>
+<ol type="1">
+<li>あ行</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">平假名</th>
+<th style="text-align: center;">平假名字源</th>
+<th style="text-align: center;">片假名</th>
+<th style="text-align: center;">片假名字源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">あ</td>
+<td style="text-align: center;">” 安 ”</td>
+<td style="text-align: center;">ア</td>
+<td style="text-align: center;">” 阿 “的左偏旁</td>
+</tr>
+<tr>
+<td style="text-align: center;">い</td>
+<td style="text-align: center;">” 以 ”</td>
+<td style="text-align: center;">イ</td>
+<td style="text-align: center;">” 伊 “的左偏旁</td>
+</tr>
+<tr>
+<td style="text-align: center;">う</td>
+<td style="text-align: center;">” 宇 ”</td>
+<td style="text-align: center;">ウ</td>
+<td style="text-align: center;">” 宇 “的上半部分</td>
+</tr>
+<tr>
+<td style="text-align: center;">え</td>
+<td style="text-align: center;">” 衣 ”</td>
+<td style="text-align: center;">エ</td>
+<td style="text-align: center;">” 江 “的右偏旁</td>
+</tr>
+<tr>
+<td style="text-align: center;">お</td>
+<td style="text-align: center;">” 於(yu) ”</td>
+<td style="text-align: center;">オ</td>
+<td style="text-align: center;">” 於 “的左偏旁</td>
+</tr>
+</tbody>
+</table>
+<ol start="2" type="1">
+<li>か行</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">平假名</th>
+<th style="text-align: center;">平假名字源</th>
+<th style="text-align: center;">片假名</th>
+<th style="text-align: center;">片假名字源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">か</td>
+<td style="text-align: center;">” 加 ”</td>
+<td style="text-align: center;">カ</td>
+<td style="text-align: center;">” 加 “的左偏旁</td>
+</tr>
+<tr>
+<td style="text-align: center;">き</td>
+<td style="text-align: center;">” 畿(ji) ”</td>
+<td style="text-align: center;">キ</td>
+<td style="text-align: center;">” 畿 “的下半部分略写</td>
+</tr>
+<tr>
+<td style="text-align: center;">く</td>
+<td style="text-align: center;">” 久 ”</td>
+<td style="text-align: center;">ク</td>
+<td style="text-align: center;">” 久 “的略体演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">け</td>
+<td style="text-align: center;">” 计 ”</td>
+<td style="text-align: center;">ケ</td>
+<td style="text-align: center;">” 介 “的略体演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">こ</td>
+<td style="text-align: center;">” 己 ”</td>
+<td style="text-align: center;">コ</td>
+<td style="text-align: center;">” 己 “的上部演变而来</td>
+</tr>
+</tbody>
+</table>
+<ol start="3" type="1">
+<li>さ行</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">平假名</th>
+<th style="text-align: center;">平假名字源</th>
+<th style="text-align: center;">片假名</th>
+<th style="text-align: center;">片假名字源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">さ</td>
+<td style="text-align: center;">” 左 ”</td>
+<td style="text-align: center;">サ</td>
+<td style="text-align: center;">” 散 “的左上部演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">し</td>
+<td style="text-align: center;">” 之 ”</td>
+<td style="text-align: center;">シ</td>
+<td style="text-align: center;">” 之 “去掉“小尾巴”演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">す</td>
+<td style="text-align: center;">” 寸 ”</td>
+<td style="text-align: center;">ス</td>
+<td style="text-align: center;">” 须 “的右偏旁演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">せ</td>
+<td style="text-align: center;">” 世 ”</td>
+<td style="text-align: center;">セ</td>
+<td style="text-align: center;">” 世 “的略体演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">そ</td>
+<td style="text-align: center;">” 曾 ”</td>
+<td style="text-align: center;">ソ</td>
+<td style="text-align: center;">” 曾 “的上部演变而来</td>
+</tr>
+</tbody>
+</table>
+<ol start="4" type="1">
+<li>た行</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">平假名</th>
+<th style="text-align: center;">平假名字源</th>
+<th style="text-align: center;">片假名</th>
+<th style="text-align: center;">片假名字源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">た</td>
+<td style="text-align: center;">” 太 ”</td>
+<td style="text-align: center;">タ</td>
+<td style="text-align: center;">” 多 “的上部演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">ち</td>
+<td style="text-align: center;">” 知 ”</td>
+<td style="text-align: center;">チ</td>
+<td style="text-align: center;">” 千 “的略体演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">つ</td>
+<td style="text-align: center;">” 川 ”</td>
+<td style="text-align: center;">ツ</td>
+<td style="text-align: center;">” 川 “的略体演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">て</td>
+<td style="text-align: center;">” 天 ”</td>
+<td style="text-align: center;">テ</td>
+<td style="text-align: center;">” 天 “的略体演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">と</td>
+<td style="text-align: center;">” 止 ”</td>
+<td style="text-align: center;">ト</td>
+<td style="text-align: center;">” 止 “的右部演变而来</td>
+</tr>
+</tbody>
+</table>
+<ol start="5" type="1">
+<li>な行</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">平假名</th>
+<th style="text-align: center;">平假名字源</th>
+<th style="text-align: center;">片假名</th>
+<th style="text-align: center;">片假名字源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">な</td>
+<td style="text-align: center;">” 奈 ”</td>
+<td style="text-align: center;">ナ</td>
+<td style="text-align: center;">” 奈 “的上部演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">に</td>
+<td style="text-align: center;">” 仁 ”</td>
+<td style="text-align: center;">ニ</td>
+<td style="text-align: center;">” 二 “演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">ぬ</td>
+<td style="text-align: center;">” 奴 ”</td>
+<td style="text-align: center;">ヌ</td>
+<td style="text-align: center;">” 奴 “的右偏旁演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">ね</td>
+<td style="text-align: center;">” 檷( mi ) ”</td>
+<td style="text-align: center;">ネ</td>
+<td style="text-align: center;">” 祢 “的左偏旁演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">の</td>
+<td style="text-align: center;">” 乃 ”</td>
+<td style="text-align: center;">ノ</td>
+<td style="text-align: center;">” 乃 “的左偏旁演变而来</td>
+</tr>
+</tbody>
+</table>
+<ol start="6" type="1">
+<li>は行</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">平假名</th>
+<th style="text-align: center;">平假名字源</th>
+<th style="text-align: center;">片假名</th>
+<th style="text-align: center;">片假名字源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">は</td>
+<td style="text-align: center;">” 波 ”</td>
+<td style="text-align: center;">ハ</td>
+<td style="text-align: center;">” 八 “的略体演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">ひ</td>
+<td style="text-align: center;">” 比 ”</td>
+<td style="text-align: center;">ヒ</td>
+<td style="text-align: center;">” 比 “的左偏旁演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">ふ</td>
+<td style="text-align: center;">” 不 ”</td>
+<td style="text-align: center;">フ</td>
+<td style="text-align: center;">” 不 “的左上部演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">へ</td>
+<td style="text-align: center;">” 部 ”</td>
+<td style="text-align: center;">ヘ</td>
+<td style="text-align: center;">” 部 “的右偏旁演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">ほ</td>
+<td style="text-align: center;">” 保 ”</td>
+<td style="text-align: center;">ホ</td>
+<td style="text-align: center;">” 保 “的右下部演变而来</td>
+</tr>
+</tbody>
+</table>
+<ol start="7" type="1">
+<li>ま行</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">平假名</th>
+<th style="text-align: center;">平假名字源</th>
+<th style="text-align: center;">片假名</th>
+<th style="text-align: center;">片假名字源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">ま</td>
+<td style="text-align: center;">” 末 ”</td>
+<td style="text-align: center;">マ</td>
+<td style="text-align: center;">” 万 “的略体演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">み</td>
+<td style="text-align: center;">” 美 ”</td>
+<td style="text-align: center;">ミ</td>
+<td style="text-align: center;">” 三 “的略体演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">む</td>
+<td style="text-align: center;">” 武 ”</td>
+<td style="text-align: center;">ム</td>
+<td style="text-align: center;">” 牟 “的上部演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">め</td>
+<td style="text-align: center;">” 女 ”</td>
+<td style="text-align: center;">メ</td>
+<td style="text-align: center;">” 女 “的略体演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">も</td>
+<td style="text-align: center;">” 毛 ”</td>
+<td style="text-align: center;">モ</td>
+<td style="text-align: center;">” 毛 “的略体演变而来</td>
+</tr>
+</tbody>
+</table>
+<ol start="8" type="1">
+<li>や行</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">平假名</th>
+<th style="text-align: center;">平假名字源</th>
+<th style="text-align: center;">片假名</th>
+<th style="text-align: center;">片假名字源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">や</td>
+<td style="text-align: center;">” 也 ”</td>
+<td style="text-align: center;">ヤ</td>
+<td style="text-align: center;">” 也 “的略体演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">ゆ</td>
+<td style="text-align: center;">” 由 ”</td>
+<td style="text-align: center;">ユ</td>
+<td style="text-align: center;">” 由 “的右上部演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">よ</td>
+<td style="text-align: center;">” 与 ”</td>
+<td style="text-align: center;">ヨ</td>
+<td style="text-align: center;">” 舆 “的右上部演变而来</td>
+</tr>
+</tbody>
+</table>
+<ol start="9" type="1">
+<li>ら行</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">平假名</th>
+<th style="text-align: center;">平假名字源</th>
+<th style="text-align: center;">片假名</th>
+<th style="text-align: center;">片假名字源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">ら</td>
+<td style="text-align: center;">” 良 ”</td>
+<td style="text-align: center;">ラ</td>
+<td style="text-align: center;">” 良 “的上部演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">り</td>
+<td style="text-align: center;">” 利 ”</td>
+<td style="text-align: center;">リ</td>
+<td style="text-align: center;">” 利 “的右偏旁演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">る</td>
+<td style="text-align: center;">” 留 ”</td>
+<td style="text-align: center;">ル</td>
+<td style="text-align: center;">” 流 “的下部演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">れ</td>
+<td style="text-align: center;">” 禮 ”</td>
+<td style="text-align: center;">レ</td>
+<td style="text-align: center;">” 礼 “的右偏旁演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">ろ</td>
+<td style="text-align: center;">” 呂( 吕 ) ”</td>
+<td style="text-align: center;">ロ</td>
+<td style="text-align: center;">” 呂 “的上部演变而来</td>
+</tr>
+</tbody>
+</table>
+<ol start="10" type="1">
+<li>わ行</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">平假名</th>
+<th style="text-align: center;">平假名字源</th>
+<th style="text-align: center;">片假名</th>
+<th style="text-align: center;">片假名字源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">わ</td>
+<td style="text-align: center;">” 和 ”</td>
+<td style="text-align: center;">ワ</td>
+<td style="text-align: center;">” 和 “的右偏旁演变而来</td>
+</tr>
+<tr>
+<td style="text-align: center;">を</td>
+<td style="text-align: center;">” 遠( 远 ) ”</td>
+<td style="text-align: center;">ヲ</td>
+<td style="text-align: center;">” 乎 “的略体演变而来</td>
+</tr>
+</tbody>
+</table>
+<ol start="11" type="1">
+<li>拨音</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">平假名</th>
+<th style="text-align: center;">平假名字源</th>
+<th style="text-align: center;">片假名</th>
+<th style="text-align: center;">片假名字源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">ん</td>
+<td style="text-align: center;">” 無 ”</td>
+<td style="text-align: center;">ン</td>
+<td style="text-align: center;">” 尔 “的略体演变而来</td>
+</tr>
+</tbody>
+</table>
+<h2 id="单词笔记-持续更新中">单词笔记 ( 持续更新中 )</h2>
+<h3 id="名词类">名词类</h3>
+<ul>
+<li>わたし /watashi/ 我</li>
+<li>かいしゃいん (会社員) /kaisha in/ 公司员工</li>
+<li>すたっふ (スタッフ) /sutaffu/ 职员</li>
+<li>がくせい (学生) /gakusei/ 学生</li>
+<li>らめん (ラーメン) /ramen/ 拉面</li>
+<li>のり /nori/ 紫菜</li>
+<li>ふりかけ /furikake/ 撒在米饭顶部的日本调味料</li>
+<li>かれし (彼氏) /kareshi/ 男朋友</li>
+<li>かのじょ (彼女) /kanojo/ 女朋友</li>
+<li>からて /karate/ 空手道</li>
+<li>うどん /udon/ 乌冬面</li>
+<li>なっとう (納豆) /nattou/ 纳豆</li>
+<li>たまごかけごはん (卵かけご飯) /tamago kake gohan/ 生鸡蛋盖米饭</li>
+<li>ふぐ /fugu/ 河豚</li>
+<li>すり /suri/ 小偷</li>
+<li>さら /sara/ 盘子</li>
+<li>おかね (お金) /okane/ 钱</li>
+<li>おんせん (温泉) /onsen/ 温泉</li>
+<li>ねこ (猫) /neko/ 猫</li>
+<li>いぬ (犬) /inu/ 狗</li>
+<li>かわいい (可愛い) /kawaii/ 可爱</li>
+<li>ゆかた /yukata/ 一种很薄的和服，
+多是去泡温泉时或泡澡后穿着；浴衣</li>
+<li>かぎ (鍵) /kagi/ 钥匙</li>
+<li>おおきいいえ(大きい家) /ookiiie/ /Ōkī ie/ 大房子</li>
+<li>しき /shiki/ 四季</li>
+<li>きせつ (季節) /kisetsu/ 季节</li>
+<li>かさ /kasa/ 伞</li>
+<li>そこ /soko/ 那里，那边</li>
+<li>ここ /koko/ 这里，这边</li>
+<li>ついたち (朔日、一日) /tsuyitachi/ 一日，一号</li>
+<li>なし /nashi/ 梨</li>
+<li>たのしい (楽しい) /tanoshii/ 有趣</li>
+<li>あさひ (朝日) /asahi/ 朝阳</li>
+<li>たばこ /tabako/ 香烟</li>
+<li>かぶき /kabuki/ 歌舞伎，一种日本戏剧</li>
+<li>ぴかぴか (ピカピカ) /kabuki/ 亮闪闪</li>
+<li>かき /kaki/柿子</li>
+<li>ごご (午後) /gogo/ 在下午</li>
+<li>しぶや (渋谷) /shibuya/ 涩谷</li>
+<li>たなばた /tanabata/ 七夕</li>
+<li>ふじさん /fujisan/ 富士山</li>
+<li>おばさん /obasan/ 中年妇女</li>
+<li>おばあさん /obaasan/ 奶奶，姥姥</li>
+<li>おにいさん /oniisan/ 哥哥</li>
+<li>くうき /kuuki/ 空气</li>
+<li>おかあさん /okaasan/ 母亲</li>
+<li>かっぱ /kappa/ 河童，日本神秘生物</li>
+<li>りぱんあ /rippana/ 华丽的</li>
+<li>がっかい /gakkai/ 学会</li>
+<li>ざっし (雑誌) /zasshi/ 杂志</li>
+<li>かっこいい /kakkoii/ 英俊的，酷的</li>
+<li>きっぷ /kippu/ 票</li>
+<li>きって /kitte/ 邮票</li>
+<li>きっさってん /kissaten/ 喫茶店，咖啡厅</li>
+<li>ぎょうざ (餃子) /gyouza/ 日式煎饺</li>
+<li>ともだち (友達) /tomodachi/ 朋友</li>
+<li>たぶん /tabun/ 大概</li>
+<li>おに /oni/ 鬼</li>
+<li>よしこ /yoshiko/ 良子(名字) 在日语中把人的姓氏放在名字前面说</li>
+<li>まんが /manga/ 漫画</li>
+<li>らめん (ラーメン) /ramen/ 拉面</li>
+<li>ひらがを /hiragawo/ 平假名</li>
+<li>エーアイ /e-ai/ AI，人工智能</li>
+<li>ケーキ /ke-ki/ 蛋糕</li>
+<li>ココア /kokoa/ 热巧克力</li>
+<li>キウイ /kiui/ 猕猴桃</li>
+<li>ケア /kea/ 照料</li>
+<li>オケ /oke/ 管弦乐</li>
+<li>シーソー /shi-so-/ 跷跷板</li>
+<li>ケース /ke-su/ 盒子</li>
+<li>オアシス /oashisu/ 绿洲</li>
+<li>アイス /aisu/ 冰淇淋</li>
+<li>サーカス /sa-kasu/ 马戏团</li>
+<li>スーセージ /su-se-ji/ 香肠</li>
+<li>ステーキ /sute-ki/ 牛排</li>
+<li>チーター /chi-ta-/ 猎豹</li>
+<li>シーツ /shi-tsu/ 床单</li>
+<li>ウエスト /uesuto/ 腰</li>
+<li>テスト /tesuto/ 考试</li>
+<li>タクシー /takushi-/ 出租车</li>
+<li>テイクアウト /teikuauto/ 外卖</li>
+<li>タッチ /tacchi/ 触碰</li>
+<li>サッカー /sakka-/ 足球</li>
+<li>チケット /chiketto/ 票</li>
+<li>カヌー /kanu-/ 独木舟</li>
+<li>ノート /no-to/ 笔记本</li>
+<li>ネクタイ /nekutai/ 领带</li>
+<li>カタカナ /katakana/ 片假名</li>
+<li>ネット /netto/ 网</li>
+<li>カカオ /kakao/ 可可树</li>
+<li>スキー /suki-/ 滑雪</li>
+<li>ガス /gasu/ 天然气</li>
+<li>スツ /sutsu/ 西装</li>
+<li>ココナッツ /kokonattsu/ 椰子</li>
+<li>グッズ /guzzu/ 物件</li>
+<li>スナック /sunakku/ 小吃，零食</li>
+<li>げんき (現金) /genki/ 现金</li>
+<li>かくにん (確認) /kakunin/ 确认</li>
+<li>かんりょう (完了) /kanryou/ 完成</li>
+<li>メモ /memo/ 便签</li>
+<li>アニメ /anime/ 源自animation</li>
+<li>ハム /hamu/ 火腿</li>
+<li>ミニスカート /minisuka-to/ 超短裙</li>
+<li>ガム /gamu/ 口香糖</li>
+<li>ゲーム /ge-mu/ 游戏</li>
+<li>ビデオゲーム /bideo ge-mu/ 电子游戏</li>
+<li>スマホ /sumaho/ 智能手机</li>
+<li>レタス /retasu/ 莴苣</li>
+<li>マクドナルド /makudonarudo/ 麦当劳</li>
+<li>アイドル /aidoru/ 爱豆</li>
+<li>タオル /taoru/ 浴巾</li>
+<li>オムカレー /omukare-/ 蛋包咖喱</li>
+<li>フライドチキン /furaidochikin/ 炸鸡</li>
+<li>バレーボール /bare-bo-ru/ 排球</li>
+<li>ロシア 俄罗斯</li>
+<li>フライドポテト 炸薯条</li>
+<li>ロボット 机器人</li>
+<li>アイスクリーム 冰淇淋</li>
+<li>レモネード 柠檬水</li>
+<li>ニャーニャー 喵喵</li>
+<li>ドライヤー 吹风机</li>
+<li>ヨーロッパ 欧洲</li>
+<li>ヨーグルト 酸奶</li>
+<li>ベーコン 培根</li>
+<li>パン 面包</li>
+<li>レモン 柠檬</li>
+<li>インドネシア 印度尼西亚</li>
+<li>ワイン 葡萄酒</li>
+<li>ソファー 沙发</li>
+<li>フィンランド 芬兰</li>
+<li>ティッシュペーパー /telisshu pe-pa-/ 纸巾</li>
+<li>フォーク 餐叉</li>
+<li>ウォッカ /ulokka/ 伏特加</li>
+<li>おでん 关东煮</li>
+<li>かすみ 霞</li>
+<li>ビネガー 醋</li>
+<li>ヘアゴム 发带，（系头发）橡皮筋</li>
+<li>オムライス 蛋包饭</li>
+<li>リュックサック 背包</li>
+<li>チョコレート 巧克力</li>
+<li>クラス 班级</li>
+<li>かばん (鞄) 钱包，包</li>
+<li>ほん (本) 书</li>
+<li>かさ (傘) 伞</li>
+<li>ざっし (雑誌) 杂志</li>
+<li>とけい 钟表，手表</li>
+<li>くるま (車) 汽车</li>
+<li>じてんしゃ (自転車) 自行车</li>
+<li>うどん 乌冬面</li>
+<li>てんぷら 天妇罗</li>
+<li>おこのみやき (お好み焼き) 喜好烧煎饼</li>
+<li>ぎゅうどん (牛丼) 牛肉盖饭</li>
+<li>そば (蕎麦) 荞麦面，有凉热两种</li>
+<li>じん/ひと 人</li>
+<li>クラス 班、课</li>
+<li>まいつき (毎月) 每个月；每月</li>
+<li>おにぎり( お握り) 米饭团</li>
+<li>みず 水</li>
+<li>コーヒー 咖啡</li>
+<li>えいが (映画) 电影</li>
+<li>おんがく (音楽) 音乐</li>
+<li>スポーツ 体育运动</li>
+<li>ジュース 果汁</li>
+<li>アラビアご 阿拉伯语</li>
+</ul>
+<h4 id="男性女性">男性、女性</h4>
+<ul>
+<li>おとこ /otoko/ 男人（较有大男子气概）</li>
+<li>おんな /onna/ 女人（不太尊敬）</li>
+<li>おとこのひと( 男の人 ) /otoko no hito/ 男人（正式）</li>
+<li>おんなのひと( 女の人 ) /onna no hito/ 女人（正式）</li>
+<li>おとこのこ( 男の子 ) /otoko no ko/ 男孩</li>
+<li>おんなのこ( 女の子 ) /onna no ko/ 女孩</li>
+<li>だんせい( 男性 ) /dansei/ 男性</li>
+<li>じょせい( 女性 ) /jyosei/ 女性</li>
+</ul>
+<h4 id="数字">数字</h4>
+<ul>
+<li>いち /ichi/ 一</li>
+<li>に /ni/ 二</li>
+<li>さん /san/ 三</li>
+<li>よん/し (yon/shi) 四</li>
+<li>ご /go/ 五</li>
+<li>ろく /roku/ 六</li>
+<li>しち/なな (shichi/nana) 七</li>
+<li>はち /hachi/ 八</li>
+<li>きゅう/く (kyuu/ku) 九</li>
+<li>じゅう /juu/ 十</li>
+<li>ひゃく /hyaku/ 百</li>
+<li>にひゃく 二百</li>
+<li>さんびゃく 三百( 注意变形 )</li>
+<li>よんひゃく 四百</li>
+<li>ごひゃく 五百</li>
+<li>ろっぴゃく 六百( 注意变形 )</li>
+<li>ななひゃく 七百</li>
+<li>はっぴゃく 八百( 注意变形 )</li>
+<li>きゅうひゃく 九百</li>
+<li>せん(千) 一千</li>
+<li>にせん 两千</li>
+<li>さんぜん 三千</li>
+<li>よんせん 四千</li>
+<li>ごせん 五千</li>
+<li>ろくせん 六千</li>
+<li>ななせん 七千</li>
+<li>はっせん 八千</li>
+<li>きゅうせん 九千</li>
+<li>まん 万( 不会直接说 )</li>
+<li>いちまん 一万</li>
+<li>にまん 两万</li>
+<li>さんまん 三万</li>
+<li>よんまん 四万</li>
+<li>ごまん 五万</li>
+<li>ろくまん 六万</li>
+<li>ななまん 七万</li>
+<li>はちまん 八万</li>
+<li>きゅうまん 九万</li>
+<li>じゅうまん 十万</li>
+</ul>
+<p>大数(例如
+20、30、40)其实也很容易组成!只要使用以下结构即可:第-个数字+じゆう (juu)
+&gt;例如： &gt; &gt;にじゆう (nijuu) -二十<br />
+&gt;さんじゅう(sanjuu)-三十<br />
+&gt;よんじゅう (yonjuu) -四十<br />
+&gt;ごじゆう (gojuu) -五十</p>
+<h4 id="时间">时间</h4>
+<h5 id="星期">星期</h5>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">中文</th>
+<th style="text-align: center;">日本汉字</th>
+<th style="text-align: center;">假名</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">周一</td>
+<td style="text-align: center;">月曜日</td>
+<td style="text-align: center;">げつようび</td>
+</tr>
+<tr>
+<td style="text-align: center;">周二</td>
+<td style="text-align: center;">火曜日</td>
+<td style="text-align: center;">かようび</td>
+</tr>
+<tr>
+<td style="text-align: center;">周三</td>
+<td style="text-align: center;">水曜日</td>
+<td style="text-align: center;">すいようび</td>
+</tr>
+<tr>
+<td style="text-align: center;">周四</td>
+<td style="text-align: center;">木曜日</td>
+<td style="text-align: center;">もくようび</td>
+</tr>
+<tr>
+<td style="text-align: center;">周五</td>
+<td style="text-align: center;">金曜日</td>
+<td style="text-align: center;">きんようび</td>
+</tr>
+<tr>
+<td style="text-align: center;">周六</td>
+<td style="text-align: center;">土曜日</td>
+<td style="text-align: center;">どようび</td>
+</tr>
+<tr>
+<td style="text-align: center;">周日</td>
+<td style="text-align: center;">日曜日</td>
+<td style="text-align: center;">にちようび</td>
+</tr>
+</tbody>
+</table>
+<h5 id="小时">小时</h5>
+<p>要说明时间，我们需要在数字后面添加表示“小时’的单词じ
+(ji)。例如，1点就是いちじ (ichiji)。需要注意以下几个麻烦的数字:4、7 和
+9。4 点是よじ (yoji)，7 点是しちじ (shichiji)，9 点是くじ(kuji)。</p>
+<ul>
+<li>いちじ(一時) 一点</li>
+<li>にじ 两点</li>
+<li>さんじ 三点</li>
+<li>よじ 四点</li>
+<li>ごじ 五点</li>
+<li>ろくじ 六点</li>
+<li>しちじ 七点</li>
+<li>はちじ 八点</li>
+<li>くじ 九点</li>
+<li>じゅうじ 十点</li>
+<li>じゅいちじ 十一点</li>
+<li>じゅうにじ 十二点</li>
+</ul>
+<h5 id="分钟">分钟</h5>
+<ul>
+<li><p>いっぷん 一分</p></li>
+<li><p>にふん 二分</p></li>
+<li><p>さんぷん 三分</p></li>
+<li><p>よんぷん 四分</p></li>
+<li><p>ごふん 五分</p></li>
+<li><p>ろっぷん 六分</p></li>
+<li><p>ななふん 七分</p></li>
+<li><p>はちふん「はっぷん」 八分</p></li>
+<li><p>きゅうふん 九分</p></li>
+<li><p>じゅっぷん 十分</p></li>
+<li><p>じゅういっぷん(juuippun) 11 分</p></li>
+<li><p>じゅうにふん(juunifun) 12 分</p></li>
+<li><p>じゅうさんぷh(juusanpun) 13 分</p></li>
+<li><p>じゅうよんぷん(juuyonpun) 14 分</p></li>
+<li><p>じゅうごふん(juugofun) 15 分</p></li>
+<li><p>じゅうるっぷん(juuroppun) 16 分</p></li>
+<li><p>じゅうななふん(juunanafun) 17 分</p></li>
+<li><p>じゅうはっぷん(juuhappun) 18 分</p></li>
+<li><p>じゅうきゆうふん(juukyuufun) 19分</p></li>
+<li><p>にじゅっぷん(nijuppun) 20分</p></li>
+<li><p>さんじゅっぷん(sanjuppun) 30分</p>
+<blockquote>
+<p>要说明确切时间，我们需要添加分钟。日语中的“分”是ふん(fun)，但在与数字组合使用时，这个单词的第一个字母往往需要变形。
+此外，数字也可能会发生一点变化。例如，1分是いっぷん(ippun),而3分是さんぶん(sanpun)。</p>
+</blockquote></li>
+</ul>
+<p>要询问时间，我们使用一下结构：</p>
+<p>いま+なん+じ+ですか。( Ima nanji desu ka ) 现在几点了？
+いま的意思是“现在”，なん的意思是“几”。</p>
+<p>要区分午前和午后，我们可以说ごぜん (
+gozen，即<strong>早上/上午</strong> ) 和ごご (
+gogo，即<strong>下午/晚上</strong>
+)。这些单词始终位于<strong>数字前面</strong>！</p>
+<blockquote>
+<p>例如</p>
+<ul>
+<li>ごぜんろくじ 上午六点<br />
+</li>
+<li>ごごいちじ 下午一点</li>
+</ul>
+</blockquote>
+<h4 id="身体">身体</h4>
+<ul>
+<li>あたま 头</li>
+<li>かお 脸</li>
+<li>ひたい 额头</li>
+<li>まゆげ 眉毛</li>
+<li>め 眼睛</li>
+<li>まつげ 睫毛</li>
+<li>まぶた 眼皮</li>
+<li>ほほ 脸颊</li>
+<li>はな 鼻子</li>
+<li>した 舌头</li>
+<li>みみ 耳朵</li>
+<li>くび 脖子</li>
+<li>のど 喉咙</li>
+<li>むね 胸</li>
+<li>おなか 肚子</li>
+<li>せなか 背</li>
+<li>こし 腰</li>
+<li>おしり 臀/屁股</li>
+<li>おへそ 肚脐</li>
+<li>うで 手臂</li>
+<li>ひじ 肘</li>
+<li>て 手</li>
+<li>ゆび 指</li>
+<li>あし 腿</li>
+<li>ひざ 膝盖</li>
+</ul>
+<h4 id="年龄">年龄</h4>
+<p>要说某人的年龄，我们需要在数字后面添加表示“岁”的单词「<strong>さい</strong>」(sai)。在<strong>1、8和10</strong>添加さい时，它们的词尾会略有变化。具体如下：</p>
+<ul>
+<li>いっさい 「一歳」 一岁</li>
+<li>にさい 「二歳」 二岁</li>
+<li>さんさい 「三歳」 三岁</li>
+<li>よんさい 「四歳」 四岁</li>
+<li>ごさい 「五歳」 五岁</li>
+<li>ろくさい 「六歳」 六岁</li>
+<li>ななさい 「七歳」 七岁</li>
+<li>はっさい 「八歳」 八岁</li>
+<li>きゅうさい 「九歳」 九岁</li>
+<li>じゅっさい 「十歳」 十岁</li>
+</ul>
+<p>对于十岁以上的人，我们需要注意年龄的最后一位数字即可，特别是<strong>1、8或10</strong>的倍数。唯一的例外是<strong>二十岁</strong>，我猜测可能和日本很长时间以来以二十岁作为成年年龄有关。</p>
+<ul>
+<li>はたち 「二十歳」 二十岁</li>
+<li>にじゅういっさい 二十一岁</li>
+<li>にじゅうにさい 二十二岁</li>
+<li>にじゅうさんさい 二十三岁</li>
+<li>にじゅうよんさい 二十四岁</li>
+<li>にじゅうごさい 二十五岁</li>
+<li>にじゅうろくさい 二十六岁</li>
+<li>にじゅうななさい 二十七岁</li>
+<li>にじゅうはっさい 二十八岁</li>
+<li>にじゅうきゅうさい 二十九岁</li>
+<li>さんじゅっさい 三十岁</li>
+</ul>
+<p>要询问别人的年龄，我们使用以下结构：</p>
+<p>人名さん + は + なんさい「何歳」(nansai) + ですか</p>
+<p>例如：まなさんはなんさいですか。</p>
+<h4 id="方位">方位</h4>
+<ul>
+<li>これ 这里，这( 离听的人远，离说的人近 )</li>
+<li>それ 那( 离听的人近，离说的人远 )</li>
+<li>あれ 那( 离说的人和听的人都远 )</li>
+</ul>
+<h4 id="地名-或国家-teyoumingci">地名 ( 或国家 )，teyoumingci</h4>
+<ul>
+<li>ふくおか (福岡県、福岡) /fukuoka/ 福冈</li>
+<li>まつもと (松本市、松本)　/matsumoto/ 松本</li>
+<li>なら (奈良県、奈良) /nara/ 奈良</li>
+<li>ひろしま (広島県、広島) /hiroshima/ 广岛</li>
+<li>よこはま (横浜市、横浜) /yokohama/ 横滨</li>
+<li>ほっかいどう (北海道) /hokkaidou/ 北海道</li>
+<li>しずおか (静岡県、静岡) /shizuoka/ 静冈</li>
+<li>とうきょう (東京都、東京) /toukyou/ 东京</li>
+<li>ロンドン /rondon/ 伦敦</li>
+<li>カナダ /kanada/ 加拿大</li>
+<li>シドニー /shidoni-/ 悉尼</li>
+<li>シカゴ /shikago/ 芝加哥</li>
+<li>かんこく (韓国) 韩国</li>
+<li>インドネシア 印度尼西亚</li>
+<li>ベトナム / ヴェトナム 越南</li>
+<li>ポーランド 波兰</li>
+<li>ポルトガル 葡萄牙</li>
+<li>イタリア 意大利</li>
+</ul>
+<hr />
+<h3 id="动词类">动词类</h3>
+<h4 id="动词类型">动词类型</h4>
+<h5 id="ます型">ます型</h5>
+
+  <div class="note-large green">
+    <div class="notel-title rounded-t-lg p-3 font-bold text-lg flex flex-row gap-2 items-center">
+      <p>info</p>
+
+    </div>
+    <div class="notel-content markdown-body">
+      <p>动词的类型比较重要，是后面的很多动词变化的基础，需要牢牢记住。</p>
+
+    </div>
+  </div>
+<p>日语的动词有 <strong>3种类型</strong> 。 <strong>基本形</strong>
+会表明它是哪类动词。</p>
+<ol type="1">
+<li>RU 动词:以 <strong>-iru</strong> 和 <strong>-eru</strong>
+发音结尾的动词，例如，みる(miru)、たべる(taberu)</li>
+<li>U 动词:其他所有动词，例如，のむ(nomu)、u&lt; (iku)、よむ(yomu)</li>
+<li>不规则动词:不规则动词只有2个!分别是する (suru) 和&lt;る
+(kuru)。</li>
+</ol>
+<p>我们就可以据此变换成ます形。</p>
+<p>要表达“我吃寿司”或“我要喝茶”之类的句子，我们需要使用动词的ます(-masu)形。这种形式用来礼貌地谈论现在和将来的情况，具体取决于上下文。该词写作ます(masu)，但读作“mas”</p>
+<blockquote>
+<p>わたしはすしをたべます。(Watashi wa sushi o
+tabemasu.)-我吃寿司。/我要吃寿司。<br />
+わたしはおちゃをのみます。(Watashi wa ocha o
+nomimasu)-我喝茶。/我要喝茶。</p>
+</blockquote>
+<p>现在，我们来学习ます形!</p>
+<hr />
+<p>首先来看 RU 动词(以 -iru 和 -eru
+结尾的动词)。我们只需要删除词尾的る(ru)，然后加上ます即可。</p>
+<blockquote>
+<p>たべる-たべます /tabemasu/<br />
+みる-みます /mimasu/</p>
+</blockquote>
+<p>不规则动词呢?
+幸运的是，我们只有两个不规则动词:する(做进行)和くる(来、来到)。请记住它们的ます(masu)
+形。</p>
+<blockquote>
+<p>する- します /shimasu/<br />
+くる -きます /kimasu/</p>
+</blockquote>
+<hr />
+<p>要构成 U动词(所有不以 -iru/-eru
+结尾的动词)的ます形，我们需要将词尾的“u”音变为“i”音!这意味着词尾的平假名将会更改。我们先来了解一下如何变形!</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">“u”段平假名中</th>
+<th style="text-align: center;">i”段平假名</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">う(u)</td>
+<td style="text-align: center;">い(i)</td>
+</tr>
+<tr>
+<td style="text-align: center;">く(ku)</td>
+<td style="text-align: center;">き (ki)</td>
+</tr>
+<tr>
+<td style="text-align: center;">す(su)</td>
+<td style="text-align: center;">し(shi)</td>
+</tr>
+<tr>
+<td style="text-align: center;">つ(tsu)</td>
+<td style="text-align: center;">ち(chi)</td>
+</tr>
+<tr>
+<td style="text-align: center;">ぬ(nu)</td>
+<td style="text-align: center;">に (ni)</td>
+</tr>
+<tr>
+<td style="text-align: center;">ふ(fu)</td>
+<td style="text-align: center;">ひ(hi)</td>
+</tr>
+<tr>
+<td style="text-align: center;">む(mu)</td>
+<td style="text-align: center;">み(mi)</td>
+</tr>
+<tr>
+<td style="text-align: center;">る(ru)</td>
+<td style="text-align: center;">り(ri)</td>
+</tr>
+</tbody>
+</table>
+<p>在将“u”段平假名变为相应的“i”段平假名之后，只需加上ます(masu)
+即可构成U动词的ます形!</p>
+<blockquote>
+<p>いく (去) – いきます<br />
+よむ (读) – よみます<br />
+のむ (喝) – のみます<br />
+かう (买) – かいます<br />
+はなす (说话) – はなします<br />
+たつ (站) – たちます<br />
+あそぶ (玩) – あそびます<br />
+つくる (制造、制作) – つくります</p>
+</blockquote>
+<h4 id="动词变形">动词变形</h4>
+<h5 id="名词转为动词">名词转为动词</h5>
+<p>する/suru 是一个非常有用的动词，它可以将名词变为动词。</p>
+<blockquote>
+<p>べんきょう/benkyou/(名词:学习)<br />
+ベんきょうする/benkyou suru/(动词:学习)</p>
+</blockquote>
+<h5 id="动词否定形式">动词否定形式</h5>
+<p>要谈论我们不做的事，就把动词后续的 ます /masu/ 变成 ません
+/masen/。没有例外!</p>
+<blockquote>
+<p>べんきょうしません “学习”的否定形<br />
+わたしは日本ごをはなします。 我说日语。<br />
+わたしはえいごをはなしません。 我不会说英语。</p>
+</blockquote>
+<hr />
+<h5 id="动词单词">动词单词</h5>
+<ul>
+<li>そる /soru/ 剃，刮</li>
+<li>きく (聞く) 听</li>
+<li>はなす (話す) 话；说话</li>
+<li>べんきょうする (勉強する) 学习</li>
+<li>かく (書く) 写</li>
+</ul>
+<hr />
+<h3 id="助词类">助词类</h3>
+<h4 id="格助词かくじょし">格助词（かくじょし）</h4>
+<p>格助词通常接在名词之后，用于表示<strong>名词与其他词之间的关系</strong>，表示名词与动词、形容词间的逻辑关系，另一方面，也可使句中的名词不受语序排列的不同而产生歧异。<br />
+格助词的核心功能是通过附加在名词后，明确该名词在句子中的
+“语法角色”（如主语、宾语、场所、工具等），并连接名词与其他句子成分（如动词、形容词），构建起句子的逻辑关系。</p>
+<h5 id="は主语主题助词">は：主语/主题助词</h5>
+<p>は (wa) :
+主要用于表示主题，也就是句子要表达的主要内容或对象，通常会介绍这个主题，或者说这个主题在句子中的状态或动作。</p>
+<h5 id="を宾语助词">を：宾语助词</h5>
+<ul>
+<li><p>我们会将宾语助词 を(o)
+接在宾语后面。例如，在“我吃寿司”这个句子中，宾语是“寿司”。动词总是位于句尾。(
+を在用作宾语助词时读作 “o”)</p>
+<blockquote>
+<p>わたしはすしをたべます。(Watashi wa sushi o tabemasu.)-我吃寿司。</p>
+</blockquote></li>
+</ul>
+<h5 id="に时间助词">に：时间助词</h5>
+<ul>
+<li><p>在谈论时间时，我们通常遵循以下语序: 主语は + 时间に + 宾语を +
+动词。</p>
+<blockquote>
+<p>わたしは四時におちやをのみます。 我4点钟喝茶。<br />
+ごごにテニスをしますか。 你下午打网球吗?</p>
+</blockquote></li>
+</ul>
+<h5 id="に地点助词">に：地点助词</h5>
+<ul>
+<li>主语は + 地点に + いきます/きます/かえります</li>
+</ul>
+<p>请记住，有些日语句子没有主语。</p>
+<blockquote>
+<p>はるきくんはがっこうに行きます。 春树同学去上学。<br />
+ともだちはわたしのうちに来ます。 一个朋友来到我家。<br />
+うちにかえります。 我回家。</p>
+</blockquote>
+<h5 id="へ表示目的地的助词">へ：表示目的地的助词</h5>
+<p>へ (e) : 除“に”外，助词 “ へ ” 也表示目的地。! 请注意， “ へ ”
+读作“e”，而不是平假名“he”的实际读音。这点类似于<strong>主语/主题提示</strong>助词
+<strong>“ は ”(wa)</strong>, 该助词的读音与其原始读音 “ha”
+有所不同。</p>
+<ul>
+<li><p>过去, “ へ ” 用于表示方向，但现在它可以代替 “ に ”
+查看下面的示例，看看词序是否与使用 “ に ” 时相同，</p>
+<blockquote>
+<p>きょうこさんはドイツ<strong>へ</strong>行きます。 / Kyokosan wa
+Doitsu <strong>e</strong> ikimasu. 恭子小姐去德国。<br />
+ケンさんは日本<strong>へ</strong>来ます。 /Ken-san waNihon
+<strong>e</strong> kimasu. 健先生来日本。
+とうきょう<strong>へ</strong>かえります。/Toukyou <strong>e</strong>
+kaerimasu. 我回东京。</p>
+</blockquote></li>
+</ul>
+<h5 id="で表示场所的助词">で：表示场所的助词</h5>
+<p>在谈论某个动作发生的地点时，我们需要使用表示场所的助词で。与我们已经学过的其他一些结构一样，场所应该放在动词之前。主语は+场所で+动词。记住，部分日语句子没有主语!如果有宾语，则应将宾语放在动词之前，然后是宾语标志词。</p>
+<blockquote>
+<p>えりこさんはこうえんでうんどうします。
+(惠理子小姐在公园里锻炼。)<br />
+じゆんこさんは学校で本をよみます。 (顺子小姐在学校读书。)<br />
+うちでベんきょうします。 (我在家学习。)</p>
+</blockquote>
+<hr />
+<h4 id="副助词ふくじょし">副助词（ふくじょし）</h4>
+<p>主要用于修饰名词、动词等，添加限定、强调、数量、范围等含义，不直接表示语法格。</p>
+<p>副助词通常是放在格助词或动词后，用来修饰下文，增加某种特别的意涵。有些文法书会再细分为副助词、系助词，系助词必须跟句末述语的部分有关。</p>
+<h5 id="も表示连同-也之意">も：表示连同。 (“也”之意)</h5>
+<p>も (mo) : 是表达“也是；同样”的助词</p>
+<ul>
+<li><p>在表达另一个人也做相同的动作时，我们使用も(mo)代替は(wa)。</p></li>
+<li><p>主语も+宾语を+动词</p>
+<blockquote>
+<p>わたしはそばをたべます。(我吃养麦面。)<br />
+よしさんもそばをたべます。-吉也吃养麦面。</p>
+</blockquote></li>
+<li><p>在带有 も 的句子中，我们可以省略名词，让句子更简短。</p>
+<blockquote>
+<p>わたしはにほんじんです。 – わたしもにほんじんです。(我是日本人。 –
+我也是日本人)<br />
+わたしはにほんじんです。 – わたしもです。(我是日本人。 – 我也是。)</p>
+</blockquote></li>
+<li><p>我们可以在宾语后接上类似的助词。这种时候，可以将 を 换成 も
+。</p>
+<blockquote>
+<p>わたしはそばをたべます。(我吃荞麦面。)<br />
+すしもたべます。(我也吃寿司。)</p>
+</blockquote></li>
+</ul>
+<h5 id="と表示连同-和之意">と：表示连同。( “和”之意 )</h5>
+<ul>
+<li>我们会用助词 と (和)来连接名词。<br />
+</li>
+<li>如果要谈论两个以上的名词，需要在每个名词后面都加上 と: (名词
+1)と(名词 2)と(名词 3)</li>
+</ul>
+<h5 id="か表示或">か：表示“或”</h5>
+<ul>
+<li><p>当我们连接名词时，助词 か的意思是“或”。</p>
+<blockquote>
+<p>フランスごかスペインごをベんきょうします。 /Furansugo ka supeingo o
+benkyoushimasu./ (我要学法语或西班牙语。)</p>
+</blockquote></li>
+</ul>
+<h5 id="の表示之">の：表示“之”</h5>
+<h5 id="とやか-区别-引用自小马哥并列助词とやか">と、や、か 区别
+(引用自<a class="link" 
+ target="_blank" rel="noopener" href="https://coolcode.org/2017/09/26/my-japanese-learning-notes-15/" >小马哥并列助词「と、や、か」<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>)</h5>
+<blockquote>
+<p>例句：</p>
+<ol type="1">
+<li>朝ご飯はパンとピザ(と)を食べた。<br />
+</li>
+<li>朝ご飯はパンやピザ(など)を食べた。<br />
+</li>
+<li>彼は朝ご飯パンかピザ(か)を食べたはずだ。</li>
+</ol>
+</blockquote>
+<ol type="1">
+<li><p>当用「と」时，表示完全列举，所以第 1
+句话表示，早饭除了「パン」和「ピザ」，就没吃别的了。</p></li>
+<li><p>当用「や」时，表示不完全列举，所以第 2
+句话表示，早饭除了「パン」和「ピザ」，还可能有别的。</p></li>
+<li><p>当用「か」时，表示从列举的范围内进行选择。所以第 3
+句话表示，他早饭吃了「パン」和「ピザ」之中的一种。</p></li>
+</ol>
+<hr />
+<h4 id="终助词しゅうじょし">终助词（しゅうじょし）</h4>
+<p>终助词通常放在句尾，表示说话者主观的情感</p>
+<p>か：表示疑问、质疑、反诘。</p>
+<p>在进行肯定的回答时，我们会说 はい/hai
+(是的)，然后重复动词部分。在进行否定回答的时候，我们会说いい元/iie(不)，然后添加动词的否定形。</p>
+<h2 id="常见短语">常见短语</h2>
+<ul>
+<li>じゃあまた /Jā mata/ 回头见</li>
+<li>しつれい します /shitsurei shimasu/ 再见；对不起（正式）</li>
+<li>なにをのみますか /nani (w)o nomimasu ka/ 你喝什么</li>
+<li>おわりました /owari mashita/ 大功告成</li>
+<li>おつかれさま(お疲れ様) /otsukaresama/ 辛苦了，干得漂亮</li>
+<li>よかった /yokatta/ 好的</li>
+<li>いっしょに(一緒に) /isshoni/ 一起</li>
+<li>わかりません /wakarimasen/ 我不懂，我不明白</li>
+<li>いてください /ite kudasai/ 请留下</li>
+<li>いってください /itte kudasai/ 请走吧</li>
+<li>ごめんなさい /gomennasai/对不起</li>
+<li>やってみましょう /yatte mimashou/ 试试吧</li>
+<li>…をください /wo kudasai/ 请给我，常用于拜托别人给自己某种东西</li>
+<li>がんばってください 请加油</li>
+<li>わかりました 我明白了</li>
+<li>じゅんちょうですね /junchou desune/ 顺利，良好，如意</li>
+<li>いらっしゃいませ /irasshaimase/ 欢迎光临</li>
+<li>ふしぎです /fushigi desu/ 这很奇怪</li>
+<li>俺が払う /orega harau/ 我来买单</li>
+<li>僕がいる /bokuga iru/ 有我在</li>
+<li>君が一番「いちばん」美「うつく」しい /kimiga ichiban utsukushii/
+你最美</li>
+<li>これはなんですか 这是什么</li>
+<li>いちまんえん、お預「あず」かりします 收您10000日元</li>
+<li>いくらですか 多少钱</li>
+<li>ラーメンはいくらですか。 拉面多少钱</li>
+</ul>
+<h2 id="tips">Tips</h2>
+<ul>
+<li>要键盘打出日语假名小写，先打个l（L），接着输想要的假名的罗马音。比如要打“や”（ya）的小写“ゃ”，就输入lya</li>
+<li>「」表示引用</li>
+<li>中文键盘的“，”相当于日语逗号，但是写出来是「、」</li>
+<li>「っ」表示停顿，后面的罗马音的辅音会双写，例如：よかった /Yokatta/
+好的</li>
+<li>在很多日语惯用法中，即使有汉字，也不写汉字，为了方便书写而用假名表示。其实，两者都是正确的日文。只不过使用汉字会给人较有学问的感觉。</li>
+</ul>
+<p>例如：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">中文</th>
+<th style="text-align: center;">日文汉字</th>
+<th style="text-align: center;">假名</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">你</td>
+<td style="text-align: center;">貴方</td>
+<td style="text-align: center;">あなた</td>
+</tr>
+<tr>
+<td style="text-align: center;">漂亮的</td>
+<td style="text-align: center;">綺麗</td>
+<td style="text-align: center;">きれい</td>
+</tr>
+<tr>
+<td style="text-align: center;">可爱的</td>
+<td style="text-align: center;">可愛い</td>
+<td style="text-align: center;">かわいい</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>一个单词中假名和汉字同时存在，汉字和假名是单词的共同组成部分，缺一不可。</li>
+</ul>
+<p>例如</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">中文</th>
+<th style="text-align: center;">日文</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">来</td>
+<td style="text-align: center;">来(く)る</td>
+</tr>
+<tr>
+<td style="text-align: center;">忙的</td>
+<td style="text-align: center;">忙(いそが)しい</td>
+</tr>
+<tr>
+<td style="text-align: center;">少的</td>
+<td style="text-align: center;">少(すく)ない</td>
+</tr>
+<tr>
+<td style="text-align: center;">喜欢</td>
+<td style="text-align: center;">好(す)き</td>
+</tr>
+<tr>
+<td style="text-align: center;">讨厌</td>
+<td style="text-align: center;">嫌(きら)い</td>
+</tr>
+<tr>
+<td style="text-align: center;">休息</td>
+<td style="text-align: center;">休(やす)み</td>
+</tr>
+<tr>
+<td style="text-align: center;">听；问</td>
+<td style="text-align: center;">聞(き)く</td>
+</tr>
+<tr>
+<td style="text-align: center;">换乘</td>
+<td style="text-align: center;">乗(の)り換(か)える</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><p>「 ( 修饰性名次 ) の (主要名词) 」句型可以进一步扩展，如: (
+修饰性名次1 ) の ( 修饰性名次2 ) の ( 修饰性名次3 ) の
+(主要名词)。无论我们有多少个修饰性名词，最后一个名词都必须是主要名词。</p>
+<blockquote>
+<p>例如</p>
+<ul>
+<li>わたしのともだちのなまえ。<br />
+</li>
+<li>ぼくのにほんごのせんせい。</li>
+</ul>
+</blockquote></li>
+<li><p>片假名<strong>ツ</strong>和<strong>シ</strong>非常相似。它们有两个重要区别：</p>
+<ol type="1">
+<li>在<strong>ツ</strong>中，互相平行的两个笔画偏<strong>竖</strong>一点，而在<strong>シ</strong>中，这两个笔画偏<strong>横</strong>一点</li>
+<li><strong>ツ</strong>的最后一笔是<strong>从上往下</strong>写的，但<strong>シ</strong>的最后一笔是<strong>从下往上</strong>写的</li>
+</ol></li>
+<li><p>片假名<strong>ソ</strong>和<strong>ン</strong>非常相似。它们有两个重要区别：</p>
+<ol type="1">
+<li>构成<strong>ソ</strong>的短笔画向<strong>竖直</strong>方向倾斜，而构成<strong>ン</strong>的短笔画向<strong>水平</strong>方向倾斜</li>
+<li><strong>ソ</strong>的第二笔<strong>从上向下</strong>写，而<strong>ン</strong>的第二笔<strong>从下向上</strong>写</li>
+</ol></li>
+<li><p>感谢用语</p>
+<ul>
+<li>别人帮忙之前：よろしくお願( ねが )いします</li>
+<li>ありがとう</li>
+</ul></li>
+<li><p>日语中ら行的发音不是”R”或”L”，而是介于两者之间。用罗马音标示时，我们使用”R”。</p></li>
+<li><p>如果在单词中有好几个连续的辅音而没有元音，那么在日语中，我们通常会在每个辅音之间添加”u”的发音。</p></li>
+<li><p>相似的片假名：</p>
+<ul>
+<li>ワ (wa)</li>
+<li>ウ (u)</li>
+<li>ク (ku)</li>
+<li>フ (fu)</li>
+</ul></li>
+<li><p>与平假名相似，如果将ヤ(ya)、ユ (yu)和ヨ(yo)
+缩小为正常大小的一半，它们可与前面的片假名合为一，形成一个读音。它们只可与以“i”音结尾的片假名字母合并，即キ(ki)、ギ(gi)、シ(shi)、ジ(ji)、チ(chi)、二(ni)、≦(mi)、ヒ
+(hi)、ビ(bi).ピ(pi) 和リ(ri)。</p>
+<blockquote>
+<p>例如</p>
+<p>キャ (kya)<br />
+シュ (shu)<br />
+ニョ (nyo)</p>
+</blockquote></li>
+<li><p>还记得平假名小写字母吗?我们使用“っ”、“ゃ”、“ゅ”和“ょ”这几个小写字母，它们还可与片假名结合使用。正如你刚刚在上表中所见，片假名小写字母包括ァィゥェォ。</p></li>
+<li><p>还记得平假名的规则吗?
+只有以“i”音结尾的平假名(き、し、ち、に、ひ、み、り、ぎ、じ、び、ぴ)才能与小字ゅ(yu)连用，例如きゅ（九）、ぎゅうにゅう（牛奶）。但是，在片假名中，小字ュ(yu)
+能以平假名中不存在的组合使用，例如テユ、デュ和フュ!</p>
+<blockquote>
+<p>例如</p>
+<p>デュオ ( 二重奏 )<br />
+フューシャピンク ( 浅莲红 )</p>
+</blockquote></li>
+<li><p>你可能已经注意到日语中没有“v”音。
+通常情况下，我们会将其替换为“b”音，并改用バ、ビ、プ、べ、ボ。但是，你还可以使用ヴ来表示“v”音。</p>
+<blockquote>
+<p>例如</p>
+<p>小提琴 バイオリン ヴァイオリ<br />
+维多利亚 ビクトリア ヴァクトリア<br />
+声音、语音 ボイス ヴォイス</p>
+</blockquote></li>
+<li><p>当“这”或“那”后接一个名词时，我们使用この(kono)、その (sono)
+和あの (ano)。</p></li>
+<li><p>词语
+これ/それ/あれ(kore/sore/are)的用法与名词相似，因此后面需要接助词
+は(wa)。词语この/その/あの(kono/sono/ano)的用法与形容词相似，因此后面必须接名词。</p>
+<blockquote>
+<p>例如</p>
+<p>これはほんです。(Kore wa hon desu.) 这是一本书。<br />
+このほんはいくらですか。(Kono hon wa ikura desu ka.) 这本书多少钱?</p>
+</blockquote></li>
+<li><p>决定好要买的商品后，便可说出商品名称，并后接をください(o
+kudasai)。を是一个宾语助词，而&lt;ださい
+(kudasai)的意思则是“请”。因此，“请(给我)这(个东西)”的结构在日语中为この/その/あの
++ 物品名称+を +ください。</p>
+<blockquote>
+<p>例如</p>
+<p>このほんをください。(kono hon okudasai.)-请给我这本书。<br />
+そのかさをください。(sono kasa okudasai.)-请给我那把伞。<br />
+あのじてんしゃをください。(ano jitensha
+okudasai.)-请给我那辆自行车(那边)。</p>
+</blockquote></li>
+<li><p>在日语中，我们不使用“您”这个词。此外，如果我们可以从上下文中清楚判断出主语，通常还会省略主语。疑问句通常以なに(什么)开头，以疑问助词か结尾。</p>
+<blockquote>
+<p>(主语は)+なに+を+动词ます形+か</p>
+</blockquote>
+<blockquote>
+<p>例如</p>
+<p>たなかさんはなにをのみますか。 田中先生您喝什么?<br />
+なにをたべますか。 您吃什么?<br />
+なにをみますか。 您看什么?<br />
+なにをしますか。</p>
+</blockquote></li>
+</ul>
+
+		</div>
+
+		
+		<div class="post-copyright-info w-full my-8 px-2 sm:px-6 md:px-8">
+			<div class="article-copyright-info-container">
+    <ul>
+        <li><strong>Title:</strong> 日语勉强中</li>
+        <li><strong>Author:</strong> Eviarch</li>
+        <li><strong>Created at
+                :</strong> 2025-07-02 19:00:20</li>
+        
+            <li>
+                <strong>Updated at
+                    :</strong> 2025-09-12 00:15:12
+            </li>
+        
+        <li>
+            <strong>Link:</strong> https://blog.eviarch.com/2025/07/02/日语勉强中/
+        </li>
+        <li>
+            <strong>
+                License:
+            </strong>
+            
+
+            
+                This work is licensed under <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0">CC BY-NC-SA 4.0</a>.
+            
+        </li>
+    </ul>
+</div>
+
+		</div>
+		
+
+		
+		<ul class="post-tags-box text-lg mt-1.5 flex-wrap justify-center flex md:hidden">
+			
+			<li class="tag-item mx-0.5">
+				<a href="/tags/Part-time-Study/">#Part-time Study</a>&nbsp;
+			</li>
+			
+			<li class="tag-item mx-0.5">
+				<a href="/tags/%E6%97%A5%E6%9C%AC%E8%AA%9E/">#日本語</a>&nbsp;
+			</li>
+			
+			<li class="tag-item mx-0.5">
+				<a href="/tags/Hobbies/">#Hobbies</a>&nbsp;
+			</li>
+			
+		</ul>
+		
+
+		
+
+		
+		<div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+			
+			<div class="article-prev border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="prev" rel="prev" href="/2025/09/04/%E6%97%A5%E6%9C%AC%E8%AA%9E%E3%82%92%E5%8B%89%E5%BC%B7%E3%81%97%E3%81%A6%E3%81%84%E3%81%BE%E3%81%99/">
+					<span class="left arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-left"></i>
+					</span>
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">日本語を勉強しています</span>
+						<span class="post-nav-item">Prev posts</span>
+					</span>
+				</a>
+			</div>
+			
+			
+			<div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="next" rel="next" href="/2025/06/30/%E5%AD%A6%E4%B9%A0%E6%80%9D%E8%B7%AF/">
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">学习思路</span>
+						<span class="post-nav-item">Next posts</span>
+					</span>
+					<span class="right arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-right"></i>
+					</span>
+				</a>
+			</div>
+			
+		</div>
+		
+
+
+		
+		<div class="comment-container px-2 sm:px-6 md:px-8 pb-8">
+			<div class="comments-container mt-10 w-full ">
+    <div id="comment-anchor" class="w-full h-2.5"></div>
+    <div class="comment-area-title w-full my-1.5 md:my-2.5 text-xl md:text-3xl font-bold">
+        Comments
+    </div>
+    
+
+        
+            
+    <div id="giscus-container"></div>
+    <script data-swup-reload-script defer>
+        async function loadGiscus() {
+            const giscusConfig = {
+                'src': 'https://giscus.app/client.js',
+                'data-repo': 'eviarch/Blooooooooooooooog',
+                'data-repo-id': 'R_kgDOO4jG4g',
+                'data-category': 'Announcements',
+                'data-category-id': 'DIC_kwDOO4jG4s4CrP-8',
+                'data-mapping': 'pathname',
+                'data-strict': '0',
+                'data-reactions-enabled': '1',
+                'data-emit-metadata': '1',
+                'data-theme': 'preferred_color_scheme',
+                'data-lang': 'zh-CN',
+                'data-input-position': 'top',
+                'data-loading': 'lazy',
+                'crossorigin': 'anonymous',
+                'async': true
+            }
+            const giscusScript = document.createElement('script');
+            for (const key in giscusConfig) {
+                giscusScript.setAttribute(key, giscusConfig[key]);
+            }
+            document.getElementById('giscus-container').appendChild(giscusScript);
+        }
+        if ('true') {
+            let loadGiscusTimeout = setTimeout(() => {
+                loadGiscus();
+                clearTimeout(loadGiscusTimeout);
+            }, 1000);
+        } else {
+            document.addEventListener('DOMContentLoaded', loadGiscus);
+        }
+    </script>
+
+
+        
+        
+    
+</div>
+
+		</div>
+		
+	</div>
+
+	
+	<div class="toc-content-container">
+		<div class="post-toc-wrap">
+	<div class="post-toc">
+		<div class="toc-title">On this page</div>
+		<div class="page-title">日语勉强中</div>
+		<ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9F%B3%E5%9B%BE"><span class="nav-text">音图</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BA%94%E5%8D%81%E9%9F%B3%E5%9B%BE%E6%B8%85%E9%9F%B3"><span class="nav-text">五十音图(清音)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%8A%E9%9F%B3"><span class="nav-text">浊音</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8B%97%C7%8Eo%E9%9F%B3"><span class="nav-text">拗（ǎo）音</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BF%83%E9%9F%B3"><span class="nav-text">促音</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%95%BF%E9%9F%B3"><span class="nav-text">长音</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%A5%E6%9C%AC%E6%B1%89%E5%AD%97"><span class="nav-text">日本汉字</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%86%E5%8F%B2%E8%83%8C%E6%99%AF%E4%BB%85%E4%BD%9C%E4%BA%86%E8%A7%A3"><span class="nav-text">历史背景（仅作了解）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8D%95%E8%AF%8D%E7%AC%94%E8%AE%B0-%E6%8C%81%E7%BB%AD%E6%9B%B4%E6%96%B0%E4%B8%AD"><span class="nav-text">单词笔记 ( 持续更新中 )</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%8D%E8%AF%8D%E7%B1%BB"><span class="nav-text">名词类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A8%E8%AF%8D%E7%B1%BB"><span class="nav-text">动词类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%A9%E8%AF%8D%E7%B1%BB"><span class="nav-text">助词类</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E7%9F%AD%E8%AF%AD"><span class="nav-text">常见短语</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#tips"><span class="nav-text">Tips</span></a></li></ol>
+
+	</div>
+</div>
+	</div>
+	
+</div>
+			</div>
+
+			
+		</div>
+
+		<div class="main-content-footer">
+			<footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+              <span>2025</span>
+              -
+            
+            2025&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">Eviarch</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        8 posts in total
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+            <script data-swup-reload-script src="https://cn.vercount.one/js"></script>
+            <div class="relative text-center lg:absolute lg:right-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-right">
+                
+                    <span id="busuanzi_container_site_uv" class="lg:!block">
+                        <span class="text-sm">VISITOR COUNT</span>
+                        <span id="busuanzi_value_site_uv"></span>
+                    </span>
+                
+                
+                    <span id="busuanzi_container_site_pv" class="lg:!block">
+                        <span class="text-sm">TOTAL PAGE VIEWS</span>
+                        <span id="busuanzi_value_site_pv"></span>
+                    </span>
+                
+            </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">POWERED BY <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a></span>
+            <span class="text-sm lg:block">THEME&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.8.5</a></span>
+        </div>
+        
+        
+            <div>
+                Blog up for <span class="odometer" id="runtime_days" ></span> days <span class="odometer" id="runtime_hours"></span> hrs <span class="odometer" id="runtime_minutes"></span> Min <span class="odometer" id="runtime_seconds"></span> Sec
+            </div>
+        
+        
+            <script data-swup-reload-script>
+                try {
+                    function odometer_init() {
+                    const elements = document.querySelectorAll('.odometer');
+                    elements.forEach(el => {
+                        new Odometer({
+                            el,
+                            format: '( ddd).dd',
+                            duration: 200
+                        });
+                    });
+                    }
+                    odometer_init();
+                } catch (error) {}
+            </script>
+        
+        
+        
+    </div>  
+</footer>
+		</div>
+	</div>
+
+	
+	<div class="post-tools">
+		<div class="post-tools-container">
+	<ul class="article-tools-list">
+		<!-- TOC aside toggle -->
+		
+		<li class="right-bottom-tools page-aside-toggle">
+			<i class="fa-regular fa-outdent"></i>
+		</li>
+		
+
+		<!-- go comment -->
+		
+		<li class="go-comment">
+			<i class="fa-regular fa-comments"></i>
+		</li>
+		
+	</ul>
+</div>
+	</div>
+	
+
+	<div class="right-side-tools-container">
+		<div class="side-tools-container">
+	<ul class="hidden-tools-list">
+		<li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-plus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-minus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+			<i class="fa-regular fa-moon"></i>
+		</li>
+
+		<!-- rss -->
+		
+
+		
+
+		<li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+			<i class="fa-regular fa-arrow-down"></i>
+		</li>
+	</ul>
+
+	<ul class="visible-tools-list">
+		<li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+			<i class="fa-regular fa-cog fa-spin"></i>
+		</li>
+		
+		<li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+			<i class="arrow-up fas fa-arrow-up"></i>
+			<span class="percent"></span>
+		</li>
+		
+		
+	</ul>
+</div>
+	</div>
+
+	<div class="image-viewer-container">
+	<img src="">
+</div>
+
+	
+	<div class="search-pop-overlay">
+	<div class="popup search-popup">
+		<div class="search-header">
+			<span class="search-input-field-pre">
+				<i class="fa-solid fa-keyboard"></i>
+			</span>
+			<div class="search-input-container">
+				<input autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="Search..." spellcheck="false" type="search" class="search-input">
+			</div>
+			<span class="popup-btn-close">
+				<i class="fa-solid fa-times"></i>
+			</span>
+		</div>
+		<div id="search-result">
+			<div id="no-result">
+				<i class="fa-solid fa-spinner fa-spin-pulse fa-5x fa-fw"></i>
+			</div>
+		</div>
+	</div>
+</div>
+	
+
+</main>
+
+
+
+<script src="/js/build/libs/Swup.min.js"></script>
+
+<script src="/js/build/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/build/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    const swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+</script>
+
+
+
+
+	
+<script src="/js/build/tools/imageViewer.js" type="module"></script>
+
+<script src="/js/build/utils.js" type="module"></script>
+
+<script src="/js/build/main.js" type="module"></script>
+
+<script src="/js/build/layouts/navbarShrink.js" type="module"></script>
+
+<script src="/js/build/tools/scrollTopBottom.js" type="module"></script>
+
+<script src="/js/build/tools/lightDarkSwitch.js" type="module"></script>
+
+<script src="/js/build/layouts/categoryList.js" type="module"></script>
+
+
+
+    
+<script src="/js/build/tools/localSearch.js" type="module"></script>
+
+
+
+
+    
+<script src="/js/build/tools/codeBlock.js" type="module"></script>
+
+
+
+
+    
+<script src="/js/build/layouts/lazyload.js" type="module"></script>
+
+
+
+
+    
+<script src="/js/build/tools/runtime.js"></script>
+
+    
+<script src="/js/build/libs/odometer.min.js"></script>
+
+    
+<link rel="stylesheet" href="/assets/odometer-theme-minimal.css">
+
+
+
+
+  
+<script src="/js/build/libs/Typed.min.js"></script>
+
+  
+<script src="/js/build/plugins/typed.js" type="module"></script>
+
+
+
+
+
+
+
+
+
+
+
+    
+<script src="/js/build/tools/tocToggle.js" type="module" data-swup-reload-script=""></script>
+
+<script src="/js/build/layouts/toc.js" type="module" data-swup-reload-script=""></script>
+
+<script src="/js/build/plugins/tabs.js" type="module" data-swup-reload-script=""></script>
+
+
+
+
+<script src="/js/build/libs/moment-with-locales.min.js" data-swup-reload-script=""></script>
+
+
+<script src="/js/build/layouts/essays.js" type="module" data-swup-reload-script=""></script>
+
+
+
+
+
+    
+<script src="/js/build/layouts/bookmarkNav.js" type="module"></script>
+
+
+	
+</body>
+
+</html>
