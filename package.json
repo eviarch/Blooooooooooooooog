@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "stylus": "github:stylus/stylus#0.64.0",
-    "hexo": "^8.0.0",
+    "hexo": "^8.1.1",
     "hexo-all-minifier": "^0.5.7",
     "hexo-filter-mathjax": "^0.9.1",
     "hexo-filter-mermaid-diagrams": "^1.0.5",
