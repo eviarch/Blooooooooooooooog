@@ -29,8 +29,8 @@
 ## 三、文件与命名
 
 - WebP 输出目录：`source/masonry_images/`
-- 原始图片归档目录：`notes/masonry_originals/`
-- `notes/masonry_originals/` 已在 `.gitignore` 中忽略，不参与网站部署
+- 不保存原始图片；转换完成后只保留 WebP
+- 原始图片不得留在 `source/` 中，否则会被 Hexo 原样复制并参与部署
 - 文件名不要以下划线 `_` 开头，Hexo 会把它当作隐藏资源而跳过
 - 文件名优先使用英文、数字和下划线，避免空格
 - 增删图片时，必须同步更新 `source/_data/masonry.yml`
@@ -56,7 +56,7 @@
 3. 转换为 WebP，质量为 `82`。
 4. 确认横图宽度为 `1600px`，竖图高度为 `1600px`。
 5. 确认文件位于 `source/masonry_images/`，且文件名不以 `_` 开头。
-6. 将原图移动到 `notes/masonry_originals/`。
+6. 删除原始图片，只保留 WebP。
 7. 在 `source/_data/masonry.yml` 中添加或更新条目。
 8. 执行 `npm run build`，确认构建成功且没有缺失图片。
 
