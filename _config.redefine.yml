@@ -236,9 +236,9 @@ navbar:
     #   path: /archives 
     #   icon: fa-regular fa-archive # can be empty
 
-    # Masonry:
-    #   icon: fa-solid fa-image #图标
-    #   path: /masonry/
+    Masonry:
+      icon: fa-solid fa-image #图标
+      path: /masonry/
 
     Bookmarks:
       path: /bookmarks/

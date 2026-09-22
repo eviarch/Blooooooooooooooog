@@ -1,3 +1,45 @@
-# - image: 图片 URL
-#   title: 图片标题
-#   description: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod
+# 瀑布流相册数据文件
+# 页面文件：source/masonry/index.md（front-matter 里的 template: masonry），访问路径 /masonry/
+# 图片建议放在 source/masonry_images/ 下，这里的路径写成 /masonry_images/文件名.webp
+#
+# 字段说明：
+#   image:       图片地址，本站路径（/masonry_images/x.webp）或完整外链 URL 都可以
+#   title:       图片左上角标题，鼠标悬停时显示
+#   description: 图片右下角描述，鼠标悬停时显示
+#
+# 注意事项：
+#   1. 本文件不能为空，只剩注释也会让 masonry 页面渲染报错（theme.masonry 为 undefined）
+#   2. 每一条 image 都必须真实存在，任意一张 404 会让整个瀑布流永远停在骨架屏
+#   3. 增删条目时，记得同步增删 source/masonry_images/ 里的图片文件
+
+- image: /masonry_images/Kinkakuji.webp
+  title: 金阁寺
+  description: 京都
+
+- image: /masonry_images/Kiyomizu-dera Temple_one.webp
+  title: 清水寺
+  description: 京都
+
+- image: /masonry_images/Kiyomizu-dera Temple_two.webp
+  title: 清水寺 · 二
+  description: 京都
+
+- image: /masonry_images/Kiyomizu-dera Temple_three.webp
+  title: 清水寺 · 三
+  description: 京都
+
+- image: /masonry_images/Sunset_at_Osaka Castle_one.webp
+  title: 大阪城日落
+  description: 大阪
+
+- image: /masonry_images/Sunset_at_Osaka Castle_two.webp
+  title: 大阪城日落 · 二
+  description: 大阪
+
+- image: /masonry_images/Shibuya_sky.webp
+  title: 涩谷天空
+  description: 东京
+
+- image: /masonry_images/sunset.webp
+  title: 日落
+  description: 海边
