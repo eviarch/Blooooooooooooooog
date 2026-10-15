@@ -86,3 +86,6 @@ npm install -g @openai/codex@latest
 
 查看DeepSeek[官网](https://api-docs.deepseek.com/zh-cn/quick_start/agent_integrations/codex/)即可
 
+## Skill 介绍，以及科研常用的 Skill
+
+https://zhuanlan.zhihu.com/p/2072121075840848767
