@@ -3,7 +3,7 @@ title: Strata 与 Project Maya 安装、构建及局域网部署指南
 date: 2026-10-16 00:58:50
 tags: ["AI", "Instruction"]
 categories: ["AI", "Instruction", "Learning", "Part-time Study"]
-thumbnail:
+thumbnail: "/post_images/Strata与ProjectMaya安装构建及局域网部署指南/huggingface_logo.svg"
 ---
 
 > **文档目的**：在同一台 Ubuntu 服务器上，以统一的环境隔离原则安装、构建和部署 Strata 与 Project Maya，包含原理说明、逐步操作、模型目录配置、服务监听、API Key、安全注意事项和故障排查。
