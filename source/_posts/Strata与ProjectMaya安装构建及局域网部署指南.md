@@ -8,9 +8,9 @@ thumbnail: "/post_images/Strata与ProjectMaya安装构建及局域网部署指�
 
 > **文档目的**：在同一台 Ubuntu 服务器上，以统一的环境隔离原则安装、构建和部署 Strata 与 Project Maya，包含原理说明、逐步操作、模型目录配置、服务监听、API Key、安全注意事项和故障排查。
 >
-> **适用环境（以部署记录为准）**：Ubuntu 18.04 x86_64；NVIDIA RTX 4090 多 GPU 服务器；NVIDIA 驱动记录为 530.41.03；CUDA Toolkit 12.0.1；独立 GCC/G++ 11.4.0 环境。
+> **适用环境（以部署记录为准）**：Ubuntu 18.04 x86_64；NVIDIA RTX 4090 24G x8张 GPU 服务器；NVIDIA 驱动记录为 530.41.03；CUDA Toolkit 12.0.1；独立 GCC/G++ 11.4.0 环境。
 >
-> **重要说明**：Strata 部分基于用户提供的《Strata 环境依赖隔离与工具链配置记录》及此前部署上下文；Maya 部分基于既有《Project Maya 安装与局域网部署指南》。各项目的启动参数会随版本变化，执行前必须检查当前仓库的帮助信息。文档明确区分历史记录、示例命令和需要在服务器上实际验证的行为。
+> **重要说明**：各项目的启动参数会随版本变化，执行前必须检查当前仓库的帮助信息。文档明确区分历史记录、示例命令和需要在服务器上实际验证的行为。
 
 ## 目录
 
@@ -51,24 +51,28 @@ thumbnail: "/post_images/Strata与ProjectMaya安装构建及局域网部署指�
 
 # 第一部分：整体架构与共同原则
 
-### 1.1 推荐目录规划
+### 1.1 目录规划
+
+后文命令都使用 `/mnt/data/ProjectMoE`。这里只保留部署时需要区分的目录：共享编译工具链、两个项目各自的代码与 Python 环境、以及与仓库分开存放的模型数据。编译器环境内部文件、仓库自带源码、备份、缓存和一次性安装包不列入。CUDA Toolkit 在 `/usr/local/cuda-12.0.1`，不在这个根目录下。
 
 ```text
-/mnt/data1/ProjectMoE/
-├── project-maya/
-│   ├── .venv/                 # Maya 的 Python 环境
-│   ├── maya.sh
-│   ├── build-maya-gcc11.sh
-│   └── logs/
-├── Strata/
-│   ├── .venv/                 # Strata 的 Python 环境
-│   ├── setup.py
-│   └── build-cuda12/          # 如已生成
-├── Strata-data/
-│   └── models/                # Strata 模型数据
-├── gcc11-env/                 # 两个项目可引用的独立 GCC 11 工具链
-├── mamba-root/
-└── tools/bin/micromamba
+/mnt/data/ProjectMoE/                  # 两个项目的统一根目录
+├── gcc11-env/                          # 独立 GCC/G++ 11.4.0；Maya 与 Strata 共用，不替换系统编译器
+├── mamba-root/                         # Micromamba 根目录，对应 MAMBA_ROOT_PREFIX
+├── tools/bin/micromamba                # Micromamba 可执行文件，用于进入 gcc11-env
+├── project-maya/                       # Maya 源码与运行目录
+│   ├── .venv/                          # Maya 自己的 Python 环境，不要与 Strata 混用
+│   ├── maya.sh                         # Maya 的安装与启动入口
+│   ├── build-maya-gcc11.sh             # 本指南使用的 GCC 11 包装脚本
+│   └── logs/                           # 包装脚本写出的安装日志
+├── Maya-data/
+│   └── models/                         # 建议存放 Maya 的 GGUF；实际路径通过 --gguf-dir 传入
+├── Strata/                             # Strata 源码与运行目录
+│   ├── .venv/                          # Strata 自己的 Python 环境
+│   ├── setup.py                        # 安装与构建入口，参数以当前 --help 为准
+│   └── build-cuda12/                   # CUDA 构建目录；检查编译器时看其中的 CMake 缓存
+└── Strata-data/
+    └── models/                         # Strata 模型文件，与源码仓库分开存放
 ```
 
 ### 1.2 共同技术原理
@@ -98,14 +102,14 @@ thumbnail: "/post_images/Strata与ProjectMaya安装构建及局域网部署指�
 
 已知环境：
 
--   操作系统：Ubuntu 18.04
--   GPU：8 × NVIDIA RTX 4090，每张 24 GB 显存
--   NVIDIA 驱动：530.41.03
--   CUDA Toolkit：12.0.1，`nvcc` 位于 `/usr/local/cuda-12.0.1/bin/nvcc`
--   独立 GCC/G++：11.4.0，位于 `/mnt/data1/ProjectMoE/gcc11-env/bin/`
--   Maya 项目：`/mnt/data1/ProjectMoE/project-maya`
--   Maya Python 虚拟环境：`/mnt/data1/ProjectMoE/project-maya/.venv`
--   计划服务地址：`0.0.0.0:8080`
+- 操作系统：Ubuntu 18.04
+- GPU：8 × NVIDIA RTX 4090，每张 24 GB 显存
+- NVIDIA 驱动：530.41.03
+- CUDA Toolkit：12.0.1，`nvcc` 位于 `/usr/local/cuda-12.0.1/bin/nvcc`
+- 独立 GCC/G++：11.4.0，位于 `/mnt/data/ProjectMoE/gcc11-env/bin/`
+- Maya 项目：`/mnt/data/ProjectMoE/project-maya`
+- Maya Python 虚拟环境：`/mnt/data/ProjectMoE/project-maya/.venv`
+- 计划服务地址：`0.0.0.0:8080`
 
 目标是：使用独立 GCC 11 和指定 CUDA Toolkit 检查并构建
 Maya，按需选择模型与 GGUF 目录，并使用 API Key 在局域网内访问服务。
@@ -119,9 +123,9 @@ Ubuntu 18.04 自带的系统编译器可能较旧。此前 Maya 的检查结果�
 
 脚本通过环境变量将编译器明确指向独立环境：
 
--   `CC`：C 编译器
--   `CXX`：C++ 编译器
--   `CUDAHOSTCXX`：CUDA 编译时使用的主机 C++ 编译器
+- `CC`：C 编译器
+- `CXX`：C++ 编译器
+- `CUDAHOSTCXX`：CUDA 编译时使用的主机 C++ 编译器
 
 这样做的目的是让构建系统优先使用 GCC 11，而不是系统
 `g++`。它不会修改系统默认编译器，也不会通过 `update-alternatives`
@@ -129,10 +133,10 @@ Ubuntu 18.04 自带的系统编译器可能较旧。此前 Maya 的检查结果�
 
 ### 2.2 CUDA Toolkit、驱动和 GPU 架构的区别
 
--   **NVIDIA 驱动**负责让操作系统与 GPU 通信。
--   **CUDA Toolkit / `nvcc`**提供 CUDA 编译工具。
--   **GPU 架构参数**决定编译产物针对哪些 GPU 架构。RTX 4090 属于 `sm_89`
-    架构。
+- **NVIDIA 驱动**负责让操作系统与 GPU 通信。
+- **CUDA Toolkit / `nvcc`**提供 CUDA 编译工具。
+- **GPU 架构参数**决定编译产物针对哪些 GPU 架构。RTX 4090 属于 `sm_89`
+架构。
 
 脚本指定 `/usr/local/cuda-12.0.1/bin/nvcc`，并把 GCC 11 的 `g++` 传给
 Maya 的 `--host-compiler` 参数。此前已经成功完成了最小 C++
@@ -151,23 +155,23 @@ Maya 命令行帮助提供了
 `--setup`、`--check`、`--download-model`、`--model`、`--gguf-dir`、`--host`、`--port`
 和 `--api-key` 等参数。
 
--   `--check`：执行环境检查。
--   `--setup`：执行 Maya 的安装/构建配置流程。
--   `--download-model`：显式请求下载模型。
--   `--model`：选择 Maya 支持的模型标识。
--   `--gguf-dir`：指定 GGUF 模型目录。
--   `--host` / `--port`：指定监听地址和端口。
--   `--api-key`：配置 API 访问密钥。
+- `--check`：执行环境检查。
+- `--setup`：执行 Maya 的安装/构建配置流程。
+- `--download-model`：显式请求下载模型。
+- `--model`：选择 Maya 支持的模型标识。
+- `--gguf-dir`：指定 GGUF 模型目录。
+- `--host` / `--port`：指定监听地址和端口。
+- `--api-key`：配置 API 访问密钥。
 
-本指南的包装脚本**不会默认添加
-`--download-model`**。如需下载模型，必须明确传入该参数。模型文件来源、下载行为和所需磁盘空间应以当前
+本指南的包装脚本**不会默认添加**
+`--download-model`。如需下载模型，必须明确传入该参数。模型文件来源、下载行为和所需磁盘空间应以当前
 Maya 版本的帮助信息及项目文档为准。
 
 ### 2.5 `0.0.0.0` 的含义与安全性
 
--   `127.0.0.1`：通常只接受服务器本机的回环访问。
--   `0.0.0.0`：让服务监听所有 IPv4
-    网络接口，局域网内其他设备才有机会连接。
+- `127.0.0.1`：通常只接受服务器本机的回环访问。
+- `0.0.0.0`：让服务监听所有 IPv4
+网络接口，局域网内其他设备才有机会连接。
 
 `0.0.0.0` **不是客户端要访问的地址**。客户端应使用服务器的实际局域网
 IP，例如 `http://192.168.1.20:8080`。启用网络监听后应设置强 API
@@ -177,9 +181,9 @@ Key，并只向可信网络开放端口；不要未经防火墙和访问控制�
 
 ### 第 1 步：登录服务器并进入项目目录
 
-``` bash
+```bash
 ssh mim@你的服务器地址
-cd /mnt/data1/ProjectMoE/project-maya
+cd /mnt/data/ProjectMoE/project-maya
 ```
 
 如果 `mim20` 已配置为 SSH 主机别名，也可以使用 `ssh mim20`。请根据自己的
@@ -187,7 +191,7 @@ SSH 配置替换示例。
 
 ### 第 2 步：确认项目和脚本存在
 
-``` bash
+```bash
 pwd
 ls -l ./maya.sh
 ./maya.sh --help
@@ -198,9 +202,9 @@ ls -l ./maya.sh
 
 ### 第 3 步：确认 GCC 11 与 CUDA 路径
 
-``` bash
-/mnt/data1/ProjectMoE/gcc11-env/bin/x86_64-conda-linux-gnu-gcc --version
-/mnt/data1/ProjectMoE/gcc11-env/bin/x86_64-conda-linux-gnu-g++ --version
+```bash
+/mnt/data/ProjectMoE/gcc11-env/bin/x86_64-conda-linux-gnu-gcc --version
+/mnt/data/ProjectMoE/gcc11-env/bin/x86_64-conda-linux-gnu-g++ --version
 /usr/local/cuda-12.0.1/bin/nvcc --version
 ```
 
@@ -210,7 +214,7 @@ ls -l ./maya.sh
 
 ### 第 4 步：检查 GPU 与当前占用
 
-``` bash
+```bash
 nvidia-smi
 ```
 
@@ -223,8 +227,8 @@ GPU；运行重型构建或加载模型前务必重新检查。**不要为了安
 
 将 `build-maya-gcc11.sh` 放在 Maya 项目目录后：
 
-``` bash
-cd /mnt/data1/ProjectMoE/project-maya
+```bash
+cd /mnt/data/ProjectMoE/project-maya
 chmod +x ./build-maya-gcc11.sh
 ./build-maya-gcc11.sh --check
 ```
@@ -238,20 +242,20 @@ chmod +x ./build-maya-gcc11.sh
 
 如果脚本在本地电脑当前目录，可以从本地终端上传：
 
-``` bash
-scp build-maya-gcc11.sh mim@你的服务器地址:/mnt/data1/ProjectMoE/project-maya/
+```bash
+scp build-maya-gcc11.sh mim@你的服务器地址:/mnt/data/ProjectMoE/project-maya/
 ```
 
 如果你配置了 `mim20` SSH 别名：
 
-``` bash
-scp build-maya-gcc11.sh mim20:/mnt/data1/ProjectMoE/project-maya/
+```bash
+scp build-maya-gcc11.sh mim20:/mnt/data/ProjectMoE/project-maya/
 ```
 
 然后在服务器上执行：
 
-``` bash
-cd /mnt/data1/ProjectMoE/project-maya
+```bash
+cd /mnt/data/ProjectMoE/project-maya
 chmod +x build-maya-gcc11.sh
 ```
 
@@ -261,13 +265,13 @@ chmod +x build-maya-gcc11.sh
 
 | 配置 | 默认值 |
 |---|---|
-| Maya 项目目录 | `/mnt/data1/ProjectMoE/project-maya` |
-| GCC 环境 | `/mnt/data1/ProjectMoE/gcc11-env` |
+| Maya 项目目录 | `/mnt/data/ProjectMoE/project-maya` |
+| GCC 环境 | `/mnt/data/ProjectMoE/gcc11-env` |
 | CUDA Toolkit | `/usr/local/cuda-12.0.1` |
 | GPU | `0,1,2,3,4,5,6,7` |
 | 服务监听地址 | `0.0.0.0` |
 | 服务端口 | `8080` |
-| 日志目录 | `/mnt/data1/ProjectMoE/project-maya/logs` |
+| 日志目录 | `/mnt/data/ProjectMoE/project-maya/logs` |
 | Python 包索引 | 阿里云 PyPI 镜像（仅影响 pip 包安装） |
 
 脚本不会主动杀死 GPU
@@ -275,7 +279,7 @@ chmod +x build-maya-gcc11.sh
 
 ### 第 3 步：先查看帮助与检查环境
 
-``` bash
+```bash
 ./build-maya-gcc11.sh --help
 ./build-maya-gcc11.sh --check
 ```
@@ -285,24 +289,24 @@ chmod +x build-maya-gcc11.sh
 
 ### 第 4 步：启动安装流程
 
-``` bash
+```bash
 ./build-maya-gcc11.sh
 ```
 
 正常安装运行时，脚本会提示输入 API Key 和可选 GGUF 目录。
 
--   **API Key**：输入时不回显；不能为空。
--   **GGUF 目录**：输入已存在的目录绝对路径。直接回车表示不传
-    `--gguf-dir`，由 Maya 使用自身默认配置。
--   **模型下载**：默认不添加 `--download-model`。若需要下载，先确认当前
-    Maya 版本支持的模型和下载方式，再显式添加对应参数。
+- **API Key**：输入时不回显；不能为空。
+- **GGUF 目录**：输入已存在的目录绝对路径。直接回车表示不传
+`--gguf-dir`，由 Maya 使用自身默认配置。
+- **模型下载**：默认不添加 `--download-model`。若需要下载，先确认当前
+Maya 版本支持的模型和下载方式，再显式添加对应参数。
 
 脚本会将安装输出保存到
 `logs/maya-setup-gcc11-时间戳.log`。如果命令失败，按终端提示查看最后 100
 行日志：
 
-``` bash
-tail -n 100 /mnt/data1/ProjectMoE/project-maya/logs/你的日志文件名.log
+```bash
+tail -n 100 /mnt/data/ProjectMoE/project-maya/logs/你的日志文件名.log
 ```
 
 **注意：** 当前包装脚本会把
@@ -314,7 +318,7 @@ tail -n 100 /mnt/data1/ProjectMoE/project-maya/logs/你的日志文件名.log
 
 ### 方式 A：交互式输入（推荐）
 
-``` bash
+```bash
 ./build-maya-gcc11.sh
 ```
 
@@ -323,7 +327,7 @@ tail -n 100 /mnt/data1/ProjectMoE/project-maya/logs/你的日志文件名.log
 
 ### 方式 B：使用环境变量
 
-``` bash
+```bash
 export MAYA_API_KEY='替换为你自己生成的强随机密钥'
 export MAYA_GGUF_DIR='/实际存在的/GGUF/目录'
 export MAYA_HOST='0.0.0.0'
@@ -334,7 +338,7 @@ export MAYA_PORT='8080'
 
 如果不想指定自定义 GGUF 目录，可以取消该变量：
 
-``` bash
+```bash
 unset MAYA_GGUF_DIR
 ```
 
@@ -346,20 +350,20 @@ Git、写进公开脚本或粘贴到公开日志中。交互输入可避免终�
 
 先检查支持的模型：
 
-``` bash
+```bash
 ./maya.sh --help
 ```
 
 如果确认要使用某个支持的模型，例如帮助中列出的
 `Maya-S-v2-IQ2_XXS`，可按该版本的参数规则显式指定：
 
-``` bash
+```bash
 ./build-maya-gcc11.sh --model Maya-S-v2-IQ2_XXS
 ```
 
 只有明确希望触发下载时才添加 `--download-model`：
 
-``` bash
+```bash
 ./build-maya-gcc11.sh --model Maya-S-v2-IQ2_XXS --download-model
 ```
 
@@ -370,7 +374,7 @@ GPU 资源。
 
 ### 第 1 步：检查监听端口
 
-``` bash
+```bash
 ss -lntp | grep ':8080'
 ```
 
@@ -380,7 +384,7 @@ Maya 日志。
 
 ### 第 2 步：在服务器本机测试
 
-``` bash
+```bash
 curl -i http://127.0.0.1:8080/
 ```
 
@@ -390,7 +394,7 @@ curl -i http://127.0.0.1:8080/
 
 ### 第 3 步：取得服务器局域网 IP
 
-``` bash
+```bash
 hostname -I
 ```
 
@@ -401,13 +405,13 @@ hostname -I
 
 浏览器或客户端使用：
 
-``` text
+```text
 http://服务器局域网IP:8080
 ```
 
 例如（仅为格式示例）：
 
-``` text
+```text
 http://192.168.1.20:8080
 ```
 
@@ -416,12 +420,12 @@ http://192.168.1.20:8080
 
 ### 第 5 步：如果无法访问，按顺序排查
 
-1.  在服务器执行 `ss -lntp | grep ':8080'`，确认端口确实在监听。
-2.  查看 Maya 日志，确认服务没有在启动后退出。
-3.  确认客户端使用的是服务器局域网 IP，而不是 `0.0.0.0` 或 `127.0.0.1`。
-4.  检查 Ubuntu 防火墙、上游防火墙、路由器 ACL、VLAN 或无线客户端隔离。
-5.  检查 Maya 是否要求特定 API 路径或认证头。
-6.  不要为排障而直接关闭全部防火墙，也不要将服务无保护地暴露到公网。
+1. 在服务器执行 `ss -lntp | grep ':8080'`，确认端口确实在监听。
+2. 查看 Maya 日志，确认服务没有在启动后退出。
+3. 确认客户端使用的是服务器局域网 IP，而不是 `0.0.0.0` 或 `127.0.0.1`。
+4. 检查 Ubuntu 防火墙、上游防火墙、路由器 ACL、VLAN 或无线客户端隔离。
+5. 检查 Maya 是否要求特定 API 路径或认证头。
+6. 不要为排障而直接关闭全部防火墙，也不要将服务无保护地暴露到公网。
 
 ## 7. 常见问题
 
@@ -429,7 +433,7 @@ http://192.168.1.20:8080
 
 先通过包装脚本运行：
 
-``` bash
+```bash
 ./build-maya-gcc11.sh --check
 ```
 
@@ -442,10 +446,10 @@ Maya 构建目录和该版本的 CMake
 
 逐项确认以下文件存在且可执行：
 
-``` bash
-ls -l /mnt/data1/ProjectMoE/project-maya/maya.sh
-ls -l /mnt/data1/ProjectMoE/gcc11-env/bin/x86_64-conda-linux-gnu-gcc
-ls -l /mnt/data1/ProjectMoE/gcc11-env/bin/x86_64-conda-linux-gnu-g++
+```bash
+ls -l /mnt/data/ProjectMoE/project-maya/maya.sh
+ls -l /mnt/data/ProjectMoE/gcc11-env/bin/x86_64-conda-linux-gnu-gcc
+ls -l /mnt/data/ProjectMoE/gcc11-env/bin/x86_64-conda-linux-gnu-g++
 ls -l /usr/local/cuda-12.0.1/bin/nvcc
 ```
 
@@ -470,9 +474,9 @@ API Key
 
 ## 8. 日常使用速查
 
-``` bash
+```bash
 # 进入项目目录
-cd /mnt/data1/ProjectMoE/project-maya
+cd /mnt/data/ProjectMoE/project-maya
 
 # 查看 Maya 支持的参数
 ./maya.sh --help
@@ -496,22 +500,22 @@ nvidia-smi
 ss -lntp | grep ':8080'
 
 # 查看最新日志文件列表
-ls -lt /mnt/data1/ProjectMoE/project-maya/logs/
+ls -lt /mnt/data/ProjectMoE/project-maya/logs/
 ```
 
 ## 9. 部署完成的判断标准
 
 逐项确认：
 
--   [ ] `./maya.sh --help` 能正常运行，参数与当前版本一致。
--   [ ] `./build-maya-gcc11.sh --check` 通过。
--   [ ] 日志表明构建过程使用了预期的 GCC 11 与 CUDA
+- [ ] `./maya.sh --help` 能正常运行，参数与当前版本一致。
+- [ ] `./build-maya-gcc11.sh --check` 通过。
+- [ ] 日志表明构建过程使用了预期的 GCC 11 与 CUDA
     Toolkit，而不是意外回退到系统编译器。
--   [ ] 所需模型文件已准备好，且 GGUF 路径与 Maya 配置一致。
--   [ ] 服务进程实际运行，`ss` 能看到预期监听端口。
--   [ ] 本机请求可到达正确的 API 路径。
--   [ ] 另一台局域网电脑能够访问，并且 API Key 认证按预期生效。
--   [ ] 服务只开放给可信网络，日志和密钥受到保护。
+- [ ] 所需模型文件已准备好，且 GGUF 路径与 Maya 配置一致。
+- [ ] 服务进程实际运行，`ss` 能看到预期监听端口。
+- [ ] 本机请求可到达正确的 API 路径。
+- [ ] 另一台局域网电脑能够访问，并且 API Key 认证按预期生效。
+- [ ] 服务只开放给可信网络，日志和密钥受到保护。
 
 完成这些检查后，才可以认为 Maya
 已完成从工具链准备、构建、模型配置到局域网 API 访问的整套部署。
@@ -536,25 +540,25 @@ Python 虚拟环境与 GCC 环境各自解决不同问题：`.venv` 管理 Pytho
 
 已记录的环境如下，执行前请重新检查：
 
-| 项目 | 路径或版本 |
-|---|---|
-| 操作系统 | Ubuntu 18.04 x86_64 |
-| Strata 仓库 | `/mnt/data1/ProjectMoE/Strata` |
-| Strata 数据目录 | `/mnt/data1/ProjectMoE/Strata-data` |
-| Strata Python 环境 | `/mnt/data1/ProjectMoE/Strata/.venv` |
-| 独立 GCC 环境 | `/mnt/data1/ProjectMoE/gcc11-env` |
-| Micromamba | `/mnt/data1/ProjectMoE/tools/bin/micromamba` |
-| Micromamba 根目录 | `/mnt/data1/ProjectMoE/mamba-root` |
-| CUDA Toolkit | `/usr/local/cuda-12.0.1` |
-| CUDA 编译器 | `/usr/local/cuda-12.0.1/bin/nvcc` |
-| Python 版本记录 | 3.12.15 |
-| GCC/G++ 版本记录 | 11.4.0 |
-| 构建工具记录 | CMake 4.4.4、Ninja |
+| 项目               | 路径或版本                                  |
+| ------------------ | ------------------------------------------- |
+| 操作系统           | Ubuntu 18.04 x86_64                         |
+| Strata 仓库        | `/mnt/data/ProjectMoE/Strata`               |
+| Strata 数据目录    | `/mnt/data/ProjectMoE/Strata-data`          |
+| Strata Python 环境 | `/mnt/data/ProjectMoE/Strata/.venv`         |
+| 独立 GCC 环境      | `/mnt/data/ProjectMoE/gcc11-env`            |
+| Micromamba         | `/mnt/data/ProjectMoE/tools/bin/micromamba` |
+| Micromamba 根目录  | `/mnt/data/ProjectMoE/mamba-root`           |
+| CUDA Toolkit       | `/usr/local/cuda-12.0.1`                    |
+| CUDA 编译器        | `/usr/local/cuda-12.0.1/bin/nvcc`           |
+| Python 版本记录    | 3.12.15                                     |
+| GCC/G++ 版本记录   | 11.4.0                                      |
+| 构建工具记录       | CMake 4.4.4、Ninja                          |
 
 典型目录结构：
 
 ```text
-/mnt/data1/ProjectMoE/
+/mnt/data/ProjectMoE/
 ├── Strata/
 │   ├── .venv/                 # Strata 的 Python 依赖
 │   ├── setup.py               # 安装/构建入口（需按当前版本确认）
@@ -572,7 +576,7 @@ Python 虚拟环境与 GCC 环境各自解决不同问题：`.venv` 管理 Pytho
 
 ```bash
 ssh mim@你的服务器地址
-cd /mnt/data1/ProjectMoE/Strata
+cd /mnt/data/ProjectMoE/Strata
 pwd
 ls -la
 ```
@@ -582,19 +586,19 @@ ls -la
 ### 3.2 检查 Python 虚拟环境
 
 ```bash
-cd /mnt/data1/ProjectMoE/Strata
+cd /mnt/data/ProjectMoE/Strata
 
 test -x .venv/bin/python && .venv/bin/python --version
 .venv/bin/python -m pip --version
 .venv/bin/python -c 'import sys; print(sys.executable); print(sys.prefix)'
 ```
 
-确认解释器指向 `/mnt/data1/ProjectMoE/Strata/.venv`，而不是系统 Python 或 Maya 的 `.venv`。
+确认解释器指向 `/mnt/data/ProjectMoE/Strata/.venv`，而不是系统 Python 或 Maya 的 `.venv`。
 
 安装 Python 包时，优先使用项目自己的解释器：
 
 ```bash
-/mnt/data1/ProjectMoE/Strata/.venv/bin/python -m pip install 包名
+/mnt/data/ProjectMoE/Strata/.venv/bin/python -m pip install 包名
 ```
 
 不要把 Strata 的 Python 依赖安装到 `gcc11-env`，也不要把 Maya 和 Strata 的 Python 虚拟环境混用。
@@ -602,9 +606,9 @@ test -x .venv/bin/python && .venv/bin/python --version
 ### 3.3 检查 Micromamba 与 GCC 11
 
 ```bash
-export MAMBA_EXE="/mnt/data1/ProjectMoE/tools/bin/micromamba"
-export MAMBA_ROOT_PREFIX="/mnt/data1/ProjectMoE/mamba-root"
-export ENV_PREFIX="/mnt/data1/ProjectMoE/gcc11-env"
+export MAMBA_EXE="/mnt/data/ProjectMoE/tools/bin/micromamba"
+export MAMBA_ROOT_PREFIX="/mnt/data/ProjectMoE/mamba-root"
+export ENV_PREFIX="/mnt/data/ProjectMoE/gcc11-env"
 
 test -x "$MAMBA_EXE" && echo "Micromamba OK"
 test -d "$ENV_PREFIX" && echo "GCC 11 environment OK"
@@ -618,8 +622,8 @@ test -d "$ENV_PREFIX" && echo "GCC 11 environment OK"
 此前构建流程使用的编译器路径为：
 
 ```bash
-/mnt/data1/ProjectMoE/gcc11-env/bin/x86_64-conda-linux-gnu-gcc
-/mnt/data1/ProjectMoE/gcc11-env/bin/x86_64-conda-linux-gnu-g++
+/mnt/data/ProjectMoE/gcc11-env/bin/x86_64-conda-linux-gnu-gcc
+/mnt/data/ProjectMoE/gcc11-env/bin/x86_64-conda-linux-gnu-g++
 ```
 
 检查实际文件：
@@ -649,11 +653,11 @@ nvidia-smi
 在当前 shell 中执行以下命令：
 
 ```bash
-cd /mnt/data1/ProjectMoE/Strata
+cd /mnt/data/ProjectMoE/Strata
 
-export MAMBA_EXE="/mnt/data1/ProjectMoE/tools/bin/micromamba"
-export MAMBA_ROOT_PREFIX="/mnt/data1/ProjectMoE/mamba-root"
-export ENV_PREFIX="/mnt/data1/ProjectMoE/gcc11-env"
+export MAMBA_EXE="/mnt/data/ProjectMoE/tools/bin/micromamba"
+export MAMBA_ROOT_PREFIX="/mnt/data/ProjectMoE/mamba-root"
+export ENV_PREFIX="/mnt/data/ProjectMoE/gcc11-env"
 export CUDA_HOME="/usr/local/cuda-12.0.1"
 
 export CC="$ENV_PREFIX/bin/x86_64-conda-linux-gnu-gcc"
@@ -682,7 +686,7 @@ printf 'CC=%s\nCXX=%s\nCUDAHOSTCXX=%s\nCUDA_HOME=%s\nSTRATA_NVCC=%s\n' \
 先确认仓库当前版本实际支持的参数：
 
 ```bash
-cd /mnt/data1/ProjectMoE/Strata
+cd /mnt/data/ProjectMoE/Strata
 .venv/bin/python setup.py --help
 ```
 
@@ -706,15 +710,15 @@ cd /mnt/data1/ProjectMoE/Strata
 
 建议将仓库和模型数据分开：
 
-- 程序代码：`/mnt/data1/ProjectMoE/Strata`
-- 模型数据：`/mnt/data1/ProjectMoE/Strata-data/models/`
+- 程序代码：`/mnt/data/ProjectMoE/Strata`
+- 模型数据：`/mnt/data/ProjectMoE/Strata-data/models/`
 
 这样更新或重新构建程序时，不必把模型文件放进源码仓库。模型下载前应核对模型名称、量化版本、分片数量、总磁盘空间和显存需求。
 
 ### 6.2 检查已有模型文件
 
 ```bash
-find /mnt/data1/ProjectMoE/Strata-data/models -maxdepth 3 -type f \
+find /mnt/data/ProjectMoE/Strata-data/models -maxdepth 3 -type f \
   \( -name '*.gguf' -o -name '*.safetensors' \) -printf '%p\n' 2>/dev/null
 ```
 
@@ -725,8 +729,8 @@ find /mnt/data1/ProjectMoE/Strata-data/models -maxdepth 3 -type f \
 此前记录过的构建命令结构如下。它是**历史配置示例**，执行前请先运行 `setup.py --help` 核对当前参数，并确认模型路径真实存在：
 
 ```bash
-ROOT="/mnt/data1/ProjectMoE/Strata"
-ENV_PREFIX="/mnt/data1/ProjectMoE/gcc11-env"
+ROOT="/mnt/data/ProjectMoE/Strata"
+ENV_PREFIX="/mnt/data/ProjectMoE/gcc11-env"
 CUDA_HOME="/usr/local/cuda-12.0.1"
 
 export CC="$ENV_PREFIX/bin/x86_64-conda-linux-gnu-gcc"
@@ -737,12 +741,12 @@ export STRATA_CUDA=12
 export CUDA_HOME
 export PATH="$ENV_PREFIX/bin:$CUDA_HOME/bin:$PATH"
 
-"/mnt/data1/ProjectMoE/tools/bin/micromamba" run -p "$ENV_PREFIX" \
+"/mnt/data/ProjectMoE/tools/bin/micromamba" run -p "$ENV_PREFIX" \
   "$ROOT/.venv/bin/python" "$ROOT/setup.py" \
   --setup \
   --source modelscope \
   --family unsloth \
-  --gguf-dir "/mnt/data1/ProjectMoE/Strata-data/models/unsloth-UD-Q4_K_XL/" \
+  --gguf-dir "/mnt/data/ProjectMoE/Strata-data/models/unsloth-UD-Q4_K_XL/" \
   --cuda 12 \
   --build \
   --no-start
@@ -756,7 +760,7 @@ export PATH="$ENV_PREFIX/bin:$CUDA_HOME/bin:$PATH"
 
 ```bash
 grep -E '^(CMAKE_C_COMPILER|CMAKE_CXX_COMPILER|CMAKE_CUDA_COMPILER|CMAKE_CUDA_HOST_COMPILER):' \
-  /mnt/data1/ProjectMoE/Strata/build-cuda12/CMakeCache.txt 2>/dev/null
+  /mnt/data/ProjectMoE/Strata/build-cuda12/CMakeCache.txt 2>/dev/null
 ```
 
 检查输出是否指向预期 GCC 11 工具链和 CUDA Toolkit。如果构建目录不存在，说明尚未生成该缓存，不能把“没有输出”当成成功。
@@ -794,7 +798,7 @@ ss -lntp
 查看仓库提供的启动脚本和帮助信息：
 
 ```bash
-cd /mnt/data1/ProjectMoE/Strata
+cd /mnt/data/ProjectMoE/Strata
 ls -la
 ```
 
@@ -869,7 +873,7 @@ http://服务器局域网IP:端口
 
 ### Python 依赖报错
 
-确认使用 `/mnt/data1/ProjectMoE/Strata/.venv/bin/python`，不要混用系统 Python 或 Maya 的 `.venv`。根据错误定位缺失包或版本冲突，再在 Strata 的虚拟环境内处理。
+确认使用 `/mnt/data/ProjectMoE/Strata/.venv/bin/python`，不要混用系统 Python 或 Maya 的 `.venv`。根据错误定位缺失包或版本冲突，再在 Strata 的虚拟环境内处理。
 
 ### 构建仍使用系统 GCC
 
@@ -908,9 +912,9 @@ http://服务器局域网IP:端口
 
 ## 1. 保持项目环境隔离
 
-- Maya Python：`/mnt/data1/ProjectMoE/project-maya/.venv`
-- Strata Python：`/mnt/data1/ProjectMoE/Strata/.venv`
-- 共享编译工具链：`/mnt/data1/ProjectMoE/gcc11-env`
+- Maya Python：`/mnt/data/ProjectMoE/project-maya/.venv`
+- Strata Python：`/mnt/data/ProjectMoE/Strata/.venv`
+- 共享编译工具链：`/mnt/data/ProjectMoE/gcc11-env`
 - CUDA Toolkit：`/usr/local/cuda-12.0.1`
 
 共享编译工具链不代表共享 Python 依赖或构建缓存。每个项目的构建日志、CMake 缓存、模型目录和启动配置都应单独管理。
