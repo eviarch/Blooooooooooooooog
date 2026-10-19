@@ -8,7 +8,7 @@ thumbnail: "/post_images/Strata与ProjectMaya安装构建及局域网部署指�
 
 > **文档目的**：在同一台 Ubuntu 服务器上，以统一的环境隔离原则安装、构建和部署 Strata 与 Project Maya，包含原理说明、逐步操作、模型目录配置、服务监听、API Key、安全注意事项和故障排查。
 >
-> **适用环境（以部署记录为准）**：Ubuntu 18.04 x86_64；NVIDIA RTX 4090 24G x8张 GPU 服务器；NVIDIA 驱动记录为 530.41.03；CUDA Toolkit 12.0.1；独立 GCC/G++ 11.4.0 环境。
+> **适用环境（以部署记录为准）**：Ubuntu 18.04 x86_64；8 × NVIDIA RTX 4090，每张 24 GB；NVIDIA 驱动记录为 530.41.03；CUDA Toolkit 12.0.1；独立 GCC/G++ 11.4.0 环境。
 >
 > **重要说明**：各项目的启动参数会随版本变化，执行前必须检查当前仓库的帮助信息。文档明确区分历史记录、示例命令和需要在服务器上实际验证的行为。
 
@@ -109,7 +109,7 @@ thumbnail: "/post_images/Strata与ProjectMaya安装构建及局域网部署指�
 - 独立 GCC/G++：11.4.0，位于 `/mnt/data/ProjectMoE/gcc11-env/bin/`
 - Maya 项目：`/mnt/data/ProjectMoE/project-maya`
 - Maya Python 虚拟环境：`/mnt/data/ProjectMoE/project-maya/.venv`
-- 计划服务地址：`0.0.0.0:8080`
+- 计划监听地址：`0.0.0.0:8080`
 
 目标是：使用独立 GCC 11 和指定 CUDA Toolkit 检查并构建 Maya，按需选择模型与 GGUF 目录，并使用 API Key 在局域网内访问服务。
 
@@ -187,7 +187,7 @@ ls -l ./maya.sh
 /usr/local/cuda-12.0.1/bin/nvcc --version
 ```
 
-应能看到 GCC/G++ 11.4.0 和 CUDA 12.0。若路径不存在，先修复工具链路径；不要为此直接更改系统 GCC 或 CUDA 软链接。
+应能看到 GCC/G++ 11.4.0。`nvcc --version` 的 release 行通常显示 CUDA 12.0，对应的 Toolkit 仍是 `/usr/local/cuda-12.0.1`。若路径不存在，先修复工具链路径；不要为此直接更改系统 GCC 或 CUDA 软链接。
 
 ### 第 4 步：检查 GPU 与当前占用
 
@@ -207,7 +207,7 @@ chmod +x ./build-maya-gcc11.sh
 ./build-maya-gcc11.sh --check
 ```
 
-包装脚本会使用指定的 GCC 11、CUDA `nvcc` 和主机编译器运行 Maya 的 `--check`。检查通过只代表前置环境检查通过，不等于安装已完成。
+包装脚本会使用指定的 GCC 11、CUDA `nvcc` 和主机编译器运行 Maya 的 `--check`。检查通过只说明前置条件满足，并不表示安装已经完成。
 
 ## 4. 安装脚本的准备与使用
 
@@ -216,7 +216,7 @@ chmod +x ./build-maya-gcc11.sh
 如果脚本在本地电脑当前目录，可以从本地终端上传：
 
 ```bash
-scp build-maya-gcc11.sh -p ssh端口 usr@你的服务器地址:/mnt/data/ProjectMoE/project-maya/
+scp -P ssh端口 build-maya-gcc11.sh usr@你的服务器地址:/mnt/data/ProjectMoE/project-maya/
 ```
 
 然后在服务器上执行：
@@ -461,7 +461,7 @@ ls -lt /mnt/data/ProjectMoE/project-maya/logs/
 
 ## 1. Strata 部署目标与总体原理
 
-本部分基于用户提供的《Strata 环境依赖隔离与工具链配置记录》，并结合此前对 Strata 的部署上下文整理。文档中明确标注了需要以当前仓库 `--help` 或日志再次核实的步骤，避免把历史命令当作所有版本都适用的固定接口。
+本部分根据《Strata 环境依赖隔离与工具链配置记录》和此前的 Strata 部署记录整理。文档中明确标注了需要以当前仓库 `--help` 或日志再次核实的步骤，避免把历史命令当作所有版本都适用的固定接口。
 
 Strata 部署分为五个层面：
 
@@ -716,7 +716,7 @@ CMake 首次配置时可能将编译器路径写入 `CMakeCache.txt`。如果之
 
 ## 8. 第六步：本机启动与 API 验证
 
-此前部署上下文中，Strata 已经完成过模型部署，并有在本机回环地址运行的记录。若当前仍是这种状态，先在服务器本机验证，不要直接开放网络端口。
+此前的部署记录中，Strata 已经完成过模型部署，并有在本机回环地址运行的记录。若当前仍是这种状态，先在服务器本机验证，不要直接开放网络端口。
 
 ### 8.1 检查 Strata 当前运行状态
 
@@ -798,7 +798,7 @@ http://服务器局域网IP:端口
 ### 9.5 网络访问失败时的排查顺序
 
 1. 在服务器上用 `ss -lntp` 确认端口正在监听。
-2. 查看 Strata 日志，确认进程没有启动后退出。
+2. 查看 Strata 日志，确认进程没有在启动后退出。
 3. 确认客户端使用真实局域网 IP，而不是 `127.0.0.1` 或 `0.0.0.0`。
 4. 检查 Ubuntu 防火墙、上游防火墙、路由器 ACL、VLAN 或无线客户端隔离。
 5. 检查客户端的 API 路径、请求格式与认证头是否符合当前版本要求。
@@ -841,7 +841,7 @@ http://服务器局域网IP:端口
 - [ ] 模型能在本机成功加载并完成一次 API 请求。
 - [ ] 如需局域网访问，监听地址和端口正确。
 - [ ] API Key 认证已验证。
-- [ ] 只向可信网络开放服务，没有无保护地暴露公网。
+- [ ] 只向可信网络开放服务，没有无保护地暴露到公网。
 
 # 第四部分：两个项目共存时的维护原则
 
@@ -891,7 +891,7 @@ ss -lntp
 - [ ] GCC/G++ 11 和 CUDA 12.0.1 路径已确认。
 - [ ] 当前 `setup.py` 或启动入口的帮助信息已核对。
 - [ ] 模型目录存在，所需文件及分片完整。
-- [ ] 构建缓存没有错误地引用系统 GCC。
+- [ ] 构建缓存没有引用系统 GCC。
 - [ ] 本机 API 请求成功。
 - [ ] 如需远程访问，监听地址、端口和 API Key 已验证。
 
