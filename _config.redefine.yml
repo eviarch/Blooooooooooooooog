@@ -12,6 +12,8 @@ data_set:
   info_subtitle: &info_subtitle "Stay with me."
   sidebar_announcement: &sidebar_announcement "死は生の裏返しである"
   subtitle_string: &subtitle_string
+    - "不过碰巧射出了完美的一箭, 此后每一次引弓, 都只是在追寻它的影子"
+    - "それまでの繋がりと、あなたの想いは、そこにあります。"
     - "求知若渴，虚心若愚"
     - "你所做的事情或许无人在意，但只要你仍追求完美，你就终将掌握连专家也望而兴叹的技能"
     - "\"拉绳子或者割断绳索，但无论你做什么，都不要犹豫\" --Death Stranding"
