@@ -8,20 +8,20 @@
 
 ## 0. 一分钟速查表
 
-| 我想做什么 | 用哪种记录 | 关键注意点 |
-|---|---|---|
-| 域名指向一个 IPv4 服务器 | **A** | 与 AAAA 一样，直接写 IP |
-| 域名指向一个 IPv6 服务器 | **AAAA** | 与 A 可同名共存 |
-| 域名指向另一个域名（如 CDN、GitHub Pages） | **CNAME** | 同名不能再有其它记录；根域靠 CNAME flattening 才能与 MX/TXT 共存 |
-| 接收邮件 | **MX** | 目标主机名要有 A 或 AAAA，并且在 Cloudflare 上必须灰云 |
-| 防止别人冒充你域名发邮件 | **TXT**（SPF / DMARC）+ 空 **MX** | 不发信用 `v=spf1 -all`、DMARC `p=reject`、空 MX。DKIM 只在真有发信服务时配 |
-| 限定哪些 CA 能给你签发证书 | **CAA** | 写实际 CA 域名。`cloudflare.com` 不是签发 CA |
-| 声明某服务的「主机 + 端口」 | **SRV** | 客户端必须支持 SRV 才有效 |
-| 声明 HTTP/3、ALPN 能力 | **HTTPS / SVCB** | 橙云且开着 Universal SSL 时，Cloudflare 自动生成 |
-| 把子域名交给别家 DNS 托管 | **NS** | 用于子域委派 |
-| 所有子域名都指向同一处 | **A/CNAME + `*`** | 精确记录优先于通配符。DNS 通配符是多级的，证书通配符只覆盖一层 |
-| 让 `web.example.com` 走 10080 端口 | **A + 灰云**，或反代到 443 | 橙云不支持 10080 |
-| 让 `ssh.example.com` 走 22 端口 | **A + 灰云** | 橙云不代理 22 端口 |
+| 我想做什么                                 | 用哪种记录                        | 关键注意点                                                   |
+| ------------------------------------------ | --------------------------------- | ------------------------------------------------------------ |
+| 域名指向一个 IPv4 服务器                   | **A**                             | 与 AAAA 一样，直接写 IP                                      |
+| 域名指向一个 IPv6 服务器                   | **AAAA**                          | 与 A 可同名共存                                              |
+| 域名指向另一个域名（如 CDN、GitHub Pages） | **CNAME**                         | 同名不能再有其它记录；根域靠 CNAME flattening 才能与 MX/TXT 共存 |
+| 接收邮件                                   | **MX**                            | 目标主机名要有 A 或 AAAA，并且在 Cloudflare 上必须灰云       |
+| 防止别人冒充你域名发邮件                   | **TXT**（SPF / DMARC）+ 空 **MX** | 不发信用 `v=spf1 -all`、DMARC `p=reject`、空 MX。DKIM 只在真有发信服务时配 |
+| 限定哪些 CA 能给你签发证书                 | **CAA**                           | 写实际 CA 域名。`cloudflare.com` 不是签发 CA                 |
+| 声明某服务的「主机 + 端口」                | **SRV**                           | 客户端必须支持 SRV 才有效                                    |
+| 声明 HTTP/3、ALPN 能力                     | **HTTPS / SVCB**                  | 橙云且开着 Universal SSL 时，Cloudflare 自动生成             |
+| 把子域名交给别家 DNS 托管                  | **NS**                            | 用于子域委派                                                 |
+| 所有子域名都指向同一处                     | **A/CNAME + `*`**                 | 精确记录优先于通配符。DNS 通配符是多级的，证书通配符只覆盖一层 |
+| 让 `web.example.com` 走 10080 端口         | **A + 灰云**，或反代到 443        | 橙云不支持 10080                                             |
+| 让 `ssh.example.com` 走 22 端口            | **A + 灰云**                      | 橙云不代理 22 端口                                           |
 
 ---
 
@@ -51,24 +51,24 @@
 
 在 Cloudflare 后台 **DNS → Records** 里，每条记录都由这几列定义：
 
-| 字段 | 含义 | 常见取值 |
-|---|---|---|
-| **Type** | 记录类型，决定「回答什么形式的答案」 | A、AAAA、CNAME、MX、TXT、NS、SRV、CAA… |
-| **Name** | 记录挂在哪个名字上 | `@`（= 根域 `example.com`）、`www`、`ssh`、`*`、`_dmarc` |
-| **Content / Target** | 答案本身 | IP 地址、另一个域名、一段文本 |
-| **TTL** | 解析结果被缓存多久 | `Auto`（= 300 秒）、60 秒 ~ 1 天 |
-| **Proxy status** | Cloudflare 是否中转流量（**Cloudflare 独有**） | 🟠 Proxied（橙云）/ ⚪ DNS only（灰云） |
+| 字段                 | 含义                                           | 常见取值                                                 |
+| -------------------- | ---------------------------------------------- | -------------------------------------------------------- |
+| **Type**             | 记录类型，决定「回答什么形式的答案」           | A、AAAA、CNAME、MX、TXT、NS、SRV、CAA…                   |
+| **Name**             | 记录挂在哪个名字上                             | `@`（= 根域 `example.com`）、`www`、`ssh`、`*`、`_dmarc` |
+| **Content / Target** | 答案本身                                       | IP 地址、另一个域名、一段文本                            |
+| **TTL**              | 解析结果被缓存多久                             | `Auto`（= 300 秒）、60 秒 ~ 1 天                         |
+| **Proxy status**     | Cloudflare 是否中转流量（**Cloudflare 独有**） | 🟠 Proxied（橙云）/ ⚪ DNS only（灰云）                    |
 
 ### Name 的写法约定
 
-| 你填的 Name | 实际生效的域名 |
-|---|---|
-| `@` | `example.com`（zone apex，根域） |
-| `www` | `www.example.com` |
-| `ssh` | `ssh.example.com` |
-| `*.api` | `*.api.example.com` |
-| `_dmarc` | `_dmarc.example.com` |
-| `example.com`（写全） | 也可以，Cloudflare 会自动识别 |
+| 你填的 Name           | 实际生效的域名                   |
+| --------------------- | -------------------------------- |
+| `@`                   | `example.com`（zone apex，根域） |
+| `www`                 | `www.example.com`                |
+| `ssh`                 | `ssh.example.com`                |
+| `*.api`               | `*.api.example.com`              |
+| `_dmarc`              | `_dmarc.example.com`             |
+| `example.com`（写全） | 也可以，Cloudflare 会自动识别    |
 
 **长度限制**（官方）：单个 label ≤ 63 字符，完整 FQDN ≤ 253 字符。下划线 `_` 在 DNS 中合法，SRV / 验证记录常用。但为了兼容主机名和 TLS 证书，建议只用字母、数字、连字符（LDH 规则）。
 
@@ -78,12 +78,12 @@
 
 Cloudflare 把记录分成三组：
 
-| 分组 | 类型 | 能否开橙云（Proxy） |
-|---|---|---|
-| **IP 地址解析** | `A`、`AAAA`、`CNAME` | ✅ **只有这三类可以代理** |
-| **邮件认证** | `MX`、`DKIM`、`SPF`、`DMARC` | ❌ |
-| **专用记录** | `TXT`、`CAA`、`SRV`、`SVCB`/`HTTPS`、`PTR`、`SOA`、`NS`、`DS`、`DNSKEY` | ❌ |
-| **其他** | `URI`、`NAPTR`、`SSHFP`、`TLSA`、`SMIMEA`、`CERT` | ❌ |
+| 分组            | 类型                                                         | 能否开橙云（Proxy）      |
+| --------------- | ------------------------------------------------------------ | ------------------------ |
+| **IP 地址解析** | `A`、`AAAA`、`CNAME`                                         | ✅ **只有这三类可以代理** |
+| **邮件认证**    | `MX`、`DKIM`、`SPF`、`DMARC`                                 | ❌                        |
+| **专用记录**    | `TXT`、`CAA`、`SRV`、`SVCB`/`HTTPS`、`PTR`、`SOA`、`NS`、`DS`、`DNSKEY` | ❌                        |
+| **其他**        | `URI`、`NAPTR`、`SSHFP`、`TLSA`、`SMIMEA`、`CERT`            | ❌                        |
 
 DKIM、SPF、DMARC 在文档里单独成组，面板里的类型仍然是 **TXT**。没有单独的 SPF / DKIM / DMARC 类型。旧的 SPF 记录类型（类型号 99）已废弃。
 
@@ -99,11 +99,11 @@ DKIM、SPF、DMARC 在文档里单独成组，面板里的类型仍然是 **TXT*
 
 最基础、你最常用的一种。
 
-| Type | Name | Content | Proxy status |
-|---|---|---|---|
-| A | `@` | `203.0.113.45` | 🟠 Proxied |
-| A | `www` | `203.0.113.45` | 🟠 Proxied |
-| A | `ssh` | `203.0.113.45` | ⚪ DNS only |
+| Type | Name  | Content        | Proxy status |
+| ---- | ----- | -------------- | ------------ |
+| A    | `@`   | `203.0.113.45` | 🟠 Proxied    |
+| A    | `www` | `203.0.113.45` | 🟠 Proxied    |
+| A    | `ssh` | `203.0.113.45` | ⚪ DNS only   |
 
 **要点：**
 
@@ -121,9 +121,9 @@ DKIM、SPF、DMARC 在文档里单独成组，面板里的类型仍然是 **TXT*
 
 和 A 完全对称，只是答案是 IPv6。
 
-| Type | Name | Content |
-|---|---|---|
-| AAAA | `@` | `2001:db8::1` |
+| Type | Name | Content       |
+| ---- | ---- | ------------- |
+| AAAA | `@`  | `2001:db8::1` |
 
 **要点：**
 
@@ -137,11 +137,11 @@ DKIM、SPF、DMARC 在文档里单独成组，面板里的类型仍然是 **TXT*
 
 用于「这个域名不指向 IP，而是指向另一个域名，跟着它走」。
 
-| Type | Name | Content（Target） | Proxy status |
-|---|---|---|---|
-| CNAME | `www` | `example.com` | 🟠 Proxied |
-| CNAME | `blog` | `myblog.github.io` | ⚪ DNS only |
-| CNAME | `@` | `cname.example.net` | 🟠 Proxied（靠 CNAME flattening） |
+| Type  | Name   | Content（Target）   | Proxy status                     |
+| ----- | ------ | ------------------- | -------------------------------- |
+| CNAME | `www`  | `example.com`       | 🟠 Proxied                        |
+| CNAME | `blog` | `myblog.github.io`  | ⚪ DNS only                       |
+| CNAME | `@`    | `cname.example.net` | 🟠 Proxied（靠 CNAME flattening） |
 
 **CNAME 的三条硬规则：**
 
@@ -171,12 +171,12 @@ DNS 标准禁止根域（`example.com`）使用 CNAME。Cloudflare 用 *CNAME fl
 
 实际有三层，不要混成一个开关：
 
-| 范围 | 谁能用 | 能不能关 |
-|---|---|---|
-| 根域 `@` | 所有套餐，默认开启 | **不能关** |
-| 橙云 CNAME | 所有套餐。橙云本来就返回 anycast 地址 | 不能单独关掉扁平化 |
-| 「Flatten all CNAME records」 | 付费套餐的 zone 级开关，主要影响**灰云** CNAME | 可以关 |
-| 单条记录的 Flatten | 付费套餐，只对灰云、非根域的 CNAME | 可以关 |
+| 范围                          | 谁能用                                         | 能不能关           |
+| ----------------------------- | ---------------------------------------------- | ------------------ |
+| 根域 `@`                      | 所有套餐，默认开启                             | **不能关**         |
+| 橙云 CNAME                    | 所有套餐。橙云本来就返回 anycast 地址          | 不能单独关掉扁平化 |
+| 「Flatten all CNAME records」 | 付费套餐的 zone 级开关，主要影响**灰云** CNAME | 可以关             |
+| 单条记录的 Flatten            | 付费套餐，只对灰云、非根域的 CNAME             | 可以关             |
 
 这带来两个实用效果：
 
@@ -194,10 +194,10 @@ DNS 标准禁止根域（`example.com`）使用 CNAME。Cloudflare 用 *CNAME fl
 
 决定「发往 `you@example.com` 的邮件该送到哪台邮件服务器」。
 
-| Type | Name | Content | Priority |
-|---|---|---|---|
-| MX | `@` | `mx1.mailprovider.com` | `10` |
-| MX | `@` | `mx2.mailprovider.com` | `20` |
+| Type | Name | Content                | Priority |
+| ---- | ---- | ---------------------- | -------- |
+| MX   | `@`  | `mx1.mailprovider.com` | `10`     |
+| MX   | `@`  | `mx2.mailprovider.com` | `20`     |
 
 **要点：**
 
@@ -210,9 +210,9 @@ DNS 标准禁止根域（`example.com`）使用 CNAME。Cloudflare 用 *CNAME fl
 - 开启 **Email Routing** 后，MX（以及配套 SPF）由 Cloudflare 托管。它和自建邮件、空 MX 冲突。不用 Email Routing 时把它关掉。
 - 域名不接收邮件时，配一条空 MX（RFC 7505），避免没有 MX 时邮件退回到根域的 A/AAAA：
 
-  | Type | Name | Content | Priority |
-  |---|---|---|---|
-  | MX | `@` | `.` | `0` |
+| Type | Name | Content | Priority |
+| ---- | ---- | ------- | -------- |
+| MX   | `@`  | `.`     | `0`      |
 
   Content 是单个句点，优先级必须是 `0`。不要加空格，也不要加引号。
 
@@ -222,11 +222,11 @@ DNS 标准禁止根域（`example.com`）使用 CNAME。Cloudflare 用 *CNAME fl
 
 不发信、也不收信时，配这三条：
 
-| 记录 | Name | Content |
-|---|---|---|
-| TXT | `@` | `v=spf1 -all` |
-| TXT | `_dmarc` | `v=DMARC1; p=reject` |
-| MX | `@` | `.`（优先级 `0`） |
+| 记录 | Name     | Content              |
+| ---- | -------- | -------------------- |
+| TXT  | `@`      | `v=spf1 -all`        |
+| TXT  | `_dmarc` | `v=DMARC1; p=reject` |
+| MX   | `@`      | `.`（优先级 `0`）    |
 
 `-all` 表示没有任何服务器被授权发信。`p=reject` 让收信方直接拒绝未通过验证的邮件。不发信的域名可以直接用 `reject`，不必先观察。
 
