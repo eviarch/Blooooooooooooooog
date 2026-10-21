@@ -1,27 +1,34 @@
+---
+title: DNS记录详解
+date: 2026-10-21 20:09:00
+updated: 2026-10-21 20:09:00
+tags: ["Network", "DNS", "Cloudflare"]
+categories: ["Network", "DNS"]
+thumbnail: /post_images/DNS记录详解/DNS.jpg
+---
+
 # Cloudflare 域名解析记录完全指南
 
-> 面向场景：你有一台带公网 IPv4 的 VPS，域名托管在 Cloudflare，需要把不同子域名指向不同服务（例如 `ssh.example.com` → 22 端口、`web.example.com` → 10080 端口）。
->
-> 资料依据：Cloudflare 官方文档（DNS record types / Proxy status / Network ports / TTL / CNAME flattening / Wildcard DNS records / CAA / IPv6 compatibility / Redirect），链接见文末。核对日期：2026-10。
+> 依据 Cloudflare 官方文档整理。核对日期：2026-10。
 
 ---
 
 ## 0. 一分钟速查表
 
-| 我想做什么                                 | 用哪种记录                        | 关键注意点                                                   |
-| ------------------------------------------ | --------------------------------- | ------------------------------------------------------------ |
-| 域名指向一个 IPv4 服务器                   | **A**                             | 与 AAAA 一样，直接写 IP                                      |
-| 域名指向一个 IPv6 服务器                   | **AAAA**                          | 与 A 可同名共存                                              |
-| 域名指向另一个域名（如 CDN、GitHub Pages） | **CNAME**                         | 同名不能再有其它记录；根域靠 CNAME flattening 才能与 MX/TXT 共存 |
-| 接收邮件                                   | **MX**                            | 目标主机名要有 A 或 AAAA，并且在 Cloudflare 上必须灰云       |
+| 我想做什么                                 | 用哪种记录                        | 关键注意点                                                                 |
+| ------------------------------------------ | --------------------------------- | -------------------------------------------------------------------------- |
+| 域名指向一个 IPv4 服务器                   | **A**                             | 与 AAAA 一样，直接写 IP                                                    |
+| 域名指向一个 IPv6 服务器                   | **AAAA**                          | 与 A 可同名共存                                                            |
+| 域名指向另一个域名（如 CDN、GitHub Pages） | **CNAME**                         | 同名不能再有其它记录；根域靠 CNAME flattening 才能与 MX/TXT 共存           |
+| 接收邮件                                   | **MX**                            | 目标主机名要有 A 或 AAAA，并且在 Cloudflare 上必须灰云                     |
 | 防止别人冒充你域名发邮件                   | **TXT**（SPF / DMARC）+ 空 **MX** | 不发信用 `v=spf1 -all`、DMARC `p=reject`、空 MX。DKIM 只在真有发信服务时配 |
-| 限定哪些 CA 能给你签发证书                 | **CAA**                           | 写实际 CA 域名。`cloudflare.com` 不是签发 CA                 |
-| 声明某服务的「主机 + 端口」                | **SRV**                           | 客户端必须支持 SRV 才有效                                    |
-| 声明 HTTP/3、ALPN 能力                     | **HTTPS / SVCB**                  | 橙云且开着 Universal SSL 时，Cloudflare 自动生成             |
-| 把子域名交给别家 DNS 托管                  | **NS**                            | 用于子域委派                                                 |
-| 所有子域名都指向同一处                     | **A/CNAME + `*`**                 | 精确记录优先于通配符。DNS 通配符是多级的，证书通配符只覆盖一层 |
-| 让 `web.example.com` 走 10080 端口         | **A + 灰云**，或反代到 443        | 橙云不支持 10080                                             |
-| 让 `ssh.example.com` 走 22 端口            | **A + 灰云**                      | 橙云不代理 22 端口                                           |
+| 限定哪些 CA 能给你签发证书                 | **CAA**                           | 写实际 CA 域名。`cloudflare.com` 不是签发 CA                               |
+| 声明某服务的「主机 + 端口」                | **SRV**                           | 客户端必须支持 SRV 才有效                                                  |
+| 声明 HTTP/3、ALPN 能力                     | **HTTPS / SVCB**                  | 橙云且开着 Universal SSL 时，Cloudflare 自动生成                           |
+| 把子域名交给别家 DNS 托管                  | **NS**                            | 用于子域委派                                                               |
+| 所有子域名都指向同一处                     | **A/CNAME + `*`**                 | 精确记录优先于通配符。DNS 通配符是多级的，证书通配符只覆盖一层             |
+| 让 `web.example.com` 走 10080 端口         | **A + 灰云**，或反代到 443        | 橙云不支持 10080                                                           |
+| 让 `ssh.example.com` 走 22 端口            | **A + 灰云**                      | 橙云不代理 22 端口                                                         |
 
 ---
 
@@ -78,12 +85,12 @@
 
 Cloudflare 把记录分成三组：
 
-| 分组            | 类型                                                         | 能否开橙云（Proxy）      |
-| --------------- | ------------------------------------------------------------ | ------------------------ |
-| **IP 地址解析** | `A`、`AAAA`、`CNAME`                                         | ✅ **只有这三类可以代理** |
-| **邮件认证**    | `MX`、`DKIM`、`SPF`、`DMARC`                                 | ❌                        |
+| 分组            | 类型                                                                    | 能否开橙云（Proxy）      |
+| --------------- | ----------------------------------------------------------------------- | ------------------------ |
+| **IP 地址解析** | `A`、`AAAA`、`CNAME`                                                    | ✅ **只有这三类可以代理** |
+| **邮件认证**    | `MX`、`DKIM`、`SPF`、`DMARC`                                            | ❌                        |
 | **专用记录**    | `TXT`、`CAA`、`SRV`、`SVCB`/`HTTPS`、`PTR`、`SOA`、`NS`、`DS`、`DNSKEY` | ❌                        |
-| **其他**        | `URI`、`NAPTR`、`SSHFP`、`TLSA`、`SMIMEA`、`CERT`            | ❌                        |
+| **其他**        | `URI`、`NAPTR`、`SSHFP`、`TLSA`、`SMIMEA`、`CERT`                       | ❌                        |
 
 DKIM、SPF、DMARC 在文档里单独成组，面板里的类型仍然是 **TXT**。没有单独的 SPF / DKIM / DMARC 类型。旧的 SPF 记录类型（类型号 99）已废弃。
 
@@ -234,9 +241,9 @@ DKIM 只在你真的用某个服务发信、并且对方给了 selector 和公�
 
 **SPF**（谁能替你发信）
 
-| Type | Name | Content |
-|---|---|---|
-| TXT | `@` | `v=spf1 -all` |
+| Type | Name | Content       |
+| ---- | ---- | ------------- |
+| TXT  | `@`  | `v=spf1 -all` |
 
 若确实用某个服务发信，例如 SendGrid：`v=spf1 include:sendgrid.net ~all`。
 
@@ -245,17 +252,17 @@ DKIM 只在你真的用某个服务发信、并且对方给了 selector 和公�
 
 **DKIM**（给邮件加密码学签名）
 
-| Type | Name | Content |
-|---|---|---|
-| TXT | `s1._domainkey` | `v=DKIM1; k=rsa; p=MIGfMA0GCS…` |
+| Type | Name            | Content                         |
+| ---- | --------------- | ------------------------------- |
+| TXT  | `s1._domainkey` | `v=DKIM1; k=rsa; p=MIGfMA0GCS…` |
 
 Name 里的 `s1` 是 selector，由邮件服务商给出。公钥也用对方提供的原文，不要自己编。
 
 **DMARC**（收信方遇到验证失败时该怎么办 + 收报告）
 
-| Type | Name | Content |
-|---|---|---|
-| TXT | `_dmarc` | `v=DMARC1; p=none; rua=mailto:dmarc@reports.example.net` |
+| Type | Name     | Content                                                  |
+| ---- | -------- | -------------------------------------------------------- |
+| TXT  | `_dmarc` | `v=DMARC1; p=none; rua=mailto:dmarc@reports.example.net` |
 
 `p=` 取值：`none`（只观察）→ `quarantine`（进垃圾箱）→ `reject`（直接拒收）。**会发信的域名**先用 `none` 看几周报告，再收紧。
 
@@ -269,10 +276,10 @@ Name 里的 `s1` 是 selector，由邮件服务商给出。公钥也用对方提
 
 用途：域名所有权验证、SPF/DMARC、站点归属证明、各种第三方服务校验。
 
-| Type | Name | Content |
-|---|---|---|
-| TXT | `@` | `google-site-verification=xxxxxxxxxxx` |
-| TXT | `_acme-challenge` | `xxxxxxxxxxxxxxxx`（证书 DNS 验证） |
+| Type | Name              | Content                                |
+| ---- | ----------------- | -------------------------------------- |
+| TXT  | `@`               | `google-site-verification=xxxxxxxxxxx` |
+| TXT  | `_acme-challenge` | `xxxxxxxxxxxxxxxx`（证书 DNS 验证）    |
 
 **要点：**
 
@@ -286,10 +293,10 @@ Name 里的 `s1` 是 selector，由邮件服务商给出。公钥也用对方提
 
 防止未被列出的 CA 给你的域名签发证书。
 
-| Type | Name | Tag | Value |
-|---|---|---|---|
-| CAA | `@` | `issue` | `letsencrypt.org` |
-| CAA | `@` | `issuewild` | `letsencrypt.org` |
+| Type | Name | Tag         | Value             |
+| ---- | ---- | ----------- | ----------------- |
+| CAA  | `@`  | `issue`     | `letsencrypt.org` |
+| CAA  | `@`  | `issuewild` | `letsencrypt.org` |
 
 **要点：**
 
@@ -312,10 +319,10 @@ Name 里的 `s1` 是 selector，由邮件服务商给出。公钥也用对方提
 
 SRV 是**少数能在 DNS 里携带端口**的记录类型，用于 VoIP、即时通讯、Minecraft 服务器等客户端主动查询 SRV 的场景。
 
-| Type | Name | Priority | Weight | Port | Target |
-|---|---|---|---|---|---|
-| SRV | `_xmpp._tcp` | `10` | `5` | `5223` | `server.example.com` |
-| SRV | `_minecraft._tcp` | `5` | `50` | `25565` | `mc.example.com` |
+| Type | Name              | Priority | Weight | Port    | Target               |
+| ---- | ----------------- | -------- | ------ | ------- | -------------------- |
+| SRV  | `_xmpp._tcp`      | `10`     | `5`    | `5223`  | `server.example.com` |
+| SRV  | `_minecraft._tcp` | `5`      | `50`   | `25565` | `mc.example.com`     |
 
 **要点：**
 
@@ -330,9 +337,9 @@ SRV 是**少数能在 DNS 里携带端口**的记录类型，用于 VoIP、即�
 
 较新的记录类型（RFC 9460），让客户端在第一次 HTTP 请求前就知道「该用 HTTP/3、该用哪个 ALPN、该连哪个端口」。
 
-| Type | Name | Content |
-|---|---|---|
-| HTTPS | `@` | `1 . alpn="h3"` |
+| Type  | Name | Content         |
+| ----- | ---- | --------------- |
+| HTTPS | `@`  | `1 . alpn="h3"` |
 
 **Cloudflare 的行为（容易困惑，重点）：**
 
@@ -340,9 +347,9 @@ SRV 是**少数能在 DNS 里携带端口**的记录类型，用于 VoIP、即�
 - **关掉 Universal SSL 后**，橙云 Name 上不再自动生成 HTTPS 记录，即使你有自定义证书或 Advanced Certificate。要恢复自动生成，重新打开 Universal SSL；真正用于连接的证书仍按证书优先级，自定义证书可以盖过 Universal SSL。
 - **灰云 Name**：你可以手动加 HTTPS 记录，Cloudflare 会正常返回 —— **但前提是同名下的所有记录都必须是灰云**。
 
-  | 情况 | 结果 |
-  |---|---|
-  | `A`（灰云）+ `HTTPS`（同名） | ✅ HTTPS 记录会被返回 |
+  | 情况                            | 结果                   |
+  | ------------------------------- | ---------------------- |
+  | `A`（灰云）+ `HTTPS`（同名）    | ✅ HTTPS 记录会被返回   |
   | `AAAA`（橙云）+ `HTTPS`（同名） | ❌ HTTPS 记录不会被返回 |
 
 ---
@@ -351,10 +358,10 @@ SRV 是**少数能在 DNS 里携带端口**的记录类型，用于 VoIP、即�
 
 告诉解析器：「这个子域名的 DNS 由别家的服务器回答」。
 
-| Type | Name | Content |
-|---|---|---|
-| NS | `blog` | `ns1.otherdns.com` |
-| NS | `blog` | `ns2.otherdns.com` |
+| Type | Name   | Content            |
+| ---- | ------ | ------------------ |
+| NS   | `blog` | `ns1.otherdns.com` |
+| NS   | `blog` | `ns2.otherdns.com` |
 
 **要点：**
 
@@ -427,17 +434,17 @@ Cloudflare 的 DNS 记录类型里**没有 Redirect**，也**不做域名伪装*
 
 ## 5. Cloudflare 独有维度：Proxy status（橙云 / 灰云）
 
-这是 Cloudflare 区别于普通 DNS 服务商的关键开关，也是你 10080 端口问题的核心。
+这是 Cloudflare 区别于普通 DNS 服务商的关键开关，也决定了非标端口能不能走代理。
 
-| | 🟠 **Proxied（橙云）** | ⚪ **DNS only（灰云）** |
-|---|---|---|
-| 解析返回的 IP | Cloudflare 的 anycast IP | 你 VPS 的真实 IP |
-| 这条记录是否暴露源站 IP | 当前应答不暴露 | 暴露 |
-| DDoS 防护 / WAF / CDN 缓存 | ✅ | ❌ |
-| Cloudflare 边缘证书（Universal SSL） | ✅ 自动 | ❌ 不生效 |
-| TTL | 固定 `Auto` = 300 秒，**不可改** | 可自定义 |
-| 支持端口 | 仅下表列出的 HTTP/HTTPS 端口 | **任意端口** |
-| 适用 | 网站、API、反代 | SSH、游戏服、数据库、Plex、任意非标端口 |
+|                                      | 🟠 **Proxied（橙云）**            | ⚪ **DNS only（灰云）**                  |
+| ------------------------------------ | -------------------------------- | --------------------------------------- |
+| 解析返回的 IP                        | Cloudflare 的 anycast IP         | 你 VPS 的真实 IP                        |
+| 这条记录是否暴露源站 IP              | 当前应答不暴露                   | 暴露                                    |
+| DDoS 防护 / WAF / CDN 缓存           | ✅                                | ❌                                       |
+| Cloudflare 边缘证书（Universal SSL） | ✅ 自动                           | ❌ 不生效                                |
+| TTL                                  | 固定 `Auto` = 300 秒，**不可改** | 可自定义                                |
+| 支持端口                             | 仅下表列出的 HTTP/HTTPS 端口     | **任意端口**                            |
+| 适用                                 | 网站、API、反代                  | SSH、游戏服、数据库、Plex、任意非标端口 |
 
 橙云只隐藏**这一条主机名当前的 DNS 应答**。同 zone 里其它灰云记录、旧缓存、邮件头，仍可能把同一台机器的 IP 公开。
 
@@ -486,29 +493,29 @@ Free / Pro / Business 上，边缘大约 **100 秒**没有从源站读到新数�
 
 ## 6. 记录之间的冲突与优先级规则
 
-| 规则 | 说明 |
-|---|---|
-| **CNAME 排他** | 同名 CNAME 不能与任何其它记录共存，加不上会报记录同名冲突。根域靠 flattening 可以与 MX、TXT、CAA 共存。 |
-| **A / AAAA / MX / TXT / CAA 可以同名共存** | 多条 A、A+AAAA、A+MX+TXT 都合法。 |
-| **同名 A/AAAA 的橙云是整组生效的** | 有一条是橙云，其余 A/AAAA 也按橙云处理。 |
-| **多条同名灰云 A = 一组地址、顺序轮换** | 没有健康检查。橙云多条 A 是多个回源地址，访客看不到这些 IP。 |
-| **精确记录优先于通配符** | 存在精确记录或委派时，`*` 不对该名字及其下级生效。 |
-| **NS 委派覆盖子域** | 被委派的子域下，Cloudflare 里的记录不再被查询。 |
-| **同名混合橙云/灰云会影响 HTTPS 记录** | 手动 HTTPS 记录要求同名所有记录都是灰云。 |
-| **MX 依赖灰云的 A/AAAA** | MX 目标主机必须有地址记录；在 Cloudflare 上该主机名要灰云。 |
-| **根域放 CNAME 靠 flattening** | 根域 flattening 始终开启，因此根域可以同时有 CNAME 和 MX。 |
-| **记录体积上限** | 单条记录 wire format ≤ 4096 字节；同名同类型记录内容总长 ≤ 8192 字符。 |
-| **记录条数上限** | 2024-09-01 之后创建的 Free zone 为 200 条；更早的 Free zone 为 1000 条。Pro / Business / Enterprise 为 3500 条。Enterprise 需要更多时可联系客户团队。 |
+| 规则                                       | 说明                                                                                                                                                  |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **CNAME 排他**                             | 同名 CNAME 不能与任何其它记录共存，加不上会报记录同名冲突。根域靠 flattening 可以与 MX、TXT、CAA 共存。                                               |
+| **A / AAAA / MX / TXT / CAA 可以同名共存** | 多条 A、A+AAAA、A+MX+TXT 都合法。                                                                                                                     |
+| **同名 A/AAAA 的橙云是整组生效的**         | 有一条是橙云，其余 A/AAAA 也按橙云处理。                                                                                                              |
+| **多条同名灰云 A = 一组地址、顺序轮换**    | 没有健康检查。橙云多条 A 是多个回源地址，访客看不到这些 IP。                                                                                          |
+| **精确记录优先于通配符**                   | 存在精确记录或委派时，`*` 不对该名字及其下级生效。                                                                                                    |
+| **NS 委派覆盖子域**                        | 被委派的子域下，Cloudflare 里的记录不再被查询。                                                                                                       |
+| **同名混合橙云/灰云会影响 HTTPS 记录**     | 手动 HTTPS 记录要求同名所有记录都是灰云。                                                                                                             |
+| **MX 依赖灰云的 A/AAAA**                   | MX 目标主机必须有地址记录；在 Cloudflare 上该主机名要灰云。                                                                                           |
+| **根域放 CNAME 靠 flattening**             | 根域 flattening 始终开启，因此根域可以同时有 CNAME 和 MX。                                                                                            |
+| **记录体积上限**                           | 单条记录 wire format ≤ 4096 字节；同名同类型记录内容总长 ≤ 8192 字符。                                                                                |
+| **记录条数上限**                           | 2024-09-01 之后创建的 Free zone 为 200 条；更早的 Free zone 为 1000 条。Pro / Business / Enterprise 为 3500 条。Enterprise 需要更多时可联系客户团队。 |
 
 ---
 
 ## 7. TTL 详解
 
-| 记录状态 | 可选 TTL 范围 | Auto 的值 |
-|---|---|---|
-| 🟠 Proxied | **不可修改**，固定 Auto | 300 秒 |
-| ⚪ DNS only（非 Enterprise） | 60 秒 ~ 1 天 | 300 秒 |
-| ⚪ DNS only（Enterprise） | 30 秒 ~ 1 天 | 300 秒 |
+| 记录状态                    | 可选 TTL 范围           | Auto 的值 |
+| --------------------------- | ----------------------- | --------- |
+| 🟠 Proxied                   | **不可修改**，固定 Auto | 300 秒    |
+| ⚪ DNS only（非 Enterprise） | 60 秒 ~ 1 天            | 300 秒    |
+| ⚪ DNS only（Enterprise）    | 30 秒 ~ 1 天            | 300 秒    |
 
 **为什么橙云不能改 TTL？** 因为橙云返回的是 Cloudflare anycast IP，可能随时变化，300 秒上限保证变更快速生效。
 
@@ -527,10 +534,10 @@ Free / Pro / Business 上，边缘大约 **100 秒**没有从源站读到新数�
 
 适合「几百个子域名都指向同一台机器」的多租户场景。
 
-| Type | Name | Content | Proxy status |
-|---|---|---|---|
-| A | `*` | `203.0.113.45` | 🟠 Proxied |
-| CNAME | `*.www` | `example.com` | 🟠 Proxied |
+| Type  | Name    | Content        | Proxy status |
+| ----- | ------- | -------------- | ------------ |
+| A     | `*`     | `203.0.113.45` | 🟠 Proxied    |
+| CNAME | `*.www` | `example.com`  | 🟠 Proxied    |
 
 **四条规则：**
 
@@ -551,221 +558,46 @@ Free / Pro / Business 上，边缘大约 **100 秒**没有从源站读到新数�
 
 不影响解析，纯粹给你自己看的元数据，记录多了时非常好用（可按标签过滤）。
 
-| | Free | Pro / Business | Enterprise |
-|---|---|---|---|
-| Comment 字数 | 100 | 500 | 500 |
-| 每条记录 Comment 数 | 1 | 1 | 1 |
-| Tags 是否可用 | ❌ | ✅ | ✅ |
-| 每记录 Tag 数 | — | 20 | 20 |
-| Tag 名 / 值字数 | — | 32 / 100 | 32 / 100 |
+|                     | Free | Pro / Business | Enterprise |
+| ------------------- | ---- | -------------- | ---------- |
+| Comment 字数        | 100  | 500            | 500        |
+| 每条记录 Comment 数 | 1    | 1              | 1          |
+| Tags 是否可用       | ❌    | ✅              | ✅          |
+| 每记录 Tag 数       | —    | 20             | 20         |
+| Tag 名 / 值字数     | —    | 32 / 100       | 32 / 100   |
 
 Tag 格式是 `name:value`，name 不区分大小写、只能含字母数字 `-` `_`。值可以是注释允许的字符，但不能换行。导入导出时 `cf-` 开头的保留 tag 可控制 Cloudflare 配置。Comment 同样不能包含换行。
 
 ---
 
-## 10. 实战：你的场景（22 端口 + 10080 端口）
+## 10. 排错速查表
 
-### 目标
-
-- `ssh.example.com` → VPS 的 22 端口（SSH）
-- `web.example.com` → VPS 的 10080 端口（网页）
-
-### 方案 A：全灰云直连（最快，5 分钟搞定）
-
-**Cloudflare 记录**
-
-| Type | Name | Content | Proxy status | TTL |
-|---|---|---|---|---|
-| A | `ssh` | `你的VPS_IP` | ⚪ **DNS only** | Auto |
-| A | `web` | `你的VPS_IP` | ⚪ **DNS only** | Auto |
-
-**为什么 `ssh` 必须灰云**：Cloudflare 不代理 22 端口，橙云会让 SSH 连接直接失败。
-
-**VPS 防火墙**
-
-```bash
-ufw allow 22/tcp
-ufw allow 10080/tcp
-```
-
-云厂商控制台的安全组也要同步放行。
-
-**使用**
-
-```bash
-ssh root@ssh.example.com
-# 浏览器：http://web.example.com:10080
-```
-
-**代价**：URL 带端口；HTTPS 要在源站自己签（Let's Encrypt 等）；源站 IP 公开。灰云用不上 Cloudflare 的边缘证书。
+| 现象                                    | 最可能原因                                                 | 处理                                                                                   |
+| --------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| 加了记录但 `ping` 不通                  | 域名 NS 没指向 Cloudflare                                  | 去注册商改 NS 为后台给出的 `xxx.ns.cloudflare.com`                                     |
+| 记录显示橙云但 `dig` 返回源站 IP        | zone 还在 pending（最长 24h）                              | 等激活；期间全部按灰云处理                                                             |
+| 加同名记录报同名冲突                    | CNAME 排他性                                               | 删掉同名的另一条记录。根域 CNAME 与 MX/TXT 可以共存                                    |
+| 想让同名一条橙云、一条灰云              | 同名 A/AAAA 整组按橙云处理                                 | 拆成两个主机名                                                                         |
+| SSH 连不上                              | `ssh` 记录被设成橙云                                       | 改成 **DNS only**                                                                      |
+| 网页 521 / 522                          | 橙云 + 非标端口，源站端口没开，或只有 AAAA 且源站没有 IPv6 | 改灰云 / 反代到 443 / 检查安全组 / 补上可用的 A 记录                                   |
+| 524                                     | 源站超过约 100 秒没有返回新数据（Free / Pro / Business）   | 缩短源站处理时间；更长超时只在 Enterprise 可调                                         |
+| 525 SSL handshake failed                | Cloudflare 与源站的 TLS 握手失败                           | 确认 443 在听、证书文件可读、Cloudflare IP 没被防火墙丢掉                              |
+| 526 Invalid SSL certificate             | Full (strict) 不接受源站证书                               | 换 Origin CA 或公共 CA，模式保持 Full (strict)                                         |
+| Too many redirects 重定向循环           | Flexible 模式 + 源站强制 HTTPS                             | 模式改 Full (strict)，源站装 Cloudflare 信任的证书                                     |
+| 网页能开但 WebSocket 断，或普通请求异常 | `Connection` 被写成固定的 `upgrade`                        | 用 `map`，只在 `$http_upgrade` 非空时设为 `upgrade`                                    |
+| 日志里的客户端 IP 全是 Cloudflare       | 用了 `$remote_addr`，且没配 `real_ip`                      | 读 `CF-Connecting-IP`，或按 Cloudflare IP 段配置 `real_ip`                             |
+| CNAME 指向别的 Cloudflare 账号报 1014   | 橙云跨账号 CNAME                                           | 同账号跨 zone 可以。跨账号用 Cloudflare for SaaS，或改为灰云 / 直接写对方源站的 A 记录 |
+| CNAME 加了但完全解析不出                | dangling CNAME（末端无 A/AAAA）                            | 确认目标域名有有效 IP 记录                                                             |
+| 第三方域名验证失败                      | CNAME 被扁平化，应答里没有 CNAME                           | 付费套餐关掉 Flatten all，或关掉这一条的 Flatten。根域 flattening 关不掉，验证改用 TXT |
+| 子域记录改了没反应                      | 该子域被 NS 委派出去了                                     | 到实际托管方改，或在 Cloudflare 删掉 NS                                                |
+| `dig MX` 出现 `_dc-mx`                  | MX 指向了橙云主机名                                        | 这是让邮件绕过代理的改写。邮件主机名应单独使用灰云 A/AAAA                              |
+| 改了记录但本机还是旧 IP                 | 本地 DNS 缓存                                              | `ipconfig /flushdns`；macOS 再执行 `sudo killall -HUP mDNSResponder`                   |
+| 邮件进垃圾箱                            | 缺 SPF/DKIM/DMARC，或 VPS 无 PTR                           | 发信用服务商给出的三件套；在主机商设 rDNS，并与 HELO 一致                              |
+| 不发信仍被伪造                          | 只有空 SPF 或假 DKIM，没有 DMARC `reject`                  | `v=spf1 -all` + DMARC `p=reject` + 空 MX                                               |
 
 ---
 
-### 方案 B：反代到 443（网页走橙云；SSH 仍会公开 IP）
-
-思路：把 10080 挪到本机内部，网页对外只暴露 443，用 Nginx 转发。SSH 仍是灰云，所以**这台机器的 IP 依然公开**。橙云只让 `web.example.com` 的 DNS 应答不再返回源站 IP。
-
-```
-用户 → Cloudflare(橙云, 443) → VPS Nginx(443) → 127.0.0.1:10080
-```
-
-**Cloudflare 记录**
-
-| Type | Name | Content | Proxy status |
-|---|---|---|---|
-| A | `ssh` | `你的VPS_IP` | ⚪ DNS only |
-| A | `web` | `你的VPS_IP` | 🟠 **Proxied** |
-
-**关键一步：让 10080 只监听 127.0.0.1**，这样外网无法绕过域名直接打 `IP:10080`。
-
-**Nginx**
-
-`map` 放在 `http` 上下文，不要放进 `server`。
-
-```nginx
-map $http_upgrade $connection_upgrade {
-    default upgrade;
-    ''      close;
-}
-
-server {
-    listen 80;
-    server_name web.example.com;
-    return 301 https://$host$request_uri;
-}
-
-server {
-    listen 443 ssl;
-    http2 on;    # nginx 1.25.1 之前写成：listen 443 ssl http2;
-    server_name web.example.com;
-
-    # 橙云回源：用 Cloudflare Origin Certificate
-    # 浏览器不信任这张证书，只有流量经过 Cloudflare 时才合适
-    ssl_certificate     /etc/nginx/ssl/web.example.com.pem;
-    ssl_certificate_key /etc/nginx/ssl/web.example.com.key;
-
-    location / {
-        proxy_pass http://127.0.0.1:10080;
-        proxy_http_version 1.1;
-        proxy_set_header Host              $host;
-        # 橙云回源时 $remote_addr 是 Cloudflare 边缘地址
-        proxy_set_header X-Real-IP         $http_cf_connecting_ip;
-        proxy_set_header X-Forwarded-For   $http_cf_connecting_ip;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header Upgrade           $http_upgrade;
-        proxy_set_header Connection        $connection_upgrade;
-        # Free / Pro / Business 边缘约 100 秒无新数据即 524
-        proxy_read_timeout 100s;
-    }
-}
-```
-
-访问日志也要显示访客 IP 时，在 `http` 里用 `real_ip` 模块信任 [Cloudflare IP 段](https://www.cloudflare.com/ips/)，并设置 `real_ip_header CF-Connecting-IP;`。地址段变更后要更新。配好之后 `$remote_addr` 才是访客地址。
-
-**证书**：Cloudflare → SSL/TLS → Origin Server → Create Certificate，下载 `.pem` + `.key`；SSL 模式设为 **Full (strict)**。Origin CA 只被 Cloudflare 信任。这台主机名若改成灰云，浏览器会报证书不受信任，应改用 Let's Encrypt 等公共 CA。
-
-**防火墙**
-
-```bash
-ufw allow 22/tcp
-ufw allow 80/tcp
-ufw allow 443/tcp
-# 不要放行 10080
-```
-
-安全组同样放行 22、80、443。80/443 若能限制为 Cloudflare IP 段，或再开启 Authenticated Origin Pulls，别人即使从 `ssh` 记录知道了 IP，也不能绕过 WAF 直连源站 443。
-
-**使用**：`https://web.example.com`（无端口、有 HTTPS、网页流量有 CDN 与 DDoS 防护）。
-
----
-
-### 方案 C：Cloudflare Tunnel（源站不必开放入站端口）
-
-`cloudflared tunnel route dns` 会创建一条**橙云 CNAME**，指向 `<tunnel-id>.cfargotunnel.com`。同名不能再有 A 记录。把这条 CNAME 改成灰云后，隧道会断。
-
-```bash
-cloudflared tunnel create myvps
-cloudflared tunnel route dns myvps ssh.example.com
-cloudflared tunnel route dns myvps web.example.com
-```
-
-Linux 上交给 systemd 时，配置和凭证放在 `/etc/cloudflared/`。只放在 `/root/.cloudflared/config.yml` 时，服务进程常常读不到。
-
-`/etc/cloudflared/config.yml`：
-
-```yaml
-tunnel: <tunnel-id>
-credentials-file: /etc/cloudflared/<tunnel-id>.json
-
-ingress:
-  - hostname: ssh.example.com
-    service: ssh://localhost:22
-  - hostname: web.example.com
-    service: http://localhost:10080
-  - service: http_status:404
-```
-
-```bash
-cloudflared tunnel run myvps
-cloudflared service install     # 开机自启；确认单元使用上面的 config.yml
-```
-
-SSH 还要在 Zero Trust 里给 `ssh.example.com` 建一个 Access 自托管应用，并写一条 Allow 策略。客户端 `~/.ssh/config`：
-
-```
-Host ssh.example.com
-    User root
-    ProxyCommand cloudflared access ssh --hostname %h
-```
-
-`cloudflared access ssh` 默认会走 Access 登录（浏览器或 service token）。没有 Access 应用时，这条 `ProxyCommand` 不会直接连上 SSH。
-
-网页主机名由隧道以橙云 CNAME 发布，HTTPS 在 Cloudflare 边缘终止。VPS 上可以 `ufw default deny incoming`，前提是管理这条机器不依赖公网入站 SSH。
-
----
-
-### 三方案对比
-
-| | 方案 A 直连 | 方案 B 反代 443 | 方案 C Tunnel |
-|---|---|---|---|
-| 配置复杂度 | 极低 | 中 | 中（含 Access） |
-| 网页 URL 带端口 | 是 | 否 | 否 |
-| HTTPS | 源站自己签 | 边缘证书 + 源站 Origin CA | 边缘证书 |
-| 源站 IP | 公开 | `web` 的 DNS 不返回源站 IP；`ssh` 灰云仍会公开 | DNS 里没有源站 A 记录 |
-| 需开放入站端口 | 22 + 10080 | 22 + 80 + 443 | 无 |
-| DDoS 防护 | ❌ | 仅橙云上的网页 | ✅ |
-| 额外依赖 | 无 | Nginx | cloudflared、Access |
-
----
-
-## 11. 排错速查表
-
-| 现象 | 最可能原因 | 处理 |
-|---|---|---|
-| 加了记录但 `ping` 不通 | 域名 NS 没指向 Cloudflare | 去注册商改 NS 为后台给出的 `xxx.ns.cloudflare.com` |
-| 记录显示橙云但 `dig` 返回源站 IP | zone 还在 pending（最长 24h） | 等激活；期间全部按灰云处理 |
-| 加同名记录报同名冲突 | CNAME 排他性 | 删掉同名的另一条记录。根域 CNAME 与 MX/TXT 可以共存 |
-| 想让同名一条橙云、一条灰云 | 同名 A/AAAA 整组按橙云处理 | 拆成两个主机名 |
-| SSH 连不上 | `ssh` 记录被设成橙云 | 改成 **DNS only** |
-| 网页 521 / 522 | 橙云 + 非标端口，源站端口没开，或只有 AAAA 且源站没有 IPv6 | 改灰云 / 反代到 443 / 检查安全组 / 补上可用的 A 记录 |
-| 524 | 源站超过约 100 秒没有返回新数据（Free / Pro / Business） | 缩短源站处理时间；更长超时只在 Enterprise 可调 |
-| 525 SSL handshake failed | Cloudflare 与源站的 TLS 握手失败 | 确认 443 在听、证书文件可读、Cloudflare IP 没被防火墙丢掉 |
-| 526 Invalid SSL certificate | Full (strict) 不接受源站证书 | 换 Origin CA 或公共 CA，模式保持 Full (strict) |
-| Too many redirects 重定向循环 | Flexible 模式 + 源站强制 HTTPS | 模式改 Full (strict)，源站装 Cloudflare 信任的证书 |
-| 网页能开但 WebSocket 断，或普通请求异常 | `Connection` 被写成固定的 `upgrade` | 用 `map`，只在 `$http_upgrade` 非空时设为 `upgrade` |
-| 日志里的客户端 IP 全是 Cloudflare | 用了 `$remote_addr`，且没配 `real_ip` | 读 `CF-Connecting-IP`，或按 Cloudflare IP 段配置 `real_ip` |
-| CNAME 指向别的 Cloudflare 账号报 1014 | 橙云跨账号 CNAME | 同账号跨 zone 可以。跨账号用 Cloudflare for SaaS，或改为灰云 / 直接写对方源站的 A 记录 |
-| CNAME 加了但完全解析不出 | dangling CNAME（末端无 A/AAAA） | 确认目标域名有有效 IP 记录 |
-| 第三方域名验证失败 | CNAME 被扁平化，应答里没有 CNAME | 付费套餐关掉 Flatten all，或关掉这一条的 Flatten。根域 flattening 关不掉，验证改用 TXT |
-| 子域记录改了没反应 | 该子域被 NS 委派出去了 | 到实际托管方改，或在 Cloudflare 删掉 NS |
-| `dig MX` 出现 `_dc-mx` | MX 指向了橙云主机名 | 这是让邮件绕过代理的改写。邮件主机名应单独使用灰云 A/AAAA |
-| 改了记录但本机还是旧 IP | 本地 DNS 缓存 | `ipconfig /flushdns`；macOS 再执行 `sudo killall -HUP mDNSResponder` |
-| 邮件进垃圾箱 | 缺 SPF/DKIM/DMARC，或 VPS 无 PTR | 发信用服务商给出的三件套；在主机商设 rDNS，并与 HELO 一致 |
-| 不发信仍被伪造 | 只有空 SPF 或假 DKIM，没有 DMARC `reject` | `v=spf1 -all` + DMARC `p=reject` + 空 MX |
-
----
-
-## 12. 常用验证命令
+## 11. 常用验证命令
 
 ```powershell
 # Windows PowerShell
@@ -809,7 +641,7 @@ sudo killall -HUP mDNSResponder
 
 ---
 
-## 13. 一页速记（可直接抄的记录模板）
+## 12. 一页速记（可直接抄的记录模板）
 
 面板里的 TXT 不要自己加引号，Cloudflare 会补。MX 的内容就是一个点。
 
@@ -834,24 +666,3 @@ CAA    @              issue      letsencrypt.org                         Auto
 ```
 
 会发信时：删掉 `v=spf1 -all` 和空 MX，改成服务商给出的 SPF、DKIM、MX，DMARC 先用 `p=none`。`rua` 放到一个能收信的其它域。
-
----
-
-## 参考来源（Cloudflare 官方文档）
-
-- DNS record types — <https://developers.cloudflare.com/dns/manage-dns-records/reference/dns-record-types/>
-- Proxy status — <https://developers.cloudflare.com/dns/proxy-status/>
-- Proxying limitations — <https://developers.cloudflare.com/dns/proxy-status/limitations/>
-- Network ports — <https://developers.cloudflare.com/fundamentals/reference/network-ports/>
-- Time to Live (TTL) — <https://developers.cloudflare.com/dns/manage-dns-records/reference/ttl/>
-- CNAME flattening — <https://developers.cloudflare.com/dns/cname-flattening/>
-- Set up CNAME flattening — <https://developers.cloudflare.com/dns/cname-flattening/set-up-cname-flattening/>
-- Records with the same name — <https://developers.cloudflare.com/dns/manage-dns-records/troubleshooting/records-with-same-name/>
-- Wildcard DNS records — <https://developers.cloudflare.com/dns/manage-dns-records/reference/wildcard-dns-records/>
-- Record attributes — <https://developers.cloudflare.com/dns/manage-dns-records/reference/record-attributes/>
-- CAA records — <https://developers.cloudflare.com/ssl/edge-certificates/caa-records/>
-- IPv6 compatibility — <https://developers.cloudflare.com/network/ipv6-compatibility/>
-- Redirect a domain — <https://developers.cloudflare.com/fundamentals/manage-domains/redirect-domain/>
-- Error 1014 — <https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1014/>
-- Email records — <https://developers.cloudflare.com/dns/manage-dns-records/how-to/email-records/>
-- Cloudflare IP ranges — <https://www.cloudflare.com/ips/>
