@@ -1,0 +1,2718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Hexo Theme Redefine">
+    
+    
+    <meta name="author" content="Eviarch">
+    
+    <!-- Completely eliminate flash of wrong theme -->
+    <script>
+        (function() {
+            const THEME_KEY = "REDEFINE-THEME-STATUS";
+            const DARK = "dark", LIGHT = "light";
+            
+            // Get preferred theme
+            function getTheme() {
+                try {
+                    const saved = localStorage.getItem(THEME_KEY);
+                    if (saved) {
+                        const { isDark } = JSON.parse(saved);
+                        return isDark ? DARK : LIGHT;
+                    }
+                } catch (e) {}
+                
+                return matchMedia("(prefers-color-scheme: dark)").matches ? DARK : LIGHT;
+            }
+            
+            // Apply theme to document
+            function applyTheme(theme) {
+                const isDark = theme === DARK;
+                const root = document.documentElement;
+                
+                // Set classes for compatibility
+                root.classList.add(theme);
+                root.classList.remove(isDark ? LIGHT : DARK);
+                root.style.colorScheme = theme;
+            }
+            
+            // Initial application
+            const theme = getTheme();
+            applyTheme(theme);
+            
+            // Listen for system preference changes
+            matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ({ matches }) => {
+                // Only update if using system preference (no localStorage entry)
+                if (!localStorage.getItem(THEME_KEY)) {
+                    applyTheme(matches ? DARK : LIGHT);
+                }
+            });
+            
+            // Set body classes ASAP (before DOMContentLoaded)
+            (function() {
+                const addBodyClass = () => {
+                    const b = document.body;
+                    if (!b) return false;
+                    b.classList.add(theme + "-mode");
+                    return true;
+                };
+
+                // Try immediately
+                if (addBodyClass()) return;
+
+                // Observe until body exists
+                const mo = new MutationObserver(() => {
+                    if (addBodyClass()) mo.disconnect();
+                });
+                mo.observe(document.documentElement, { childList: true, subtree: true });
+            })();
+        })();
+    </script>
+    
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="https://blog.eviarch.com/2026/10/21/dns记录详解/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+    
+        
+        <meta name="description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DNS记录详解">
+<meta property="og:url" content="https://blog.eviarch.com/2026/10/21/DNS%E8%AE%B0%E5%BD%95%E8%AF%A6%E8%A7%A3/index.html">
+<meta property="og:site_name" content="Eviarch&#39;s blog">
+<meta property="og:description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://blog.eviarch.com/images/redefine-og.webp">
+<meta property="article:published_time" content="2026-10-21T20:09:00.000Z">
+<meta property="article:modified_time" content="2026-10-21T20:09:00.000Z">
+<meta property="article:author" content="Eviarch">
+<meta property="article:tag" content="Cloudflare">
+<meta property="article:tag" content="DNS">
+<meta property="article:tag" content="Network">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog.eviarch.com/images/redefine-og.webp">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="https://avatars.githubusercontent.com/u/148052580?v=4" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://avatars.githubusercontent.com/u/148052580?v=4">
+    <meta name="theme-color" content="#F6B8B8">
+    <link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/148052580?v=4">
+    <!--- Page Info-->
+    
+    <title>
+        
+            DNS记录详解 | Eviarch&#39;s blog
+        
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/css/build/tailwind.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/GeistMono/geist-mono.css">
+
+    
+<link rel="stylesheet" href="/fonts/Geist/geist.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+    
+    
+        
+<script src="/js/build/libs/anime.min.js"></script>
+
+    
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"blog.eviarch.com","root":"/","language":"en","path":"search.json"};
+    window.theme = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"delete_mask":false,"title_alignment":"left","headings_top_spacing":{"h1":"3.2rem","h2":"2.4rem","h3":"1.9rem","h4":"1.6rem","h5":"1.4rem","h6":"1.3rem"}},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":true,"auto":false,"list":[]},"code_block":{"copy":true,"style":"mac","highlight_theme":{"light":"github","dark":"vs2015"},"font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":{"enable":true,"default":"cc_by_nc_sa"},"lazyload":true,"pangu_js":false,"recommendation":{"enable":false,"title":"Recommended article","limit":3,"mobile_limit":2,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#F6B8B8","secondary":null,"default_mode":"dark"},"global":{"fonts":{"chinese":{"enable":false,"family":"Noto Serif SC","url":"https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&display=swap\" rel=\"stylesheet"},"english":{"enable":false,"family":"Noto Serif SC","url":"https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&display=swap\" rel=\"stylesheet"},"title":{"enable":false,"family":"Noto Serif SC","url":"https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&display=swap\" rel=\"stylesheet"}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":true},"scroll_progress":{"bar":true,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":true,"site_pv":true,"site_uv":true,"post_pv":true},"single_page":true,"preloader":{"enable":true,"custom_message":"Eviarch's blog"},"side_tools":{"gear_rotation":true,"auto_expand":false},"open_graph":{"enable":true,"image":"/images/redefine-og.webp","description":"Hexo Theme Redefine, Redefine Your Hexo Journey."},"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/post_images/background_image/goldenglow_light.png","dark":"/post_images/background_image/goldenglow_dark.png"},"title":"It's Eviarch's blog, sharing things about study and daily life","subtitle":{"text":["不过碰巧射出了完美的一箭, 此后每一次引弓, 都只是在追寻它的影子","それまでの繋がりと、あなたの想いは、そこにあります。","求知若渴，虚心若愚","你所做的事情或许无人在意，但只要你仍追求完美，你就终将掌握连专家也望而兴叹的技能","\"拉绳子或者割断绳索，但无论你做什么，都不要犹豫\" --Death Stranding","共赴山海","回首望来路，尘埃映星河 --Zachary","天空越黑，星星越亮 --小农帽","青春就像月亮，时圆时缺，但是只要圆过一次，我们的青春就没有遗憾 --Zachary","不能信任那些 Terminal 或 Editor 用白底的人","软件靠重启，硬件靠插拔","\"绳索和棍棒是人类最早发明的工具。绳索可以留住美好，棍棒则可以驱赶危险。两者皆是我们最早的朋友，皆由我们创造。有人的地方，就有绳索与棍棒。--摘自 安部公房《绳》\"","总有一天我会没办法继续照顾你，你必须自己做出决定，决定自己究竟是谁，这个世界不喜欢与众不同的人马库斯，不要让别人告诉你，该成为什么样的人。 --Detroit Become Human","\"Life is a tragedy when seen in close-up, but a comedy in long-shot.\" ― Charlie Chaplin ","行ってきます！","「大切な人といつかまた巡り合えますように」时光流逝，愿你与重要的人再次重逢","君の膵臓をたべたい","因为万物都会坠落，所以攀登是我们必然的宿命"],"hitokoto":{"enable":false,"show_author":false,"api":"https://v1.hitokoto.cn"},"typing_speed":80,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":true,"style":"default","links":[{"icon":"fa-brands fa-github","url":"https://github.com/eviarch"},{"icon":"fa-brands fa-twitter","url":"https://x.com/eviarch74703"},{"icon":"fa-solid fa-at","url":"eviarch@gmail.com"},{"icon":"fa-solid fa-tower-broadcast","url":"https://www.youtube.com/@eviarch"}],"qrs":[]}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":{"audios":[{"name":"深藍","artist":"ルルティア","url":"https://music.163.com/song/media/outer/url?id=22724676.mp3","cover":"https://p2.music.126.net/kprSJv0yHoiwyJ7pbuEVxg==/834529325505669.jpg","lrc":"https://gist.githubusercontent.com/Yttehs-HDX/6f133b5a8f35475404e1c581f3045b4a/raw/80a621dc3efdfdaa5bb161ce705904bf4d8080b0/22724676.lrc"}]}},"mermaid":{"enable":false,"version":"11.4.1","theme":{"light":"default","dark":"dark"}}},"version":"2.9.0","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Masonry":{"icon":"fa-solid fa-image","path":"/masonry/"},"Bookmarks":{"path":"/bookmarks/","icon":"fa-regular fa-bookmark"},"Friends":{"path":"/links/","icon":"fa-solid fa-link"},"About":{"icon":"fa-regular fa-user","submenus":{"Blog Repo":"https://github.com/eviarch/Blooooooooooooooog"}}},"search":{"enable":true,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"blur","masonry":{"batch_size":12,"initial_batch_size":24}},"home":{"sidebar":{"enable":true,"position":"left","first_item":"info","announcement":"死は生の裏返しである","show_on_mobile":true,"links":{"Moments":{"path":"/essays","icon":"fa-regular fa-comment"},"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"Tags":{"path":"/tags/","icon":"fa-regular fa-tags"},"Categories":{"path":"/categories/","icon":"fa-regular fa-folder"}}},"article_date_format":"auto","excerpt_length":200,"categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footer":{"runtime":true,"icon":"<i class=\"fa-solid fa-heart fa-beat\" style=\"--fa-animation-duration: 0.5s; color: #f54545\"></i>","start":"2025/6/10 12:34:56","statistics":true,"customize":null,"icp":{"enable":false,"number":null,"url":null}},"footerStart":"2025/6/10 12:34:56","mermaid":{"style":{"light":"default","dark":"dark"}}};
+    window.lang_ago = {"second":"%s seconds ago","minute":"%s minutes ago","hour":"%s hours ago","day":"%s days ago","week":"%s weeks ago","month":"%s months ago","year":"%s years ago"};
+    window.i18n = {"search":"Search...","toc":"On this page","prev":"Prev","next":"Next","prev_posts":"Prev posts","next_posts":"Next posts","page":"Page %d","recent_posts":"Recent Posts","share":"Share","powered_by":"POWERED BY %s","theme":"THEME","rss_feed":"RSS Feed","category":"Category","categories":"Categories","tag":"Tag","tags":"Tags","post":"Post","posts":"Posts","tagcloud":"Tag Cloud","comment":"Comment","comments":"Comments","home":"Home","archive":"Archive","archives":"Archives","top":"TOP","sticky":"Sticky","go-back-home":"Go Back Home","masonry_loading":"Loading photos...","image_viewer":"Image viewer","close":"Close","exif":{"title":"EXIF","cards":{"camera":"Camera","lens":"Lens","exposure":"Exposure","other":"Other"},"fields":{"make":"Brand","model":"Model","date_taken":"Date taken","lens_model":"Lens","focal_length":"Focal length","focus_mode":"Focus mode","shutter":"Shutter","aperture":"Aperture","iso":"ISO","exposure_program":"Exposure program","exposure_compensation":"Exposure compensation","metering_mode":"Metering mode","flash":"Flash","white_balance":"White balance","latitude":"Latitude","longitude":"Longitude","altitude":"Altitude"},"status":{"loading":"Loading...","no_exif":"No EXIF available","library_missing":"EXIF library not loaded","image_source_missing":"Image source unavailable","unavailable":"EXIF unavailable (blocked by CORS or missing metadata)","flag_unavailable":"EXIF unavailable"}},"about":"About","changelog":"Changelog","links":"Links","link":"Link","friends":"Friends","friend":"Friend","timeline":"Timeline","shuoshuo":"Shuoshuo","bookmarks":"Bookmarks","site_uv":"VISITOR COUNT","site_pv":"TOTAL PAGE VIEWS","read_more":"Read more","wordcount":"Words","min2read":"Mins","status":"Status","runtime":"Blog up for","days":"days","hours":"hrs","minutes":"Min","seconds":"Sec","optimized_by":"and Optimized by Evan","rights":"All Rights Reserved","site_posts":"%s posts in total","site_wordcount":"%s words in total","copyright":{"author":"Author","title":"Title","link":"Link","create_time":"Created at","update_time":"Updated at","license_title":"License","license_content":"This work is licensed under %s.","all_rights_reserved":"All Rights Reserved &#169; %s","public_domain":"This work is in the public domain."},"ago":{"second":"%s seconds ago","minute":"%s minutes ago","hour":"%s hours ago","day":"%s days ago","week":"%s weeks ago","month":"%s months ago","year":"%s years ago"},"create_time":"Created","update_time":"Updated","expired":"This post is written %s days ago, and the content may not be up to date."};
+    window.data = {"masonry":true};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+
+<body>
+	<div class="progress-bar-container">
+	
+	<span class="scroll-progress-bar"></span>
+	
+
+	
+	<span class="pjax-progress-bar"></span>
+	<!--        <span class="swup-progress-icon">-->
+	<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+	<!--        </span>-->
+	
+</div>
+
+<style>
+    :root {
+        --preloader-background-color: #fff;
+        --preloader-text-color: #000;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --preloader-background-color: #202124;
+            --preloader-text-color: #fff;
+        }
+    }
+
+    @media (prefers-color-scheme: light) {
+        :root {
+            --preloader-background-color: #fff;
+            --preloader-text-color: #000;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .ml13 {
+            font-size: 2.6rem !important; /* Adjust this value as needed */
+        }
+    }
+
+    .preloader {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem; /* Tailwind 'gap-4' is 1rem */
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        padding: 12px;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh; /* 'h-screen' is 100% of the viewport height */
+        background-color: var(--preloader-background-color);
+        z-index: 1100; /* 'z-[1100]' sets the z-index */
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .ml13 {
+        font-size: 3.2rem;
+        /* text-transform: uppercase; */
+        color: var(--preloader-text-color);
+        letter-spacing: -1px;
+        font-weight: 500;
+        font-family: 'Chillax-Variable', sans-serif;
+        text-align: center;
+    }
+
+    .ml13 .word {
+        display: inline-flex;
+        flex-wrap: wrap;
+        white-space: nowrap;
+    }
+
+    .ml13 .letter {
+        display: inline-block;
+        line-height: 1em;
+    }
+</style>
+
+<div class="preloader">
+    <h2 class="ml13">
+        Eviarch&#39;s blog
+    </h2>
+    <script>
+        var textWrapper = document.querySelector('.ml13');
+        // Split text into words
+        var words = textWrapper.textContent.trim().split(' ');
+
+        // Clear the existing content
+        textWrapper.innerHTML = '';
+
+        // Wrap each word and its letters in spans
+        words.forEach(function(word) {
+            var wordSpan = document.createElement('span');
+            wordSpan.classList.add('word');
+            wordSpan.innerHTML = word.replace(/\S/g, "<span class='letter'>$&</span>");
+            textWrapper.appendChild(wordSpan);
+            textWrapper.appendChild(document.createTextNode(' ')); // Add space between words
+        });
+
+        var animation = anime.timeline({ loop: true })
+            .add({
+                targets: '.ml13 .letter',
+                translateY: [20, 0],
+                translateZ: 0,
+                opacity: [0, 1],
+                filter: ['blur(5px)', 'blur(0px)'],
+                easing: "easeOutExpo",
+                duration: 1200,
+                delay: (el, i) => 300 + 20 * i,
+            })
+            .add({
+                targets: '.ml13 .letter',
+                translateY: [0, -20],
+                opacity: [1, 0],
+                filter: ['blur(0px)', 'blur(5px)'],
+                easing: "easeInExpo",
+                duration: 1000,
+                delay: (el, i) => 15 * i,
+                complete: function() {
+                    hidePreloader();
+                }
+            }, '-=700');
+
+
+        let themeStatus = JSON.parse(localStorage.getItem('REDEFINE-THEME-STATUS'))?.isDark;
+
+        // If the theme status is not found in local storage, check the preferred color scheme
+        if (themeStatus === undefined || themeStatus === null) {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                themeStatus = 'dark';
+            } else {
+                themeStatus = 'light';
+            }
+        }
+
+        // Now you can use the themeStatus variable in your code
+        if (themeStatus) {
+            document.documentElement.style.setProperty('--preloader-background-color', '#202124');
+            document.documentElement.style.setProperty('--preloader-text-color', '#fff');
+        } else {
+            document.documentElement.style.setProperty('--preloader-background-color', '#fff');
+            document.documentElement.style.setProperty('--preloader-text-color', '#000');
+        }
+
+        window.addEventListener('load', function () {
+            setTimeout(hidePreloader, 5000); // Call hidePreloader after 5000 milliseconds if not already called by animation
+        });
+
+        function hidePreloader() {
+            var preloader = document.querySelector('.preloader');
+            preloader.style.opacity = '0';
+            setTimeout(function () {
+                preloader.style.display = 'none';
+            }, 200);
+        }
+    </script>
+</div>
+
+<main class="page-container" id="swup">
+
+	
+
+	<div class="main-content-container flex flex-col justify-between min-h-dvh">
+		<div class="main-content-header">
+			<header class="navbar-container px-6 md:px-12">
+    <div class="navbar-content transition-navbar ">
+        <div class="left">
+            
+                <a class="logo-image h-8 w-8 sm:w-10 sm:h-10 mr-3" href="/">
+                    <img src="https://avatars.githubusercontent.com/u/148052580?v=4" class="w-full h-full rounded-xs">
+                </a>
+            
+            <a class="logo-title" href="/">
+                
+                Eviarch&#39;s blog
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    HOME
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/masonry/"
+                                        >
+                                    <i class="fa-solid fa-image fa-fw"></i>
+                                    MASONRY
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/bookmarks/"
+                                        >
+                                    <i class="fa-regular fa-bookmark fa-fw"></i>
+                                    BOOKMARKS
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/links/"
+                                        >
+                                    <i class="fa-solid fa-link fa-fw"></i>
+                                    FRIENDS
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="has-dropdown"
+                                   href="#"
+                                        onClick=&#34;return false;&#34;>
+                                    <i class="fa-regular fa-user fa-fw"></i>
+                                    ABOUT
+                                    <i class="fa-solid fa-chevron-down fa-fw"></i>
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                                    <ul class="sub-menu">
+                                        
+                                            <li>
+                                                <a target="_blank" rel="noopener" href="https://github.com/eviarch/Blooooooooooooooog">
+                                                    BLOG REPO
+                                                </a>
+                                            </li>
+                                        
+                                    </ul>
+                                
+                            </li>
+                    
+                    
+                        <li class="navbar-item search search-popup-trigger">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </li>
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                    <div class="icon-item search search-popup-trigger"><i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-dvh w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                HOME
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/masonry/"
+                        >
+                            <span>
+                                MASONRY
+                            </span>
+                            
+                                <i class="fa-solid fa-image fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/bookmarks/"
+                        >
+                            <span>
+                                BOOKMARKS
+                            </span>
+                            
+                                <i class="fa-regular fa-bookmark fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/links/"
+                        >
+                            <span>
+                                FRIENDS
+                            </span>
+                            
+                                <i class="fa-solid fa-link fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item-sub text-base my-1.5 flex flex-col w-full">
+                        
+                        <div class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary cursor-pointer text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                             navbar-data-toggle="submenu-About"
+                        >
+                            <span>
+                                ABOUT
+                            </span>
+                            
+                                <i class="fa-solid fa-chevron-right fa-sm fa-fw transition-all"></i>
+                            
+                        </div>
+                        
+
+                        
+                            <div class="flex-col items-start px-2 py-2 hidden" data-target="submenu-About">
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           target="_blank" rel="noopener" href="https://github.com/eviarch/Blooooooooooooooog">BLOG REPO</a>
+                                    </div>
+                                
+                            </div>
+                        
+                    </li>
+            
+
+            
+            
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/essays"
+                        >
+                            <span>Moments</span>
+                            <i class="fa-regular fa-comment fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/archives"
+                        >
+                            <span>Archives</span>
+                            <i class="fa-regular fa-archive fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/tags/"
+                        >
+                            <span>Tags</span>
+                            <i class="fa-regular fa-tags fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/categories/"
+                        >
+                            <span>Categories</span>
+                            <i class="fa-regular fa-folder fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">27</div>
+        <div class="label text-third-text-color text-sm">Tags</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">20</div>
+        <div class="label text-third-text-color text-sm">Categories</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">10</div>
+        <div class="label text-third-text-color text-sm">Posts</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+		</div>
+
+		<div class="main-content-body transition-fade-up">
+			
+
+			<div class="main-content">
+				<div class="post-page-container flex relative justify-between box-border w-full h-full">
+	<div class="article-content-container">
+
+		<div class="article-title relative w-full">
+			
+			
+			
+			<img src="/post_images/DNS%E8%AE%B0%E5%BD%95%E8%AF%A6%E8%A7%A3/DNS.jpg" alt="DNS记录详解" class="w-full h-60 sm:h-72 md:h-80 object-cover sm:rounded-t-large dark:brightness-75" />
+			
+			<div class="w-full flex items-center absolute bottom-0 justify-start">
+				<h1 class="article-title-cover text-center mx-6 my-6 text-second-text-color bg-background-color-transparent px-4 py-3 text-3xl sm:text-4xl md:text-5xl font-semibold backdrop-blur-lg rounded-xl border border-border-color ">DNS记录详解</h1>
+			</div>
+			
+		</div>
+
+		
+		<div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+			<div class="avatar w-[46px] h-[46px] shrink-0 rounded-medium border border-border-color p-px">
+				<img src="https://avatars.githubusercontent.com/u/148052580?v=4">
+			</div>
+			<div class="info flex flex-col justify-between">
+				<div class="author flex items-center">
+					<span class="name text-default-text-color text-lg font-semibold">Eviarch</span>
+					
+					<span class="author-label ml-1.5 text-xs px-2 py-0.5 rounded-small text-third-text-color border border-shadow-color-1">Lv2</span>
+					
+				</div>
+				<div class="meta-info">
+					<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2026-10-21 20:09</span>
+        <span class="mobile">2026-10-21 20:09</span>
+        <span class="hover-info">Created</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2026-10-21 20:09</span>
+            <span class="mobile">2026-10-21 20:09</span>
+            <span class="hover-info">Updated</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/Network/">Network</a>&nbsp;
+                        </li>
+                    
+                    
+                
+                    
+                        
+                            <li>></li>
+                        
+                        <li>
+                            <a href="/categories/Network/DNS/">DNS</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/Network/">Network</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/DNS/">DNS</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/Cloudflare/">Cloudflare</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+        <span class="article-pv article-meta-item">
+            <i class="fa-regular fa-eye"></i>&nbsp;<span id="busuanzi_value_page_pv"></span>
+        </span>
+    
+</div>
+
+				</div>
+			</div>
+		</div>
+		
+
+		
+
+
+		<div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+			<h1 id="cloudflare-域名解析记录完全指南">Cloudflare
+域名解析记录完全指南</h1>
+<blockquote>
+<p>依据 Cloudflare 官方文档整理。核对日期：2026-10。</p>
+</blockquote>
+<hr />
+<h2 id="一分钟速查表">0. 一分钟速查表</h2>
+<table>
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 22%" />
+<col style="width: 49%" />
+</colgroup>
+<thead>
+<tr>
+<th>我想做什么</th>
+<th>用哪种记录</th>
+<th>关键注意点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>域名指向一个 IPv4 服务器</td>
+<td><strong>A</strong></td>
+<td>与 AAAA 一样，直接写 IP</td>
+</tr>
+<tr>
+<td>域名指向一个 IPv6 服务器</td>
+<td><strong>AAAA</strong></td>
+<td>与 A 可同名共存</td>
+</tr>
+<tr>
+<td>域名指向另一个域名（如 CDN、GitHub Pages）</td>
+<td><strong>CNAME</strong></td>
+<td>同名不能再有其它记录；根域靠 CNAME flattening 才能与 MX/TXT
+共存</td>
+</tr>
+<tr>
+<td>接收邮件</td>
+<td><strong>MX</strong></td>
+<td>目标主机名要有 A 或 AAAA，并且在 Cloudflare 上必须灰云</td>
+</tr>
+<tr>
+<td>防止别人冒充你域名发邮件</td>
+<td><strong>TXT</strong>（SPF / DMARC）+ 空 <strong>MX</strong></td>
+<td>不发信用 <code>v=spf1 -all</code>、DMARC <code>p=reject</code>、空
+MX。DKIM 只在真有发信服务时配</td>
+</tr>
+<tr>
+<td>限定哪些 CA 能给你签发证书</td>
+<td><strong>CAA</strong></td>
+<td>写实际 CA 域名。<code>cloudflare.com</code> 不是签发 CA</td>
+</tr>
+<tr>
+<td>声明某服务的「主机 + 端口」</td>
+<td><strong>SRV</strong></td>
+<td>客户端必须支持 SRV 才有效</td>
+</tr>
+<tr>
+<td>声明 HTTP/3、ALPN 能力</td>
+<td><strong>HTTPS / SVCB</strong></td>
+<td>橙云且开着 Universal SSL 时，Cloudflare 自动生成</td>
+</tr>
+<tr>
+<td>把子域名交给别家 DNS 托管</td>
+<td><strong>NS</strong></td>
+<td>用于子域委派</td>
+</tr>
+<tr>
+<td>所有子域名都指向同一处</td>
+<td><strong>A/CNAME + <code>*</code></strong></td>
+<td>精确记录优先于通配符。DNS 通配符是多级的，证书通配符只覆盖一层</td>
+</tr>
+<tr>
+<td>让 <code>web.example.com</code> 走 10080 端口</td>
+<td><strong>A + 灰云</strong>，或反代到 443</td>
+<td>橙云不支持 10080</td>
+</tr>
+<tr>
+<td>让 <code>ssh.example.com</code> 走 22 端口</td>
+<td><strong>A + 灰云</strong></td>
+<td>橙云不代理 22 端口</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="先理解-dns-的解析链路">1. 先理解 DNS 的解析链路</h2>
+<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">你在浏览器输入 web.example.com</span><br><span class="line">        ↓</span><br><span class="line">① 递归解析器（1.1.1.1 / 运营商 DNS）问根服务器：.com 谁管？</span><br><span class="line">        ↓</span><br><span class="line">② 问 .com 顶级域：example.com 的 NS 是谁？</span><br><span class="line">        ↓  ← 这一步由「你在注册商填的 Nameserver」决定</span><br><span class="line">③ 问 Cloudflare 权威服务器：example.com 有哪些记录？</span><br><span class="line">        ↓  ← 这一步由「Cloudflare DNS 记录表」决定</span><br><span class="line">④ 拿到答案（IP / CNAME / …），浏览器发起连接</span><br><span class="line">        ↓  ← 端口由 URL 或客户端配置决定，DNS 不参与</span><br></pre></td></tr></table></figure></div>
+<p><strong>两条最重要的结论：</strong></p>
+<ol type="1">
+<li><strong>Nameserver 决定「谁来回答」，DNS
+记录决定「回答什么」。</strong> 你在 Cloudflare 后台加记录，只有当域名的
+NS 确实指向 Cloudflare 时才生效。</li>
+<li><strong>DNS 不携带端口信息</strong>（SRV / HTTPS
+记录除外）。<code>A</code> 记录只回答「这个域名对应哪个 IP」。端口来自
+URL（<code>http://web.example.com:10080</code>）或客户端默认值（SSH 默认
+22、HTTPS 默认 443）。</li>
+</ol>
+<hr />
+<h2 id="一条记录的五个要素">2. 一条记录的五个要素</h2>
+<p>在 Cloudflare 后台 <strong>DNS → Records</strong>
+里，每条记录都由这几列定义：</p>
+<table>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 37%" />
+<col style="width: 45%" />
+</colgroup>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+<th>常见取值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Type</strong></td>
+<td>记录类型，决定「回答什么形式的答案」</td>
+<td>A、AAAA、CNAME、MX、TXT、NS、SRV、CAA…</td>
+</tr>
+<tr>
+<td><strong>Name</strong></td>
+<td>记录挂在哪个名字上</td>
+<td><code>@</code>（= 根域
+<code>example.com</code>）、<code>www</code>、<code>ssh</code>、<code>*</code>、<code>_dmarc</code></td>
+</tr>
+<tr>
+<td><strong>Content / Target</strong></td>
+<td>答案本身</td>
+<td>IP 地址、另一个域名、一段文本</td>
+</tr>
+<tr>
+<td><strong>TTL</strong></td>
+<td>解析结果被缓存多久</td>
+<td><code>Auto</code>（= 300 秒）、60 秒 ~ 1 天</td>
+</tr>
+<tr>
+<td><strong>Proxy status</strong></td>
+<td>Cloudflare 是否中转流量（<strong>Cloudflare 独有</strong>）</td>
+<td>🟠 Proxied（橙云）/ ⚪ DNS only（灰云）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="name-的写法约定">Name 的写法约定</h3>
+<table>
+<thead>
+<tr>
+<th>你填的 Name</th>
+<th>实际生效的域名</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>@</code></td>
+<td><code>example.com</code>（zone apex，根域）</td>
+</tr>
+<tr>
+<td><code>www</code></td>
+<td><code>www.example.com</code></td>
+</tr>
+<tr>
+<td><code>ssh</code></td>
+<td><code>ssh.example.com</code></td>
+</tr>
+<tr>
+<td><code>*.api</code></td>
+<td><code>*.api.example.com</code></td>
+</tr>
+<tr>
+<td><code>_dmarc</code></td>
+<td><code>_dmarc.example.com</code></td>
+</tr>
+<tr>
+<td><code>example.com</code>（写全）</td>
+<td>也可以，Cloudflare 会自动识别</td>
+</tr>
+</tbody>
+</table>
+<p><strong>长度限制</strong>（官方）：单个 label ≤ 63 字符，完整 FQDN ≤
+253 字符。下划线 <code>_</code> 在 DNS 中合法，SRV /
+验证记录常用。但为了兼容主机名和 TLS
+证书，建议只用字母、数字、连字符（LDH 规则）。</p>
+<hr />
+<h2 id="记录类型总览">3. 记录类型总览</h2>
+<p>Cloudflare 把记录分成三组：</p>
+<table>
+<colgroup>
+<col style="width: 13%" />
+<col style="width: 64%" />
+<col style="width: 21%" />
+</colgroup>
+<thead>
+<tr>
+<th>分组</th>
+<th>类型</th>
+<th>能否开橙云（Proxy）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>IP 地址解析</strong></td>
+<td><code>A</code>、<code>AAAA</code>、<code>CNAME</code></td>
+<td>✅ <strong>只有这三类可以代理</strong></td>
+</tr>
+<tr>
+<td><strong>邮件认证</strong></td>
+<td><code>MX</code>、<code>DKIM</code>、<code>SPF</code>、<code>DMARC</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><strong>专用记录</strong></td>
+<td><code>TXT</code>、<code>CAA</code>、<code>SRV</code>、<code>SVCB</code>/<code>HTTPS</code>、<code>PTR</code>、<code>SOA</code>、<code>NS</code>、<code>DS</code>、<code>DNSKEY</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><strong>其他</strong></td>
+<td><code>URI</code>、<code>NAPTR</code>、<code>SSHFP</code>、<code>TLSA</code>、<code>SMIMEA</code>、<code>CERT</code></td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<p>DKIM、SPF、DMARC 在文档里单独成组，面板里的类型仍然是
+<strong>TXT</strong>。没有单独的 SPF / DKIM / DMARC 类型。旧的 SPF
+记录类型（类型号 99）已废弃。</p>
+<blockquote>
+<p>官方原文：<em>Only A, AAAA, and CNAME records that serve HTTP or
+HTTPS traffic can be proxied. Other DNS record types cannot be
+proxied.</em></p>
+</blockquote>
+<p>每个域名<strong>至少要有一条 IP 地址解析记录</strong>（A / AAAA /
+CNAME），否则 Cloudflare 上的这个 zone 无法正常工作。</p>
+<hr />
+<h2 id="逐类详解">4. 逐类详解</h2>
+<h3 id="a-记录-域名-ipv4">4.1 A 记录 —— 域名 → IPv4</h3>
+<p>最基础、你最常用的一种。</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Content</th>
+<th>Proxy status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td><code>@</code></td>
+<td><code>203.0.113.45</code></td>
+<td>🟠 Proxied</td>
+</tr>
+<tr>
+<td>A</td>
+<td><code>www</code></td>
+<td><code>203.0.113.45</code></td>
+<td>🟠 Proxied</td>
+</tr>
+<tr>
+<td>A</td>
+<td><code>ssh</code></td>
+<td><code>203.0.113.45</code></td>
+<td>⚪ DNS only</td>
+</tr>
+</tbody>
+</table>
+<p><strong>要点：</strong></p>
+<ul>
+<li>Content 填<strong>源站 IP</strong>。不能填 Cloudflare 的 anycast
+地址，否则解析会异常。只做 HTTP 跳转、没有源站时，可以使用文档地址
+<code>192.0.2.1</code>，见 4.15。</li>
+<li><strong>不支持简写 IPv4</strong>：<code>1.1</code> 不会被当成
+<code>1.0.0.1</code>，必须写完整四段。</li>
+<li><strong>同一个 Name 可以有多条 A
+记录</strong>，但橙云和灰云看到的不是同一件事：
+<ul>
+<li><strong>灰云</strong>：权威应答返回这一整组 A
+记录，顺序轮换。没有健康检查，已经挂掉的 IP 仍会出现在应答里。</li>
+<li><strong>橙云</strong>：访客拿到的是 Cloudflare anycast
+地址，不是这些源站 IP。多条 A 是边缘回源时的多个源站。</li>
+</ul></li>
+<li><strong>同名只要有一条 A 或 AAAA 是橙云，该名字上其余 A/AAAA
+也全部按橙云处理。</strong>
+不能在同一个主机名上「一条橙云做网站、另一条灰云做 SSH」。SSH
+和网站要用两个名字，例如 <code>ssh</code> 与 <code>web</code>。</li>
+<li>A 和 AAAA 可以同名共存，也可以与 MX、TXT、CAA 共存。双栈站点推荐 A
+和 AAAA 都配。</li>
+</ul>
+<hr />
+<h3 id="aaaa-记录-域名-ipv6">4.2 AAAA 记录 —— 域名 → IPv6</h3>
+<p>和 A 完全对称，只是答案是 IPv6。</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AAAA</td>
+<td><code>@</code></td>
+<td><code>2001:db8::1</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>要点：</strong></p>
+<ul>
+<li>Cloudflare 用 <strong>RFC 5952 规范写法</strong>存储：你填
+<code>fe80::0:0:1</code>，它保存并返回 <code>fe80::1</code>。</li>
+<li>VPS 没有 IPv6 时只配 A 即可。默认开启的 <strong>IPv6
+Compatibility</strong> 会向访客发布 Cloudflare 自己的 AAAA，IPv6
+用户仍能打开橙云主机名，源站不必有 IPv6。</li>
+<li><strong>回源用的地址族不跟访客走。</strong> 同名同时有橙云 A 和 AAAA
+时，Cloudflare 回源优先 IPv4。只有橙云 AAAA、没有 A 时，IPv4 和 IPv6
+访客都会被回源到 IPv6；源站没有在该地址上监听，两边都会 521/522。</li>
+</ul>
+<hr />
+<h3 id="cname-记录-域名-另一个域名">4.3 CNAME 记录 —— 域名 →
+另一个域名</h3>
+<p>用于「这个域名不指向 IP，而是指向另一个域名，跟着它走」。</p>
+<table>
+<colgroup>
+<col style="width: 8%" />
+<col style="width: 9%" />
+<col style="width: 30%" />
+<col style="width: 51%" />
+</colgroup>
+<thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Content（Target）</th>
+<th>Proxy status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CNAME</td>
+<td><code>www</code></td>
+<td><code>example.com</code></td>
+<td>🟠 Proxied</td>
+</tr>
+<tr>
+<td>CNAME</td>
+<td><code>blog</code></td>
+<td><code>myblog.github.io</code></td>
+<td>⚪ DNS only</td>
+</tr>
+<tr>
+<td>CNAME</td>
+<td><code>@</code></td>
+<td><code>cname.example.net</code></td>
+<td>🟠 Proxied（靠 CNAME flattening）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>CNAME 的三条硬规则：</strong></p>
+<ol type="1">
+<li><p><strong>排他性（最容易踩的坑）</strong> 同一个 Name
+上，<strong>CNAME 不能与任何其它记录共存</strong>。</p>
+<ul>
+<li>已有 <code>A</code> 记录 → 无法再加同名 <code>CNAME</code></li>
+<li>已有 <code>CNAME</code> → 无法再加同名 <code>A</code> /
+<code>AAAA</code> / <code>TXT</code> / <code>MX</code> 原因来自 RFC
+1034：一个名字一旦是 CNAME，就不允许再有其它类型的数据。</li>
+</ul>
+<p>根域是例外：Cloudflare 对 <code>@</code> 做 CNAME flattening
+之后，根域 CNAME 可以和 MX、TXT、CAA 共存。A 与 AAAA、以及它们和 MX /
+TXT / CAA，本来就可以同名共存，这不是 CNAME 的例外。</p></li>
+<li><p><strong>最终必须落到一个有 A/AAAA 的域名上</strong> CNAME
+可以套娃（<code>a → b → c</code>），但链条末端必须有有效的 A 或 AAAA。
+若末端没有 IP（<strong>dangling CNAME</strong>），Cloudflare
+返回空响应（NODATA），看起来就像「记录没生效」。</p></li>
+<li><p><strong>橙云不能跨 Cloudflare 账号 CNAME</strong> 橙云 CNAME
+指向另一个 Cloudflare 账号里的域名 → <strong>Error 1014: CNAME
+Cross-User Banned</strong>。</p>
+<ul>
+<li>同一账号里跨 zone（<code>example.com</code> →
+<code>example.net</code>）是允许的。</li>
+<li>跨账号要让橙云生效，目标方需要使用 <strong>Cloudflare for
+SaaS</strong>。</li>
+<li>灰云 CNAME 不会在你这边的代理上弹出
+1014。目标若本身是别的账号的橙云主机名，访客仍可能在对方边缘看到 1014
+或证书错误。</li>
+</ul></li>
+</ol>
+<p><strong>橙云 CNAME 的额外行为：</strong>
+查询这个名字上的其它类型（例如 TXT）不会跟到目标域。目标域上的 TXT
+不会从你的名字返回。</p>
+<p><strong>CNAME flattening（Cloudflare 特有机制）</strong></p>
+<p>DNS 标准禁止根域（<code>example.com</code>）使用 CNAME。Cloudflare 用
+<em>CNAME flattening</em> 绕过：它在权威服务器上先把 CNAME
+一路解析到最终 IP，然后<strong>直接返回 A/AAAA 而不是
+CNAME</strong>。</p>
+<p>实际有三层，不要混成一个开关：</p>
+<table>
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 49%" />
+<col style="width: 19%" />
+</colgroup>
+<thead>
+<tr>
+<th>范围</th>
+<th>谁能用</th>
+<th>能不能关</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>根域 <code>@</code></td>
+<td>所有套餐，默认开启</td>
+<td><strong>不能关</strong></td>
+</tr>
+<tr>
+<td>橙云 CNAME</td>
+<td>所有套餐。橙云本来就返回 anycast 地址</td>
+<td>不能单独关掉扁平化</td>
+</tr>
+<tr>
+<td>「Flatten all CNAME records」</td>
+<td>付费套餐的 zone 级开关，主要影响<strong>灰云</strong> CNAME</td>
+<td>可以关</td>
+</tr>
+<tr>
+<td>单条记录的 Flatten</td>
+<td>付费套餐，只对灰云、非根域的 CNAME</td>
+<td>可以关</td>
+</tr>
+</tbody>
+</table>
+<p>这带来两个实用效果：</p>
+<ul>
+<li>你可以在根域 <code>@</code> 上放 CNAME（Cloudflare Pages
+的根域名就是这么工作的），并同时放 MX / TXT。</li>
+<li>解析更快，少一次往返。</li>
+</ul>
+<p>副作用：</p>
+<ul>
+<li>第三方若靠「查你的 CNAME 记录」验证域名归属，扁平化后应答里没有
+CNAME，验证会失败。根域验证改用 TXT。子域名验证失败时，在付费套餐里关掉
+zone 级 <strong>Flatten all</strong>，或关掉这一条的
+<strong>Flatten</strong>。</li>
+<li><strong>不能代理的 CNAME 目标</strong>：Cloudflare 主动禁止一批
+CNAME 开橙云（多为别家 CDN / DKIM 主机），例如
+<code>dkim.amazonses.com</code>、<code>*.onmicrosoft.com</code>、<code>zmverify.zoho.com</code>、<code>dkim.intercom.io</code>、<code>acm-validations.aws</code>
+等。这类记录必须灰云。</li>
+</ul>
+<hr />
+<h3 id="mx-记录-邮件投递">4.4 MX 记录 —— 邮件投递</h3>
+<p>决定「发往 <code>you@example.com</code>
+的邮件该送到哪台邮件服务器」。</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Content</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MX</td>
+<td><code>@</code></td>
+<td><code>mx1.mailprovider.com</code></td>
+<td><code>10</code></td>
+</tr>
+<tr>
+<td>MX</td>
+<td><code>@</code></td>
+<td><code>mx2.mailprovider.com</code></td>
+<td><code>20</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>要点：</strong></p>
+<ul>
+<li><strong>Priority（优先级）数字越小越优先。</strong>
+发送方应先试数字更小的
+MX；是不是立刻切到备机会取决于对方的重试策略。相同优先级可以并列，用来分担。</li>
+<li>MX 指向的主机名<strong>必须有 A 或 AAAA 记录</strong>。</li>
+<li>这个主机名如果在 Cloudflare
+上，<strong>必须灰云</strong>。SMTP、IMAP、POP3 不走普通 HTTP
+代理。橙云会让邮件客户端连到 Cloudflare 地址，投递失败。</li>
+<li>MX 指向的名字若和某个橙云网站是同一个主机名，Cloudflare 会在 MX
+应答里加上 <code>_dc-mx</code>
+前缀，让邮件绕过代理、直接打到源站。<code>dig</code> 看到
+<code>_dc-mx</code>
+是这个改写，不是多出来的一条你要手删的记录。更干净的做法仍是单独用灰云的
+<code>mail</code> 主机名。</li>
+<li><strong>MX 记录本身不能开橙云。</strong></li>
+<li>根域可以靠 CNAME flattening 同时放 CNAME 和 MX。没有 flattening
+时，根域 CNAME 与 MX 不能共存。</li>
+<li>开启 <strong>Email Routing</strong> 后，MX（以及配套 SPF）由
+Cloudflare 托管。它和自建邮件、空 MX 冲突。不用 Email Routing
+时把它关掉。</li>
+<li>域名不接收邮件时，配一条空 MX（RFC 7505），避免没有 MX
+时邮件退回到根域的 A/AAAA：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Content</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MX</td>
+<td><code>@</code></td>
+<td><code>.</code></td>
+<td><code>0</code></td>
+</tr>
+</tbody>
+</table>
+<p>Content 是单个句点，优先级必须是
+<code>0</code>。不要加空格，也不要加引号。</p>
+<hr />
+<h3 id="spf-dkim-dmarc-邮件反伪造都是-txt-形态">4.5 SPF / DKIM / DMARC
+—— 邮件反伪造（都是 TXT 形态）</h3>
+<p>不发信、也不收信时，配这三条：</p>
+<table>
+<thead>
+<tr>
+<th>记录</th>
+<th>Name</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TXT</td>
+<td><code>@</code></td>
+<td><code>v=spf1 -all</code></td>
+</tr>
+<tr>
+<td>TXT</td>
+<td><code>_dmarc</code></td>
+<td><code>v=DMARC1; p=reject</code></td>
+</tr>
+<tr>
+<td>MX</td>
+<td><code>@</code></td>
+<td><code>.</code>（优先级 <code>0</code>）</td>
+</tr>
+</tbody>
+</table>
+<p><code>-all</code> 表示没有任何服务器被授权发信。<code>p=reject</code>
+让收信方直接拒绝未通过验证的邮件。不发信的域名可以直接用
+<code>reject</code>，不必先观察。</p>
+<p>DKIM 只在你真的用某个服务发信、并且对方给了 selector
+和公钥时再加。没有私钥的 DKIM 挡不住伪造。</p>
+<p><strong>SPF</strong>（谁能替你发信）</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TXT</td>
+<td><code>@</code></td>
+<td><code>v=spf1 -all</code></td>
+</tr>
+</tbody>
+</table>
+<p>若确实用某个服务发信，例如
+SendGrid：<code>v=spf1 include:sendgrid.net ~all</code>。</p>
+<ul>
+<li>同一个 Name 上只能有<strong>一条</strong>以 <code>v=spf1</code>
+开头的 TXT。多条会直接 PermError，收信方当成没有 SPF。</li>
+<li><code>include</code>、<code>a</code>、<code>mx</code>、<code>redirect</code>
+等机制合计最多 <strong>10 次</strong> DNS 查询。超过后 SPF 失败。</li>
+</ul>
+<p><strong>DKIM</strong>（给邮件加密码学签名）</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TXT</td>
+<td><code>s1._domainkey</code></td>
+<td><code>v=DKIM1; k=rsa; p=MIGfMA0GCS…</code></td>
+</tr>
+</tbody>
+</table>
+<p>Name 里的 <code>s1</code> 是
+selector，由邮件服务商给出。公钥也用对方提供的原文，不要自己编。</p>
+<p><strong>DMARC</strong>（收信方遇到验证失败时该怎么办 + 收报告）</p>
+<table>
+<colgroup>
+<col style="width: 5%" />
+<col style="width: 11%" />
+<col style="width: 82%" />
+</colgroup>
+<thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TXT</td>
+<td><code>_dmarc</code></td>
+<td><code>v=DMARC1; p=none; rua=mailto:dmarc@reports.example.net</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>p=</code> 取值：<code>none</code>（只观察）→
+<code>quarantine</code>（进垃圾箱）→
+<code>reject</code>（直接拒收）。<strong>会发信的域名</strong>先用
+<code>none</code> 看几周报告，再收紧。</p>
+<p><code>rua</code> 必须是一个真能收信的邮箱。空 MX
+的域名收不到报告，所以 <code>rua</code>
+不要写回这个域自己。<code>rua</code> 的邮箱域和 DMARC
+所在域不同时，邮箱域还要有一条 <code>_report._dmarc</code> TXT
+授权接收（RFC 7489）。</p>
+<blockquote>
+<p>Cloudflare 提供 <strong>Email Security Wizard</strong>，比手写 TXT
+更省事。开了 Email Routing 或 Email Sending 时，用它生成的
+SPF，不要再留着 <code>v=spf1 -all</code>。</p>
+</blockquote>
+<hr />
+<h3 id="txt-记录-万能文本">4.6 TXT 记录 —— 万能文本</h3>
+<p>用途：域名所有权验证、SPF/DMARC、站点归属证明、各种第三方服务校验。</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TXT</td>
+<td><code>@</code></td>
+<td><code>google-site-verification=xxxxxxxxxxx</code></td>
+</tr>
+<tr>
+<td>TXT</td>
+<td><code>_acme-challenge</code></td>
+<td><code>xxxxxxxxxxxxxxxx</code>（证书 DNS 验证）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>要点：</strong></p>
+<ul>
+<li>TXT 内容本质是「被双引号包裹的字符串」。Cloudflare
+会在你没写引号时自动补上；<strong>引号不成对</strong>（如
+<code>"this</code> 或
+<code>"these" ones"</code>）会触发校验错误。抄进面板时不要自己再套一层引号。</li>
+<li>在 Cloudflare 上 TXT 最常见的用途是 <strong>SSL
+证书域名验证（DCV）</strong>。</li>
+<li>单个 Name 下可以有多条 TXT（一条 SPF、若干条验证记录）。DMARC 在
+<code>_dmarc</code> 下，不和根域 TXT 抢名字。SPF 仍然只能有一条。</li>
+</ul>
+<hr />
+<h3 id="caa-记录-限定谁能给你签证书">4.7 CAA 记录 ——
+限定谁能给你签证书</h3>
+<p>防止未被列出的 CA 给你的域名签发证书。</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Tag</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CAA</td>
+<td><code>@</code></td>
+<td><code>issue</code></td>
+<td><code>letsencrypt.org</code></td>
+</tr>
+<tr>
+<td>CAA</td>
+<td><code>@</code></td>
+<td><code>issuewild</code></td>
+<td><code>letsencrypt.org</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>要点：</strong></p>
+<ul>
+<li><code>issue</code> 管普通证书，<code>issuewild</code>
+管通配符证书。存在 <code>issuewild</code> 时，通配符只看
+<code>issuewild</code>，不再沿用 <code>issue</code>。没写
+<code>issuewild</code> 时，<code>issue</code> 同时适用于通配符。</li>
+<li><strong><code>cloudflare.com</code> 不是签发 CA，写进 CAA 不会授权
+Universal SSL。</strong> 边缘证书来自合作 CA。2026-10 官方示例里能
+<code>dig</code> 到的是：
+<ul>
+<li><code>letsencrypt.org</code></li>
+<li><code>pki.goog</code>（常带参数
+<code>cansignhttpexchanges=yes</code>）</li>
+<li><code>ssl.com</code></li>
+<li><code>sectigo.com</code>
+这份名单官方写明并不完整，会随运营调整增减。</li>
+</ul></li>
+<li><strong>Universal SSL 开着时</strong>，你只要添加任意
+CAA，Cloudflare 会自动补上当前合作 CA 的 <code>issue</code> 和
+<code>issuewild</code>。这些自动记录<strong>不出现在面板里</strong>，<code>dig CAA</code>
+能看到。因此在 Cloudflare DNS 上，不必为了 Universal SSL 去手写
+<code>cloudflare.com</code>。</li>
+<li><strong>Advanced Certificate 不会自动补 CAA。</strong> 用了哪种
+CA，就要显式允许哪种 CA，<code>issue</code> 和 <code>issuewild</code>
+都要写到。</li>
+<li>自动补上的记录只存在于 Cloudflare 的权威应答里。把同一份 CAA
+抄到别的 DNS 服务商时，必须自己写上当时的合作
+CA，否则边缘证书会签不出来。</li>
+<li>常见 tag 还有 <code>iodef</code>（违规签发时向某邮箱报告）。</li>
+<li>CAA 会沿 CNAME 链生效。你的主机名 CNAME 到一个 CAA
+更严的域时，以目标域的 CAA 为准。</li>
+</ul>
+<hr />
+<h3 id="srv-记录-唯一带端口的常见记录">4.8 SRV 记录 ——
+唯一「带端口」的常见记录</h3>
+<p>SRV 是<strong>少数能在 DNS 里携带端口</strong>的记录类型，用于
+VoIP、即时通讯、Minecraft 服务器等客户端主动查询 SRV 的场景。</p>
+<table>
+<colgroup>
+<col style="width: 6%" />
+<col style="width: 27%" />
+<col style="width: 12%" />
+<col style="width: 9%" />
+<col style="width: 11%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Priority</th>
+<th>Weight</th>
+<th>Port</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SRV</td>
+<td><code>_xmpp._tcp</code></td>
+<td><code>10</code></td>
+<td><code>5</code></td>
+<td><code>5223</code></td>
+<td><code>server.example.com</code></td>
+</tr>
+<tr>
+<td>SRV</td>
+<td><code>_minecraft._tcp</code></td>
+<td><code>5</code></td>
+<td><code>50</code></td>
+<td><code>25565</code></td>
+<td><code>mc.example.com</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>要点：</strong></p>
+<ul>
+<li>Name 必须写成 <code>_服务._协议</code>
+形式（<code>_sip._tcp</code>、<code>_minecraft._udp</code>…），下划线是必需的。</li>
+<li><code>Priority</code> 越小越优先；<code>Weight</code>
+在同优先级内做加权分配。</li>
+<li><strong>关键限制：SRV 只在客户端主动查询 SRV 时才起作用。</strong>
+浏览器不会查 SRV，SSH 不会查 SRV。所以 <strong>SRV 不能用来实现「域名 →
+10080 端口」的网页访问</strong>，也不能用来改 SSH 端口。</li>
+<li>SRV 不能开橙云。</li>
+</ul>
+<hr />
+<h3 id="https-svcb-记录-提前告诉客户端怎么连">4.9 HTTPS / SVCB 记录 ——
+提前告诉客户端怎么连</h3>
+<p>较新的记录类型（RFC 9460），让客户端在第一次 HTTP 请求前就知道「该用
+HTTP/3、该用哪个 ALPN、该连哪个端口」。</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HTTPS</td>
+<td><code>@</code></td>
+<td><code>1 . alpn="h3"</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cloudflare 的行为（容易困惑，重点）：</strong></p>
+<ul>
+<li><p><strong>橙云 Name</strong>：只要开了 Universal SSL，并且启用了
+HTTP/2 或 HTTP/3，Cloudflare <strong>自动动态生成</strong> HTTPS
+记录。你手动加的 HTTPS 记录在橙云 Name
+上<strong>不会被返回</strong>，Cloudflare 用自己的。</p></li>
+<li><p><strong>关掉 Universal SSL 后</strong>，橙云 Name 上不再自动生成
+HTTPS 记录，即使你有自定义证书或 Advanced
+Certificate。要恢复自动生成，重新打开 Universal
+SSL；真正用于连接的证书仍按证书优先级，自定义证书可以盖过 Universal
+SSL。</p></li>
+<li><p><strong>灰云 Name</strong>：你可以手动加 HTTPS 记录，Cloudflare
+会正常返回 ——
+<strong>但前提是同名下的所有记录都必须是灰云</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>A</code>（灰云）+ <code>HTTPS</code>（同名）</td>
+<td>✅ HTTPS 记录会被返回</td>
+</tr>
+<tr>
+<td><code>AAAA</code>（橙云）+ <code>HTTPS</code>（同名）</td>
+<td>❌ HTTPS 记录不会被返回</td>
+</tr>
+</tbody>
+</table></li>
+</ul>
+<hr />
+<h3 id="ns-记录-子域委派">4.10 NS 记录 —— 子域委派</h3>
+<p>告诉解析器：「这个子域名的 DNS 由别家的服务器回答」。</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NS</td>
+<td><code>blog</code></td>
+<td><code>ns1.otherdns.com</code></td>
+</tr>
+<tr>
+<td>NS</td>
+<td><code>blog</code></td>
+<td><code>ns2.otherdns.com</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>要点：</strong></p>
+<ul>
+<li><strong>绝大多数情况你不需要手动加 NS。</strong> 你域名在 Cloudflare
+的权威 NS（<code>xxx.ns.cloudflare.com</code>）由后台
+<strong>Nameservers</strong> 专区管理，不在记录表里。</li>
+<li>只有两种场景需要手动加 NS：① <strong>子域委派</strong>（把
+<code>blog.example.com</code> 交给别家托管）；② <strong>子域
+setup</strong>（subdomain setup）。</li>
+<li>数量限制：Cloudflare 每个委派名最多 <strong>10 条
+NS</strong>，超过会被拒绝；最佳实践是 <strong>≤ 7 条</strong>（RFC
+1912）。</li>
+<li>一旦某子域被 NS
+委派出去，<strong>该子域下所有记录都由别家决定</strong>，你在 Cloudflare
+里给它加 A 记录是不生效的。</li>
+</ul>
+<hr />
+<h3 id="soa-记录-区域权威信息">4.11 SOA 记录 —— 区域权威信息</h3>
+<p>存管理员邮箱、序列号、刷新/重试/过期时间等。</p>
+<ul>
+<li><strong>你不需要创建它。</strong> 用 Cloudflare 权威 DNS 时，SOA
+自动生成。</li>
+<li>Enterprise 用户可覆盖 SOA
+参数（<code>MNAME</code>、<code>RNAME</code>、<code>Serial</code>、<code>Refresh</code>、<code>Retry</code>、<code>Expire</code>、<code>Record TTL</code>、<code>Minimum TTL</code>）。</li>
+<li>查询 SOA 时返回的 TTL 是 <code>Record TTL</code> 与
+<code>Minimum TTL</code>
+中<strong>较小</strong>的那个。<code>Minimum TTL</code>
+本身是负缓存时间（RFC 2308）。</li>
+</ul>
+<hr />
+<h3 id="ptr-记录-反向解析ip-域名">4.12 PTR 记录 —— 反向解析（IP →
+域名）</h3>
+<p>「这个 IP 对应的域名是什么」，邮件服务器几乎必需（很多收件方会做 PTR
+校验，没有 PTR 的邮件容易进垃圾箱）。</p>
+<ul>
+<li>PTR <strong>不属于正向 zone</strong>，它挂在反解
+zone（<code>in-addr.arpa</code>）里。</li>
+<li>Cloudflare 支持 <strong>Reverse Zones</strong>，但实践中 <strong>PTR
+通常由你的 VPS 服务商在其控制台设置</strong>（在 Vultr / Linode /
+阿里云后台填 “Reverse DNS / rDNS” 即可），而不是在 Cloudflare
+里配。</li>
+<li>你的 VPS 要发邮件的话，把 PTR 设成 <code>mail.example.com</code>
+并与 HELO 一致，是提升送达率的关键一步。</li>
+</ul>
+<hr />
+<h3 id="ds-dnskey-dnssec">4.13 DS / DNSKEY —— DNSSEC</h3>
+<p>给 DNS 回答加密码学签名，防止 DNS 应答被篡改。</p>
+<ul>
+<li><strong>不要手动加这两条。</strong> Cloudflare 的做法是：在
+<strong>DNS → DNSSEC</strong> 里点一下 Enable，Cloudflare 自己生成
+KSK/ZSK，你只需把它给出的 <strong>DS
+记录</strong>填到<strong>注册商</strong>那里。</li>
+<li>子域已经用 NS 委派出去、并且子域自己做了 DNSSEC 时，才在 Cloudflare
+里给这个子域加 <strong>DS</strong>。</li>
+<li>手动添加 DNSKEY
+只出现在多签名者（multi-signer）等专门方案里。普通「Cloudflare
+做权威并签名」不要手写 DNSKEY。</li>
+</ul>
+<hr />
+<h3 id="其他类型">4.14 其他类型</h3>
+<p>Cloudflare
+还支持较少用到的：<code>URI</code>、<code>NAPTR</code>、<code>SSHFP</code>、<code>TLSA</code>、<code>SMIMEA</code>、<code>CERT</code>。</p>
+<ul>
+<li><strong>TLSA</strong>：配合 DANE 使用，绑定「DNS 里声明的证书」与
+TLS 连接，用于邮件/HTTPS 的额外校验。</li>
+<li><strong>SSHFP</strong>：声明 SSH 主机密钥指纹，<code>ssh</code>
+客户端开启 <code>VerifyHostKeyDNS</code> 时可自动校验。</li>
+<li>一般个人 VPS 场景用不到，知道存在即可。</li>
+</ul>
+<hr />
+<h3 id="容易混淆的两个不是标准记录的概念">4.15
+容易混淆的两个「不是标准记录」的概念</h3>
+<p><strong>① ALIAS / ANAME</strong></p>
+<p>很多 DNS 服务商（AWS Route 53、DNSMadeEasy 等）提供
+ALIAS/ANAME，用来在根域实现「像 CNAME 一样指向域名，但又能和 MX 共存」。
+<strong>Cloudflare 不提供 ALIAS 类型</strong> —— 它用 <strong>CNAME
+flattening</strong> 达到同样效果，所以你在 Cloudflare 里直接在
+<code>@</code> 上放 CNAME 就行。</p>
+<p><strong>② URL 转发</strong></p>
+<p>Cloudflare 的 DNS 记录类型里<strong>没有
+Redirect</strong>，也<strong>不做域名伪装</strong>（地址栏继续显示你的域名、页面内容来自别处）。官方提供的是
+HTTP 跳转，浏览器地址会变成目标 URL。</p>
+<p>做法：</p>
+<ol type="1">
+<li>给主机名一条橙云 A 或 CNAME。没有真实源站、只做跳转时，A
+记录填文档地址 <code>192.0.2.1</code>（IPv6 用
+<code>100::</code>），并保持橙云。这是占位地址，流量由跳转规则处理，不会回源。它不是
+Cloudflare 的 anycast 地址。</li>
+<li>在 <strong>Rules → Redirect Rules</strong>（Single Redirects 或 Bulk
+Redirects）里配置 301/302。</li>
+</ol>
+<p>跳转只作用于 HTTP/HTTPS，不能用于 SSH
+或非标端口。主机名不是橙云时，Redirect Rule 不会生效。</p>
+<hr />
+<h2 id="cloudflare-独有维度proxy-status橙云-灰云">5. Cloudflare
+独有维度：Proxy status（橙云 / 灰云）</h2>
+<p>这是 Cloudflare 区别于普通 DNS
+服务商的关键开关，也决定了非标端口能不能走代理。</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 29%" />
+<col style="width: 36%" />
+</colgroup>
+<thead>
+<tr>
+<th></th>
+<th>🟠 <strong>Proxied（橙云）</strong></th>
+<th>⚪ <strong>DNS only（灰云）</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>解析返回的 IP</td>
+<td>Cloudflare 的 anycast IP</td>
+<td>你 VPS 的真实 IP</td>
+</tr>
+<tr>
+<td>这条记录是否暴露源站 IP</td>
+<td>当前应答不暴露</td>
+<td>暴露</td>
+</tr>
+<tr>
+<td>DDoS 防护 / WAF / CDN 缓存</td>
+<td>✅</td>
+<td>❌</td>
+</tr>
+<tr>
+<td>Cloudflare 边缘证书（Universal SSL）</td>
+<td>✅ 自动</td>
+<td>❌ 不生效</td>
+</tr>
+<tr>
+<td>TTL</td>
+<td>固定 <code>Auto</code> = 300 秒，<strong>不可改</strong></td>
+<td>可自定义</td>
+</tr>
+<tr>
+<td>支持端口</td>
+<td>仅下表列出的 HTTP/HTTPS 端口</td>
+<td><strong>任意端口</strong></td>
+</tr>
+<tr>
+<td>适用</td>
+<td>网站、API、反代</td>
+<td>SSH、游戏服、数据库、Plex、任意非标端口</td>
+</tr>
+</tbody>
+</table>
+<p>橙云只隐藏<strong>这一条主机名当前的 DNS 应答</strong>。同 zone
+里其它灰云记录、旧缓存、邮件头，仍可能把同一台机器的 IP 公开。</p>
+<h3 id="官方支持的代理端口">官方支持的代理端口</h3>
+<p><strong>HTTP 端口</strong></p>
+<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">80, 8080, 8880, 2052, 2082, 2086, 2095</span><br></pre></td></tr></table></figure></div>
+<p><strong>HTTPS 端口</strong></p>
+<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">443, 2053, 2083, 2087, 2096, 8443</span><br></pre></td></tr></table></figure></div>
+<p><strong>默认会缓存的端口：</strong>
+<code>80</code>、<code>8080</code>、<code>443</code>。</p>
+<p><strong>默认关闭缓存的端口</strong>（能代理，但 Cloudflare
+不缓存内容；Enterprise 可用 Cache Rule 打开缓存）</p>
+<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2052, 2053, 2082, 2083, 2086, 2087, 2095, 2096, 8880, 8443</span><br></pre></td></tr></table></figure></div>
+<h3 id="非标端口如-10080怎么办">非标端口（如 10080）怎么办</h3>
+<p>官方给出两条路：</p>
+<ol type="1">
+<li><strong>把该 Name 改成灰云</strong>，绕过 Cloudflare 直连源站 → 访问
+<code>http://web.example.com:10080</code>。</li>
+<li><strong>配置 Spectrum 应用</strong>，Spectrum 支持任意 TCP/UDP 端口
+—— 但 <strong>Spectrum 全端口仅 Enterprise 套餐提供</strong>。</li>
+</ol>
+<p>另外注意：Cloudflare 付费套餐的 WAF 有一条「Anomaly:Port - Non
+Standard Port (not 80 or 443)」规则，默认关闭；开启后会拦截 80/443
+之外的 HTTP 请求。</p>
+<p>Free / Pro / Business 上，边缘大约 <strong>100
+秒</strong>没有从源站读到新数据就会返回 <strong>524</strong>。源站 Nginx
+的 <code>proxy_read_timeout</code> 改不了这个上限。更长的 Proxy Read
+Timeout 是 Enterprise 的设置。</p>
+<h3 id="其它代理限制">其它代理限制</h3>
+<ul>
+<li><strong>只有承载 HTTP/HTTPS 流量的 A / AAAA / CNAME
+可以代理</strong>，其它类型一律不行。</li>
+<li><strong>同名 A/AAAA
+混用橙云和灰云时，整组都按橙云处理。</strong></li>
+<li><strong>NTLM / Kerberos / Microsoft Integrated Windows
+Authentication 与橙云不兼容</strong>（它们在 TCP 连接层认证，而
+Cloudflare 不保证同一客户端复用同一条回源 TCP
+连接），会造成反复弹认证框。</li>
+<li><strong>新加入 Cloudflare 的域名处于 pending 状态（最长 24
+小时）</strong>，这期间<strong>所有记录都是灰云</strong>，返回的是源站真实
+IP。激活后才可能变橙云。官方建议激活后<strong>在主机商处更换一次源站
+IP</strong>，避免 onboarding 期间 IP 泄露。</li>
+<li>开通了 <strong>Cloudflare China Network</strong>
+的域名，在中国数据中心里只代理 <strong>80 和
+443</strong>。这是该产品的限制，不是「国内访客访问普通 Cloudflare
+站点只能用这两个端口」。</li>
+</ul>
+<hr />
+<h2 id="记录之间的冲突与优先级规则">6. 记录之间的冲突与优先级规则</h2>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 78%" />
+</colgroup>
+<thead>
+<tr>
+<th>规则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CNAME 排他</strong></td>
+<td>同名 CNAME 不能与任何其它记录共存，加不上会报记录同名冲突。根域靠
+flattening 可以与 MX、TXT、CAA 共存。</td>
+</tr>
+<tr>
+<td><strong>A / AAAA / MX / TXT / CAA 可以同名共存</strong></td>
+<td>多条 A、A+AAAA、A+MX+TXT 都合法。</td>
+</tr>
+<tr>
+<td><strong>同名 A/AAAA 的橙云是整组生效的</strong></td>
+<td>有一条是橙云，其余 A/AAAA 也按橙云处理。</td>
+</tr>
+<tr>
+<td><strong>多条同名灰云 A = 一组地址、顺序轮换</strong></td>
+<td>没有健康检查。橙云多条 A 是多个回源地址，访客看不到这些 IP。</td>
+</tr>
+<tr>
+<td><strong>精确记录优先于通配符</strong></td>
+<td>存在精确记录或委派时，<code>*</code> 不对该名字及其下级生效。</td>
+</tr>
+<tr>
+<td><strong>NS 委派覆盖子域</strong></td>
+<td>被委派的子域下，Cloudflare 里的记录不再被查询。</td>
+</tr>
+<tr>
+<td><strong>同名混合橙云/灰云会影响 HTTPS 记录</strong></td>
+<td>手动 HTTPS 记录要求同名所有记录都是灰云。</td>
+</tr>
+<tr>
+<td><strong>MX 依赖灰云的 A/AAAA</strong></td>
+<td>MX 目标主机必须有地址记录；在 Cloudflare 上该主机名要灰云。</td>
+</tr>
+<tr>
+<td><strong>根域放 CNAME 靠 flattening</strong></td>
+<td>根域 flattening 始终开启，因此根域可以同时有 CNAME 和 MX。</td>
+</tr>
+<tr>
+<td><strong>记录体积上限</strong></td>
+<td>单条记录 wire format ≤ 4096 字节；同名同类型记录内容总长 ≤ 8192
+字符。</td>
+</tr>
+<tr>
+<td><strong>记录条数上限</strong></td>
+<td>2024-09-01 之后创建的 Free zone 为 200 条；更早的 Free zone 为 1000
+条。Pro / Business / Enterprise 为 3500 条。Enterprise
+需要更多时可联系客户团队。</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="ttl-详解">7. TTL 详解</h2>
+<table>
+<thead>
+<tr>
+<th>记录状态</th>
+<th>可选 TTL 范围</th>
+<th>Auto 的值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>🟠 Proxied</td>
+<td><strong>不可修改</strong>，固定 Auto</td>
+<td>300 秒</td>
+</tr>
+<tr>
+<td>⚪ DNS only（非 Enterprise）</td>
+<td>60 秒 ~ 1 天</td>
+<td>300 秒</td>
+</tr>
+<tr>
+<td>⚪ DNS only（Enterprise）</td>
+<td>30 秒 ~ 1 天</td>
+<td>300 秒</td>
+</tr>
+</tbody>
+</table>
+<p><strong>为什么橙云不能改 TTL？</strong> 因为橙云返回的是 Cloudflare
+anycast IP，可能随时变化，300 秒上限保证变更快速生效。</p>
+<p><strong>实操建议：</strong></p>
+<ul>
+<li>平时：<code>Auto</code>（300 秒）就够。</li>
+<li><strong>准备换 VPS / 换 IP 之前</strong>：提前几小时把灰云记录的 TTL
+降到 60 秒，切换后旧缓存很快过期，迁移窗口短。</li>
+<li>稳定不变的记录（如 DKIM、SPF）：可以设长 TTL 减少查询。</li>
+<li>注意：改完记录后，<strong>你本机 DNS 缓存可能比 TTL
+更久</strong>才刷新。Windows 用 <code>ipconfig /flushdns</code>。macOS
+用
+<code>sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder</code>。Linux
+若使用 systemd-resolved，用 <code>resolvectl flush-caches</code>。</li>
+</ul>
+<blockquote>
+<p><strong>Nameserver TTL 是另一个独立设置</strong>，只影响 Cloudflare
+分配的 NS / 自定义 NS，不在记录表里调。</p>
+</blockquote>
+<hr />
+<h2 id="通配符记录wildcard">8. 通配符记录（Wildcard）</h2>
+<p>适合「几百个子域名都指向同一台机器」的多租户场景。</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Name</th>
+<th>Content</th>
+<th>Proxy status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td><code>*</code></td>
+<td><code>203.0.113.45</code></td>
+<td>🟠 Proxied</td>
+</tr>
+<tr>
+<td>CNAME</td>
+<td><code>*.www</code></td>
+<td><code>example.com</code></td>
+<td>🟠 Proxied</td>
+</tr>
+</tbody>
+</table>
+<p><strong>四条规则：</strong></p>
+<ol type="1">
+<li><strong>只有第一个 label 的 <code>*</code> 才是通配符。</strong>
+<code>subdomain.*.example.com</code> 里的 <code>*</code>
+被当作字面字符。<code>*.*.example.com</code> 也只有第一个 <code>*</code>
+是通配符。</li>
+<li><strong>通配符默认是多级的。</strong> <code>*.example.com</code>
+同时覆盖 <code>abc.example.com</code> 和
+<code>123.abc.example.com</code>。</li>
+<li><strong>精确记录优先。</strong> 若 <code>abc.example.com</code>
+有自己的记录或委派，通配符对它无效，对它下面的层级也无效。</li>
+<li>通配符可橙云可灰云，<strong>所有套餐都支持</strong>。</li>
+</ol>
+<p><strong>隐式父名和 NS 类型有关。</strong> 只在 <code>123.abc</code>
+上有记录、<code>abc</code> 本身没有任何记录时：标准 NS 仍用
+<code>*.example.com</code> 回答 <code>abc.example.com</code>；Advanced
+nameservers 按 RFC 4592，不再用这条通配符回答
+<code>abc.example.com</code>。</p>
+<p><strong>证书只覆盖一层。</strong> Universal SSL 的通配符是
+<code>*.example.com</code>，只匹配一个 label。DNS 能把
+<code>123.abc.example.com</code> 解析到
+Cloudflare，边缘证书却不包含这个名字，HTTPS
+会失败。更深的名字要单独放进证书，或为那一层另做
+<code>*.abc</code>。</p>
+<p><strong>CNAME setup（partial）的签发方式</strong>：这种接入下
+Cloudflare 不会自动为通配符签发证书。Universal 证书要用 TXT
+DCV；Advanced 证书优先用 Delegated DCV，否则<strong>证书里每个 hostname
+都要单独放一个 DCV token</strong>（<code>example.com</code> +
+<code>*.example.com</code> = 2 个 token）。</p>
+<hr />
+<h2 id="记录注释与标签comments-tags">9. 记录注释与标签（Comments /
+Tags）</h2>
+<p>不影响解析，纯粹给你自己看的元数据，记录多了时非常好用（可按标签过滤）。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Free</th>
+<th>Pro / Business</th>
+<th>Enterprise</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Comment 字数</td>
+<td>100</td>
+<td>500</td>
+<td>500</td>
+</tr>
+<tr>
+<td>每条记录 Comment 数</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Tags 是否可用</td>
+<td>❌</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>每记录 Tag 数</td>
+<td>—</td>
+<td>20</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Tag 名 / 值字数</td>
+<td>—</td>
+<td>32 / 100</td>
+<td>32 / 100</td>
+</tr>
+</tbody>
+</table>
+<p>Tag 格式是 <code>name:value</code>，name 不区分大小写、只能含字母数字
+<code>-</code>
+<code>_</code>。值可以是注释允许的字符，但不能换行。导入导出时
+<code>cf-</code> 开头的保留 tag 可控制 Cloudflare 配置。Comment
+同样不能包含换行。</p>
+<hr />
+<h2 id="排错速查表">10. 排错速查表</h2>
+<table>
+<colgroup>
+<col style="width: 21%" />
+<col style="width: 31%" />
+<col style="width: 46%" />
+</colgroup>
+<thead>
+<tr>
+<th>现象</th>
+<th>最可能原因</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>加了记录但 <code>ping</code> 不通</td>
+<td>域名 NS 没指向 Cloudflare</td>
+<td>去注册商改 NS 为后台给出的 <code>xxx.ns.cloudflare.com</code></td>
+</tr>
+<tr>
+<td>记录显示橙云但 <code>dig</code> 返回源站 IP</td>
+<td>zone 还在 pending（最长 24h）</td>
+<td>等激活；期间全部按灰云处理</td>
+</tr>
+<tr>
+<td>加同名记录报同名冲突</td>
+<td>CNAME 排他性</td>
+<td>删掉同名的另一条记录。根域 CNAME 与 MX/TXT 可以共存</td>
+</tr>
+<tr>
+<td>想让同名一条橙云、一条灰云</td>
+<td>同名 A/AAAA 整组按橙云处理</td>
+<td>拆成两个主机名</td>
+</tr>
+<tr>
+<td>SSH 连不上</td>
+<td><code>ssh</code> 记录被设成橙云</td>
+<td>改成 <strong>DNS only</strong></td>
+</tr>
+<tr>
+<td>网页 521 / 522</td>
+<td>橙云 + 非标端口，源站端口没开，或只有 AAAA 且源站没有 IPv6</td>
+<td>改灰云 / 反代到 443 / 检查安全组 / 补上可用的 A 记录</td>
+</tr>
+<tr>
+<td>524</td>
+<td>源站超过约 100 秒没有返回新数据（Free / Pro / Business）</td>
+<td>缩短源站处理时间；更长超时只在 Enterprise 可调</td>
+</tr>
+<tr>
+<td>525 SSL handshake failed</td>
+<td>Cloudflare 与源站的 TLS 握手失败</td>
+<td>确认 443 在听、证书文件可读、Cloudflare IP 没被防火墙丢掉</td>
+</tr>
+<tr>
+<td>526 Invalid SSL certificate</td>
+<td>Full (strict) 不接受源站证书</td>
+<td>换 Origin CA 或公共 CA，模式保持 Full (strict)</td>
+</tr>
+<tr>
+<td>Too many redirects 重定向循环</td>
+<td>Flexible 模式 + 源站强制 HTTPS</td>
+<td>模式改 Full (strict)，源站装 Cloudflare 信任的证书</td>
+</tr>
+<tr>
+<td>网页能开但 WebSocket 断，或普通请求异常</td>
+<td><code>Connection</code> 被写成固定的 <code>upgrade</code></td>
+<td>用 <code>map</code>，只在 <code>$http_upgrade</code> 非空时设为
+<code>upgrade</code></td>
+</tr>
+<tr>
+<td>日志里的客户端 IP 全是 Cloudflare</td>
+<td>用了 <code>$remote_addr</code>，且没配 <code>real_ip</code></td>
+<td>读 <code>CF-Connecting-IP</code>，或按 Cloudflare IP 段配置
+<code>real_ip</code></td>
+</tr>
+<tr>
+<td>CNAME 指向别的 Cloudflare 账号报 1014</td>
+<td>橙云跨账号 CNAME</td>
+<td>同账号跨 zone 可以。跨账号用 Cloudflare for SaaS，或改为灰云 /
+直接写对方源站的 A 记录</td>
+</tr>
+<tr>
+<td>CNAME 加了但完全解析不出</td>
+<td>dangling CNAME（末端无 A/AAAA）</td>
+<td>确认目标域名有有效 IP 记录</td>
+</tr>
+<tr>
+<td>第三方域名验证失败</td>
+<td>CNAME 被扁平化，应答里没有 CNAME</td>
+<td>付费套餐关掉 Flatten all，或关掉这一条的 Flatten。根域 flattening
+关不掉，验证改用 TXT</td>
+</tr>
+<tr>
+<td>子域记录改了没反应</td>
+<td>该子域被 NS 委派出去了</td>
+<td>到实际托管方改，或在 Cloudflare 删掉 NS</td>
+</tr>
+<tr>
+<td><code>dig MX</code> 出现 <code>_dc-mx</code></td>
+<td>MX 指向了橙云主机名</td>
+<td>这是让邮件绕过代理的改写。邮件主机名应单独使用灰云 A/AAAA</td>
+</tr>
+<tr>
+<td>改了记录但本机还是旧 IP</td>
+<td>本地 DNS 缓存</td>
+<td><code>ipconfig /flushdns</code>；macOS 再执行
+<code>sudo killall -HUP mDNSResponder</code></td>
+</tr>
+<tr>
+<td>邮件进垃圾箱</td>
+<td>缺 SPF/DKIM/DMARC，或 VPS 无 PTR</td>
+<td>发信用服务商给出的三件套；在主机商设 rDNS，并与 HELO 一致</td>
+</tr>
+<tr>
+<td>不发信仍被伪造</td>
+<td>只有空 SPF 或假 DKIM，没有 DMARC <code>reject</code></td>
+<td><code>v=spf1 -all</code> + DMARC <code>p=reject</code> + 空 MX</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="常用验证命令">11. 常用验证命令</h2>
+<div class="code-container" data-rel="Powershell"><figure class="iseeu highlight powershell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Windows PowerShell</span></span><br><span class="line"><span class="built_in">Resolve-DnsName</span> example.com <span class="literal">-Type</span> A</span><br><span class="line"><span class="built_in">Resolve-DnsName</span> ssh.example.com <span class="literal">-Type</span> A</span><br><span class="line"><span class="built_in">Resolve-DnsName</span> example.com <span class="literal">-Type</span> MX</span><br><span class="line"><span class="built_in">Resolve-DnsName</span> _dmarc.example.com <span class="literal">-Type</span> TXT</span><br><span class="line"><span class="built_in">Resolve-DnsName</span> example.com <span class="literal">-Type</span> CAA</span><br><span class="line">ipconfig /flushdns</span><br></pre></td></tr></table></figure></div>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Linux / macOS</span></span><br><span class="line">dig +short example.com A</span><br><span class="line">dig +short ssh.example.com A</span><br><span class="line">dig +short example.com MX</span><br><span class="line">dig +short TXT _dmarc.example.com</span><br><span class="line">dig +short CAA example.com</span><br><span class="line"></span><br><span class="line"><span class="comment"># 问该 zone 的权威 NS。名字在 Cloudflare 后台 Nameservers 卡片里，下面只是例子</span></span><br><span class="line">dig example.com A @ada.ns.cloudflare.com</span><br><span class="line"></span><br><span class="line"><span class="comment"># 1.1.1.1 是递归解析器，应答可能来自它自己的缓存</span></span><br><span class="line">dig example.com A @1.1.1.1</span><br><span class="line"></span><br><span class="line">dig +trace example.com            <span class="comment"># 从根开始追踪委派</span></span><br><span class="line"></span><br><span class="line">nc -vz ssh.example.com 22</span><br><span class="line">nc -vz web.example.com 10080</span><br><span class="line">curl -I https://web.example.com</span><br></pre></td></tr></table></figure></div>
+<p>macOS 清缓存：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> dscacheutil -flushcache</span><br><span class="line"><span class="built_in">sudo</span> killall -HUP mDNSResponder</span><br></pre></td></tr></table></figure></div>
+<p><strong>判断橙云还是灰云</strong>：解析结果落在 Cloudflare 地址段 →
+橙云；返回你的 VPS IP →
+灰云。<code>104.16.0.0/12</code>、<code>172.64.0.0/13</code>
+只是常见例子，以 <a class="link"   target="_blank" rel="noopener" href="https://www.cloudflare.com/ips/" 
+class="uri">https://www.cloudflare.com/ips/<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a> 的完整名单为准。</p>
+<hr />
+<h2 id="一页速记可直接抄的记录模板">12.
+一页速记（可直接抄的记录模板）</h2>
+<p>面板里的 TXT 不要自己加引号，Cloudflare 会补。MX
+的内容就是一个点。</p>
+<div class="code-container" data-rel="Plaintext"><figure class="iseeu highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"># 主站</span><br><span class="line">A      @              203.0.113.45   🟠 Proxied    Auto</span><br><span class="line">A      www            203.0.113.45   🟠 Proxied    Auto</span><br><span class="line"></span><br><span class="line"># 管理 / 非标服务（必须灰云）</span><br><span class="line">A      ssh            203.0.113.45   ⚪ DNS only   Auto</span><br><span class="line">A      panel          203.0.113.45   ⚪ DNS only   Auto</span><br><span class="line"></span><br><span class="line"># 不发信、不收信</span><br><span class="line">TXT    @              v=spf1 -all                                        Auto</span><br><span class="line">TXT    _dmarc         v=DMARC1; p=reject                                 Auto</span><br><span class="line">MX     @              .                              priority 0           Auto</span><br><span class="line"></span><br><span class="line"># 源站若用 Let&#x27;s Encrypt。Universal SSL 开着时，Cloudflare 会自动补合作 CA</span><br><span class="line"># （letsencrypt.org / pki.goog / ssl.com / sectigo.com 等），面板里看不到。</span><br><span class="line"># 不要写 cloudflare.com。Advanced Certificate 不会自动补，须按实际 CA 写全 issue 与 issuewild。</span><br><span class="line">CAA    @              issue      letsencrypt.org                         Auto</span><br></pre></td></tr></table></figure></div>
+<p>会发信时：删掉 <code>v=spf1 -all</code> 和空 MX，改成服务商给出的
+SPF、DKIM、MX，DMARC 先用 <code>p=none</code>。<code>rua</code>
+放到一个能收信的其它域。</p>
+
+		</div>
+
+		
+		<div class="post-copyright-info w-full my-8 px-2 sm:px-6 md:px-8">
+			<div class="article-copyright-info-container">
+    <ul>
+        <li><strong>Title:</strong> DNS记录详解</li>
+        <li><strong>Author:</strong> Eviarch</li>
+        <li><strong>Created at
+                :</strong> 2026-10-21 20:09:00</li>
+        
+            <li>
+                <strong>Updated at
+                    :</strong> 2026-10-21 20:09:00
+            </li>
+        
+        <li>
+            <strong>Link:</strong> https://blog.eviarch.com/2026/10/21/DNS记录详解/
+        </li>
+        <li>
+            <strong>
+                License:
+            </strong>
+            
+
+            
+                This work is licensed under <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0">CC BY-NC-SA 4.0</a>.
+            
+        </li>
+    </ul>
+</div>
+
+		</div>
+		
+
+		
+		<ul class="post-tags-box text-lg mt-1.5 flex-wrap justify-center flex md:hidden">
+			
+			<li class="tag-item mx-0.5">
+				<a href="/tags/Network/">#Network</a>&nbsp;
+			</li>
+			
+			<li class="tag-item mx-0.5">
+				<a href="/tags/DNS/">#DNS</a>&nbsp;
+			</li>
+			
+			<li class="tag-item mx-0.5">
+				<a href="/tags/Cloudflare/">#Cloudflare</a>&nbsp;
+			</li>
+			
+		</ul>
+		
+
+		
+
+		
+		<div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+			
+			
+			<div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="next" rel="next" href="/2026/10/21/%E9%9B%85%E6%80%9D%E5%8F%A3%E8%AF%AD%E9%A2%98%E7%9B%AE/">
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">雅思口语题目</span>
+						<span class="post-nav-item">Next posts</span>
+					</span>
+					<span class="right arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-right"></i>
+					</span>
+				</a>
+			</div>
+			
+		</div>
+		
+
+
+		
+		<div class="comment-container px-2 sm:px-6 md:px-8 pb-8">
+			<div class="comments-container mt-10 w-full ">
+    <div id="comment-anchor" class="w-full h-2.5"></div>
+    <div class="comment-area-title w-full my-1.5 md:my-2.5 text-xl md:text-3xl font-bold">
+        Comments
+    </div>
+    
+
+        
+            
+    <div id="giscus-container"></div>
+    <script data-swup-reload-script defer>
+        (function() {
+            const containerId = "giscus-container";
+            const mapping = "pathname";
+            const lang = "zh-CN";
+            const inputPosition = "top";
+            const reactionsEnabled = "1" === "1";
+            const emitMetadata = "1" === "1";
+            const strict = "0" === "1";
+            const loading = "lazy";
+
+            const getTerm = () => {
+                if (mapping === "pathname") return location.pathname;
+                if (mapping === "url") return location.href;
+                if (mapping === "title") return document.title;
+                if (mapping === "og:title") {
+                    const ogTitle = document.querySelector("meta[property='og:title']");
+                    return ogTitle?.content || document.title;
+                }
+                return "";
+            };
+
+            const sendUpdate = () => {
+                const iframe = document.querySelector("iframe.giscus-frame");
+                if (!iframe) {
+                    return;
+                }
+
+                const setConfig = {
+                    theme: "preferred_color_scheme",
+                    lang,
+                    inputPosition,
+                    reactionsEnabled,
+                    emitMetadata,
+                    strict,
+                };
+
+                if (mapping !== "number") {
+                    const term = getTerm();
+                    if (term) {
+                        setConfig.term = term;
+                    }
+                }
+
+                iframe.contentWindow.postMessage(
+                    { giscus: { setConfig } },
+                    "https://giscus.app",
+                );
+            };
+
+            const loadGiscus = () => {
+                const container = document.getElementById(containerId);
+                if (!container) {
+                    return;
+                }
+
+                const iframe = container.querySelector("iframe.giscus-frame");
+                if (iframe) {
+                    sendUpdate();
+                    return;
+                }
+
+                if (container.dataset.giscusInit === "true") {
+                    return;
+                }
+
+                const giscusConfig = {
+                    src: "https://giscus.app/client.js",
+                    "data-repo": "eviarch/Blooooooooooooooog",
+                    "data-repo-id": "R_kgDOO4jG4g",
+                    "data-category": "Announcements",
+                    "data-category-id": "DIC_kwDOO4jG4s4CrP-8",
+                    "data-mapping": mapping,
+                    "data-strict": "0",
+                    "data-reactions-enabled": "1",
+                    "data-emit-metadata": "1",
+                    "data-theme": "preferred_color_scheme",
+                    "data-lang": lang,
+                    "data-input-position": inputPosition,
+                    "data-loading": loading,
+                    crossorigin: "anonymous",
+                    async: true,
+                };
+
+                const giscusScript = document.createElement("script");
+                for (const key in giscusConfig) {
+                    giscusScript.setAttribute(key, giscusConfig[key]);
+                }
+                container.appendChild(giscusScript);
+                container.dataset.giscusInit = "true";
+            };
+
+            const runGiscus = () => {
+                const container = document.getElementById(containerId);
+                if (!container) {
+                    return;
+                }
+
+                if (container.querySelector("iframe.giscus-frame")) {
+                    sendUpdate();
+                    return;
+                }
+
+                loadGiscus();
+            };
+
+            runGiscus();
+        })();
+    </script>
+
+
+        
+    
+</div>
+
+		</div>
+		
+	</div>
+
+	
+	<div class="toc-content-container">
+		<div class="post-toc-wrap">
+	<div class="post-toc">
+		<div class="toc-title">On this page</div>
+		<div class="page-title">DNS记录详解</div>
+		<ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#cloudflare-%E5%9F%9F%E5%90%8D%E8%A7%A3%E6%9E%90%E8%AE%B0%E5%BD%95%E5%AE%8C%E5%85%A8%E6%8C%87%E5%8D%97"><span class="nav-text">Cloudflare
+域名解析记录完全指南</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E5%88%86%E9%92%9F%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="nav-text">0. 一分钟速查表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%88%E7%90%86%E8%A7%A3-dns-%E7%9A%84%E8%A7%A3%E6%9E%90%E9%93%BE%E8%B7%AF"><span class="nav-text">1. 先理解 DNS 的解析链路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E6%9D%A1%E8%AE%B0%E5%BD%95%E7%9A%84%E4%BA%94%E4%B8%AA%E8%A6%81%E7%B4%A0"><span class="nav-text">2. 一条记录的五个要素</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#name-%E7%9A%84%E5%86%99%E6%B3%95%E7%BA%A6%E5%AE%9A"><span class="nav-text">Name 的写法约定</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E7%B1%BB%E5%9E%8B%E6%80%BB%E8%A7%88"><span class="nav-text">3. 记录类型总览</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%90%E7%B1%BB%E8%AF%A6%E8%A7%A3"><span class="nav-text">4. 逐类详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#a-%E8%AE%B0%E5%BD%95-%E5%9F%9F%E5%90%8D-ipv4"><span class="nav-text">4.1 A 记录 —— 域名 → IPv4</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#aaaa-%E8%AE%B0%E5%BD%95-%E5%9F%9F%E5%90%8D-ipv6"><span class="nav-text">4.2 AAAA 记录 —— 域名 → IPv6</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cname-%E8%AE%B0%E5%BD%95-%E5%9F%9F%E5%90%8D-%E5%8F%A6%E4%B8%80%E4%B8%AA%E5%9F%9F%E5%90%8D"><span class="nav-text">4.3 CNAME 记录 —— 域名 →
+另一个域名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mx-%E8%AE%B0%E5%BD%95-%E9%82%AE%E4%BB%B6%E6%8A%95%E9%80%92"><span class="nav-text">4.4 MX 记录 —— 邮件投递</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#spf-dkim-dmarc-%E9%82%AE%E4%BB%B6%E5%8F%8D%E4%BC%AA%E9%80%A0%E9%83%BD%E6%98%AF-txt-%E5%BD%A2%E6%80%81"><span class="nav-text">4.5 SPF &#x2F; DKIM &#x2F; DMARC
+—— 邮件反伪造（都是 TXT 形态）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#txt-%E8%AE%B0%E5%BD%95-%E4%B8%87%E8%83%BD%E6%96%87%E6%9C%AC"><span class="nav-text">4.6 TXT 记录 —— 万能文本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#caa-%E8%AE%B0%E5%BD%95-%E9%99%90%E5%AE%9A%E8%B0%81%E8%83%BD%E7%BB%99%E4%BD%A0%E7%AD%BE%E8%AF%81%E4%B9%A6"><span class="nav-text">4.7 CAA 记录 ——
+限定谁能给你签证书</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#srv-%E8%AE%B0%E5%BD%95-%E5%94%AF%E4%B8%80%E5%B8%A6%E7%AB%AF%E5%8F%A3%E7%9A%84%E5%B8%B8%E8%A7%81%E8%AE%B0%E5%BD%95"><span class="nav-text">4.8 SRV 记录 ——
+唯一「带端口」的常见记录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#https-svcb-%E8%AE%B0%E5%BD%95-%E6%8F%90%E5%89%8D%E5%91%8A%E8%AF%89%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%80%8E%E4%B9%88%E8%BF%9E"><span class="nav-text">4.9 HTTPS &#x2F; SVCB 记录 ——
+提前告诉客户端怎么连</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ns-%E8%AE%B0%E5%BD%95-%E5%AD%90%E5%9F%9F%E5%A7%94%E6%B4%BE"><span class="nav-text">4.10 NS 记录 —— 子域委派</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#soa-%E8%AE%B0%E5%BD%95-%E5%8C%BA%E5%9F%9F%E6%9D%83%E5%A8%81%E4%BF%A1%E6%81%AF"><span class="nav-text">4.11 SOA 记录 —— 区域权威信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ptr-%E8%AE%B0%E5%BD%95-%E5%8F%8D%E5%90%91%E8%A7%A3%E6%9E%90ip-%E5%9F%9F%E5%90%8D"><span class="nav-text">4.12 PTR 记录 —— 反向解析（IP →
+域名）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ds-dnskey-dnssec"><span class="nav-text">4.13 DS &#x2F; DNSKEY —— DNSSEC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E7%B1%BB%E5%9E%8B"><span class="nav-text">4.14 其他类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%B9%E6%98%93%E6%B7%B7%E6%B7%86%E7%9A%84%E4%B8%A4%E4%B8%AA%E4%B8%8D%E6%98%AF%E6%A0%87%E5%87%86%E8%AE%B0%E5%BD%95%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="nav-text">4.15
+容易混淆的两个「不是标准记录」的概念</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cloudflare-%E7%8B%AC%E6%9C%89%E7%BB%B4%E5%BA%A6proxy-status%E6%A9%99%E4%BA%91-%E7%81%B0%E4%BA%91"><span class="nav-text">5. Cloudflare
+独有维度：Proxy status（橙云 &#x2F; 灰云）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%98%E6%96%B9%E6%94%AF%E6%8C%81%E7%9A%84%E4%BB%A3%E7%90%86%E7%AB%AF%E5%8F%A3"><span class="nav-text">官方支持的代理端口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%9E%E6%A0%87%E7%AB%AF%E5%8F%A3%E5%A6%82-10080%E6%80%8E%E4%B9%88%E5%8A%9E"><span class="nav-text">非标端口（如 10080）怎么办</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B6%E5%AE%83%E4%BB%A3%E7%90%86%E9%99%90%E5%88%B6"><span class="nav-text">其它代理限制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E4%B9%8B%E9%97%B4%E7%9A%84%E5%86%B2%E7%AA%81%E4%B8%8E%E4%BC%98%E5%85%88%E7%BA%A7%E8%A7%84%E5%88%99"><span class="nav-text">6. 记录之间的冲突与优先级规则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ttl-%E8%AF%A6%E8%A7%A3"><span class="nav-text">7. TTL 详解</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%9A%E9%85%8D%E7%AC%A6%E8%AE%B0%E5%BD%95wildcard"><span class="nav-text">8. 通配符记录（Wildcard）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%B0%E5%BD%95%E6%B3%A8%E9%87%8A%E4%B8%8E%E6%A0%87%E7%AD%BEcomments-tags"><span class="nav-text">9. 记录注释与标签（Comments &#x2F;
+Tags）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%92%E9%94%99%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="nav-text">10. 排错速查表</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E9%AA%8C%E8%AF%81%E5%91%BD%E4%BB%A4"><span class="nav-text">11. 常用验证命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E9%A1%B5%E9%80%9F%E8%AE%B0%E5%8F%AF%E7%9B%B4%E6%8E%A5%E6%8A%84%E7%9A%84%E8%AE%B0%E5%BD%95%E6%A8%A1%E6%9D%BF"><span class="nav-text">12.
+一页速记（可直接抄的记录模板）</span></a></li></ol></li></ol>
+
+	</div>
+</div>
+	</div>
+	
+</div>
+
+			</div>
+
+			
+		</div>
+
+		<div class="main-content-footer">
+			<footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+              <span>2025</span>
+              -
+            
+            2026&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">Eviarch</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        10 posts in total
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+            <script data-swup-reload-script src="https://cn.vercount.one/js"></script>
+            <div class="relative text-center lg:absolute lg:right-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-right">
+                
+                    <span id="busuanzi_container_site_uv" class="lg:!block">
+                        <span class="text-sm">VISITOR COUNT</span>
+                        <span id="busuanzi_value_site_uv"></span>
+                    </span>
+                
+                
+                    <span id="busuanzi_container_site_pv" class="lg:!block">
+                        <span class="text-sm">TOTAL PAGE VIEWS</span>
+                        <span id="busuanzi_value_site_pv"></span>
+                    </span>
+                
+            </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">POWERED BY <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a></span>
+            <span class="text-sm lg:block">THEME&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.9.0</a></span>
+        </div>
+        
+        
+            <div>
+                Blog up for <span class="odometer" id="runtime_days" ></span> days <span class="odometer" id="runtime_hours"></span> hrs <span class="odometer" id="runtime_minutes"></span> Min <span class="odometer" id="runtime_seconds"></span> Sec
+            </div>
+        
+        
+            <script data-swup-reload-script>
+                try {
+                    function odometer_init() {
+                    const elements = document.querySelectorAll('.odometer');
+                    elements.forEach(el => {
+                        new Odometer({
+                            el,
+                            format: '( ddd).dd',
+                            duration: 200
+                        });
+                    });
+                    }
+                    odometer_init();
+                } catch (error) {}
+            </script>
+        
+        
+        
+    </div>  
+</footer>
+		</div>
+	</div>
+
+	
+	<div class="post-tools">
+		<div class="post-tools-container">
+	<ul class="article-tools-list">
+		<!-- TOC aside toggle -->
+		
+		<li class="right-bottom-tools page-aside-toggle">
+			<i class="fa-regular fa-outdent"></i>
+		</li>
+		
+
+		<!-- go comment -->
+		
+		<li class="go-comment">
+			<i class="fa-regular fa-comments"></i>
+		</li>
+		
+	</ul>
+</div>
+	</div>
+	
+
+	<div class="right-side-tools-container">
+		<div class="side-tools-container">
+	<ul class="hidden-tools-list">
+		<li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-plus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-minus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+			<i class="fa-regular fa-moon"></i>
+		</li>
+
+		<!-- rss -->
+		
+
+		
+
+		<li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+			<i class="fa-regular fa-arrow-down"></i>
+		</li>
+	</ul>
+
+	<ul class="visible-tools-list">
+		<li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+			<i class="fa-regular fa-cog fa-spin"></i>
+		</li>
+		
+		<li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+			<i class="arrow-up fas fa-arrow-up"></i>
+			<span class="percent"></span>
+		</li>
+		
+		
+	</ul>
+</div>
+	</div>
+
+	<div class="image-viewer-container" role="dialog" aria-modal="true" aria-label="Image viewer">
+	<button class="image-viewer-close" type="button" aria-label="Close">
+		<i class="fa-solid fa-xmark"></i>
+	</button>
+	<button class="image-viewer-prev" type="button" aria-label="Prev">
+		<i class="fa-solid fa-chevron-left"></i>
+	</button>
+	<div class="image-viewer-frame">
+		<img src="" alt="">
+	</div>
+	<div class="image-viewer-exif-panel hidden absolute left-1/2 bottom-20 -translate-x-1/2 w-[min(92vw,420px)] max-h-[60vh] overflow-hidden rounded-2xl bg-background-color-transparent-80 p-4 text-left shadow-redefine-flat backdrop-blur-md" role="dialog" aria-label="EXIF" aria-hidden="true">
+		<div class="flex items-center justify-between mb-3">
+			<span class="text-sm font-semibold text-first-text-color">EXIF</span>
+			<button class="image-viewer-exif-close flex h-8 w-8 items-center justify-center rounded-full bg-background-color-transparent-80 text-first-text-color transition hover:bg-background-color-transparent-40" type="button" aria-label="Close">
+				<i class="fa-solid fa-xmark text-[0.65rem]"></i>
+			</button>
+		</div>
+		<div class="image-viewer-exif-cards grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pr-1 scrollbar-hide"></div>
+		<template class="image-viewer-exif-card-template">
+			<div class="rounded-lg bg-background-color-transparent-40 px-3 py-2">
+				<div class="image-viewer-exif-card-header flex items-center gap-2 mb-1">
+					<i class="image-viewer-exif-card-icon fa-solid fa-circle-info text-xs text-third-text-color"></i>
+					<div class="image-viewer-exif-card-title text-xs font-semibold text-first-text-color"></div>
+				</div>
+				<div class="image-viewer-exif-card-items flex flex-col gap-1"></div>
+			</div>
+		</template>
+	</div>
+	<button class="image-viewer-exif-toggle flex items-center gap-2 hidden absolute left-1/2 bottom-6 -translate-x-1/2 rounded-full border border-border-color bg-background-color-transparent-80 px-4 py-2 text-first-text-color backdrop-blur-md transition hover:bg-background-color-transparent-40" type="button" aria-label="EXIF" aria-expanded="false">
+		<i class="fa-solid fa-circle-info text-xs"></i>
+		<span class="text-xs font-semibold uppercase tracking-wider">EXIF</span>
+	</button>
+	<button class="image-viewer-next" type="button" aria-label="Next">
+		<i class="fa-solid fa-chevron-right"></i>
+	</button>
+</div>
+
+
+	
+	<div class="search-pop-overlay">
+	<div class="popup search-popup">
+		<div class="search-header">
+			<span class="search-input-field-pre">
+				<i class="fa-solid fa-keyboard"></i>
+			</span>
+			<div class="search-input-container">
+				<input autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="Search..." spellcheck="false" type="search" class="search-input">
+			</div>
+			<span class="popup-btn-close">
+				<i class="fa-solid fa-times"></i>
+			</span>
+		</div>
+		<div id="search-result">
+			<div id="no-result">
+				<i class="fa-solid fa-spinner fa-spin-pulse fa-5x fa-fw"></i>
+			</div>
+		</div>
+	</div>
+</div>
+	
+
+</main>
+
+
+
+<script src="/js/build/libs/Swup.min.js"></script>
+
+<script src="/js/build/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/build/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    window.swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+
+    window.dispatchEvent(
+        new CustomEvent("redefine:swup:ready", {
+            detail: {
+                swup: window.swup,
+            },
+        }),
+    );
+</script>
+
+
+
+
+	
+<script src="/js/build/main.js" type="module"></script>
+
+
+
+    
+<script src="/js/build/libs/odometer.min.js"></script>
+
+    
+<link rel="stylesheet" href="/assets/odometer-theme-minimal.css">
+
+
+
+
+
+
+
+  
+<script src="/js/build/libs/Typed.min.js"></script>
+
+
+
+
+
+
+
+
+    
+<script src="/js/build/libs/minimasonry.min.js" data-swup-reload-script=""></script>
+
+
+
+
+<script src="/js/build/libs/moment-with-locales.min.js" data-swup-reload-script=""></script>
+
+
+
+	
+</body>
+
+</html>

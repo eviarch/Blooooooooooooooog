@@ -1,0 +1,2161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Hexo Theme Redefine">
+    
+    
+    <meta name="author" content="Eviarch">
+    
+    <!-- Completely eliminate flash of wrong theme -->
+    <script>
+        (function() {
+            const THEME_KEY = "REDEFINE-THEME-STATUS";
+            const DARK = "dark", LIGHT = "light";
+            
+            // Get preferred theme
+            function getTheme() {
+                try {
+                    const saved = localStorage.getItem(THEME_KEY);
+                    if (saved) {
+                        const { isDark } = JSON.parse(saved);
+                        return isDark ? DARK : LIGHT;
+                    }
+                } catch (e) {}
+                
+                return matchMedia("(prefers-color-scheme: dark)").matches ? DARK : LIGHT;
+            }
+            
+            // Apply theme to document
+            function applyTheme(theme) {
+                const isDark = theme === DARK;
+                const root = document.documentElement;
+                
+                // Set classes for compatibility
+                root.classList.add(theme);
+                root.classList.remove(isDark ? LIGHT : DARK);
+                root.style.colorScheme = theme;
+            }
+            
+            // Initial application
+            const theme = getTheme();
+            applyTheme(theme);
+            
+            // Listen for system preference changes
+            matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ({ matches }) => {
+                // Only update if using system preference (no localStorage entry)
+                if (!localStorage.getItem(THEME_KEY)) {
+                    applyTheme(matches ? DARK : LIGHT);
+                }
+            });
+            
+            // Set body classes ASAP (before DOMContentLoaded)
+            (function() {
+                const addBodyClass = () => {
+                    const b = document.body;
+                    if (!b) return false;
+                    b.classList.add(theme + "-mode");
+                    return true;
+                };
+
+                // Try immediately
+                if (addBodyClass()) return;
+
+                // Observe until body exists
+                const mo = new MutationObserver(() => {
+                    if (addBodyClass()) mo.disconnect();
+                });
+                mo.observe(document.documentElement, { childList: true, subtree: true });
+            })();
+        })();
+    </script>
+    
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="https://blog.eviarch.com/2026/10/16/strata与projectmaya安装构建及局域网部署指南/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+    
+        
+        <meta name="description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Strata 与 Project Maya 安装、构建及局域网部署指南">
+<meta property="og:url" content="https://blog.eviarch.com/2026/10/16/Strata%E4%B8%8EProjectMaya%E5%AE%89%E8%A3%85%E6%9E%84%E5%BB%BA%E5%8F%8A%E5%B1%80%E5%9F%9F%E7%BD%91%E9%83%A8%E7%BD%B2%E6%8C%87%E5%8D%97/index.html">
+<meta property="og:site_name" content="Eviarch&#39;s blog">
+<meta property="og:description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://blog.eviarch.com/images/redefine-og.webp">
+<meta property="article:published_time" content="2026-10-16T00:58:50.000Z">
+<meta property="article:modified_time" content="2026-10-16T00:58:50.000Z">
+<meta property="article:author" content="Eviarch">
+<meta property="article:tag" content="AI">
+<meta property="article:tag" content="Instruction">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog.eviarch.com/images/redefine-og.webp">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="https://avatars.githubusercontent.com/u/148052580?v=4" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://avatars.githubusercontent.com/u/148052580?v=4">
+    <meta name="theme-color" content="#F6B8B8">
+    <link rel="shortcut icon" href="https://avatars.githubusercontent.com/u/148052580?v=4">
+    <!--- Page Info-->
+    
+    <title>
+        
+            Strata 与 Project Maya 安装、构建及局域网部署指南 | Eviarch&#39;s blog
+        
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/css/build/tailwind.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/GeistMono/geist-mono.css">
+
+    
+<link rel="stylesheet" href="/fonts/Geist/geist.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+    
+    
+        
+<script src="/js/build/libs/anime.min.js"></script>
+
+    
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"blog.eviarch.com","root":"/","language":"en","path":"search.json"};
+    window.theme = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"delete_mask":false,"title_alignment":"left","headings_top_spacing":{"h1":"3.2rem","h2":"2.4rem","h3":"1.9rem","h4":"1.6rem","h5":"1.4rem","h6":"1.3rem"}},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":true,"auto":false,"list":[]},"code_block":{"copy":true,"style":"mac","highlight_theme":{"light":"github","dark":"vs2015"},"font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":{"enable":true,"default":"cc_by_nc_sa"},"lazyload":true,"pangu_js":false,"recommendation":{"enable":false,"title":"Recommended article","limit":3,"mobile_limit":2,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#F6B8B8","secondary":null,"default_mode":"dark"},"global":{"fonts":{"chinese":{"enable":false,"family":"Noto Serif SC","url":"https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&display=swap\" rel=\"stylesheet"},"english":{"enable":false,"family":"Noto Serif SC","url":"https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&display=swap\" rel=\"stylesheet"},"title":{"enable":false,"family":"Noto Serif SC","url":"https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&display=swap\" rel=\"stylesheet"}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":true},"scroll_progress":{"bar":true,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":true,"site_pv":true,"site_uv":true,"post_pv":true},"single_page":true,"preloader":{"enable":true,"custom_message":"Eviarch's blog"},"side_tools":{"gear_rotation":true,"auto_expand":false},"open_graph":{"enable":true,"image":"/images/redefine-og.webp","description":"Hexo Theme Redefine, Redefine Your Hexo Journey."},"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/post_images/background_image/goldenglow_light.png","dark":"/post_images/background_image/goldenglow_dark.png"},"title":"It's Eviarch's blog, sharing things about study and daily life","subtitle":{"text":["不过碰巧射出了完美的一箭, 此后每一次引弓, 都只是在追寻它的影子","それまでの繋がりと、あなたの想いは、そこにあります。","求知若渴，虚心若愚","你所做的事情或许无人在意，但只要你仍追求完美，你就终将掌握连专家也望而兴叹的技能","\"拉绳子或者割断绳索，但无论你做什么，都不要犹豫\" --Death Stranding","共赴山海","回首望来路，尘埃映星河 --Zachary","天空越黑，星星越亮 --小农帽","青春就像月亮，时圆时缺，但是只要圆过一次，我们的青春就没有遗憾 --Zachary","不能信任那些 Terminal 或 Editor 用白底的人","软件靠重启，硬件靠插拔","\"绳索和棍棒是人类最早发明的工具。绳索可以留住美好，棍棒则可以驱赶危险。两者皆是我们最早的朋友，皆由我们创造。有人的地方，就有绳索与棍棒。--摘自 安部公房《绳》\"","总有一天我会没办法继续照顾你，你必须自己做出决定，决定自己究竟是谁，这个世界不喜欢与众不同的人马库斯，不要让别人告诉你，该成为什么样的人。 --Detroit Become Human","\"Life is a tragedy when seen in close-up, but a comedy in long-shot.\" ― Charlie Chaplin ","行ってきます！","「大切な人といつかまた巡り合えますように」时光流逝，愿你与重要的人再次重逢","君の膵臓をたべたい","因为万物都会坠落，所以攀登是我们必然的宿命"],"hitokoto":{"enable":false,"show_author":false,"api":"https://v1.hitokoto.cn"},"typing_speed":80,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":true,"style":"default","links":[{"icon":"fa-brands fa-github","url":"https://github.com/eviarch"},{"icon":"fa-brands fa-twitter","url":"https://x.com/eviarch74703"},{"icon":"fa-solid fa-at","url":"eviarch@gmail.com"},{"icon":"fa-solid fa-tower-broadcast","url":"https://www.youtube.com/@eviarch"}],"qrs":[]}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":{"audios":[{"name":"深藍","artist":"ルルティア","url":"https://music.163.com/song/media/outer/url?id=22724676.mp3","cover":"https://p2.music.126.net/kprSJv0yHoiwyJ7pbuEVxg==/834529325505669.jpg","lrc":"https://gist.githubusercontent.com/Yttehs-HDX/6f133b5a8f35475404e1c581f3045b4a/raw/80a621dc3efdfdaa5bb161ce705904bf4d8080b0/22724676.lrc"}]}},"mermaid":{"enable":false,"version":"11.4.1","theme":{"light":"default","dark":"dark"}}},"version":"2.9.0","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Masonry":{"icon":"fa-solid fa-image","path":"/masonry/"},"Bookmarks":{"path":"/bookmarks/","icon":"fa-regular fa-bookmark"},"Friends":{"path":"/links/","icon":"fa-solid fa-link"},"About":{"icon":"fa-regular fa-user","submenus":{"Blog Repo":"https://github.com/eviarch/Blooooooooooooooog"}}},"search":{"enable":true,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"blur","masonry":{"batch_size":12,"initial_batch_size":24}},"home":{"sidebar":{"enable":true,"position":"left","first_item":"info","announcement":"死は生の裏返しである","show_on_mobile":true,"links":{"Moments":{"path":"/essays","icon":"fa-regular fa-comment"},"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"Tags":{"path":"/tags/","icon":"fa-regular fa-tags"},"Categories":{"path":"/categories/","icon":"fa-regular fa-folder"}}},"article_date_format":"auto","excerpt_length":200,"categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footer":{"runtime":true,"icon":"<i class=\"fa-solid fa-heart fa-beat\" style=\"--fa-animation-duration: 0.5s; color: #f54545\"></i>","start":"2025/6/10 12:34:56","statistics":true,"customize":null,"icp":{"enable":false,"number":null,"url":null}},"footerStart":"2025/6/10 12:34:56","mermaid":{"style":{"light":"default","dark":"dark"}}};
+    window.lang_ago = {"second":"%s seconds ago","minute":"%s minutes ago","hour":"%s hours ago","day":"%s days ago","week":"%s weeks ago","month":"%s months ago","year":"%s years ago"};
+    window.i18n = {"search":"Search...","toc":"On this page","prev":"Prev","next":"Next","prev_posts":"Prev posts","next_posts":"Next posts","page":"Page %d","recent_posts":"Recent Posts","share":"Share","powered_by":"POWERED BY %s","theme":"THEME","rss_feed":"RSS Feed","category":"Category","categories":"Categories","tag":"Tag","tags":"Tags","post":"Post","posts":"Posts","tagcloud":"Tag Cloud","comment":"Comment","comments":"Comments","home":"Home","archive":"Archive","archives":"Archives","top":"TOP","sticky":"Sticky","go-back-home":"Go Back Home","masonry_loading":"Loading photos...","image_viewer":"Image viewer","close":"Close","exif":{"title":"EXIF","cards":{"camera":"Camera","lens":"Lens","exposure":"Exposure","other":"Other"},"fields":{"make":"Brand","model":"Model","date_taken":"Date taken","lens_model":"Lens","focal_length":"Focal length","focus_mode":"Focus mode","shutter":"Shutter","aperture":"Aperture","iso":"ISO","exposure_program":"Exposure program","exposure_compensation":"Exposure compensation","metering_mode":"Metering mode","flash":"Flash","white_balance":"White balance","latitude":"Latitude","longitude":"Longitude","altitude":"Altitude"},"status":{"loading":"Loading...","no_exif":"No EXIF available","library_missing":"EXIF library not loaded","image_source_missing":"Image source unavailable","unavailable":"EXIF unavailable (blocked by CORS or missing metadata)","flag_unavailable":"EXIF unavailable"}},"about":"About","changelog":"Changelog","links":"Links","link":"Link","friends":"Friends","friend":"Friend","timeline":"Timeline","shuoshuo":"Shuoshuo","bookmarks":"Bookmarks","site_uv":"VISITOR COUNT","site_pv":"TOTAL PAGE VIEWS","read_more":"Read more","wordcount":"Words","min2read":"Mins","status":"Status","runtime":"Blog up for","days":"days","hours":"hrs","minutes":"Min","seconds":"Sec","optimized_by":"and Optimized by Evan","rights":"All Rights Reserved","site_posts":"%s posts in total","site_wordcount":"%s words in total","copyright":{"author":"Author","title":"Title","link":"Link","create_time":"Created at","update_time":"Updated at","license_title":"License","license_content":"This work is licensed under %s.","all_rights_reserved":"All Rights Reserved &#169; %s","public_domain":"This work is in the public domain."},"ago":{"second":"%s seconds ago","minute":"%s minutes ago","hour":"%s hours ago","day":"%s days ago","week":"%s weeks ago","month":"%s months ago","year":"%s years ago"},"create_time":"Created","update_time":"Updated","expired":"This post is written %s days ago, and the content may not be up to date."};
+    window.data = {"masonry":true};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+<meta name="generator" content="Hexo 8.1.2"></head>
+
+
+<body>
+	<div class="progress-bar-container">
+	
+	<span class="scroll-progress-bar"></span>
+	
+
+	
+	<span class="pjax-progress-bar"></span>
+	<!--        <span class="swup-progress-icon">-->
+	<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+	<!--        </span>-->
+	
+</div>
+
+<style>
+    :root {
+        --preloader-background-color: #fff;
+        --preloader-text-color: #000;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --preloader-background-color: #202124;
+            --preloader-text-color: #fff;
+        }
+    }
+
+    @media (prefers-color-scheme: light) {
+        :root {
+            --preloader-background-color: #fff;
+            --preloader-text-color: #000;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .ml13 {
+            font-size: 2.6rem !important; /* Adjust this value as needed */
+        }
+    }
+
+    .preloader {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem; /* Tailwind 'gap-4' is 1rem */
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        padding: 12px;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh; /* 'h-screen' is 100% of the viewport height */
+        background-color: var(--preloader-background-color);
+        z-index: 1100; /* 'z-[1100]' sets the z-index */
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    .ml13 {
+        font-size: 3.2rem;
+        /* text-transform: uppercase; */
+        color: var(--preloader-text-color);
+        letter-spacing: -1px;
+        font-weight: 500;
+        font-family: 'Chillax-Variable', sans-serif;
+        text-align: center;
+    }
+
+    .ml13 .word {
+        display: inline-flex;
+        flex-wrap: wrap;
+        white-space: nowrap;
+    }
+
+    .ml13 .letter {
+        display: inline-block;
+        line-height: 1em;
+    }
+</style>
+
+<div class="preloader">
+    <h2 class="ml13">
+        Eviarch&#39;s blog
+    </h2>
+    <script>
+        var textWrapper = document.querySelector('.ml13');
+        // Split text into words
+        var words = textWrapper.textContent.trim().split(' ');
+
+        // Clear the existing content
+        textWrapper.innerHTML = '';
+
+        // Wrap each word and its letters in spans
+        words.forEach(function(word) {
+            var wordSpan = document.createElement('span');
+            wordSpan.classList.add('word');
+            wordSpan.innerHTML = word.replace(/\S/g, "<span class='letter'>$&</span>");
+            textWrapper.appendChild(wordSpan);
+            textWrapper.appendChild(document.createTextNode(' ')); // Add space between words
+        });
+
+        var animation = anime.timeline({ loop: true })
+            .add({
+                targets: '.ml13 .letter',
+                translateY: [20, 0],
+                translateZ: 0,
+                opacity: [0, 1],
+                filter: ['blur(5px)', 'blur(0px)'],
+                easing: "easeOutExpo",
+                duration: 1200,
+                delay: (el, i) => 300 + 20 * i,
+            })
+            .add({
+                targets: '.ml13 .letter',
+                translateY: [0, -20],
+                opacity: [1, 0],
+                filter: ['blur(0px)', 'blur(5px)'],
+                easing: "easeInExpo",
+                duration: 1000,
+                delay: (el, i) => 15 * i,
+                complete: function() {
+                    hidePreloader();
+                }
+            }, '-=700');
+
+
+        let themeStatus = JSON.parse(localStorage.getItem('REDEFINE-THEME-STATUS'))?.isDark;
+
+        // If the theme status is not found in local storage, check the preferred color scheme
+        if (themeStatus === undefined || themeStatus === null) {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                themeStatus = 'dark';
+            } else {
+                themeStatus = 'light';
+            }
+        }
+
+        // Now you can use the themeStatus variable in your code
+        if (themeStatus) {
+            document.documentElement.style.setProperty('--preloader-background-color', '#202124');
+            document.documentElement.style.setProperty('--preloader-text-color', '#fff');
+        } else {
+            document.documentElement.style.setProperty('--preloader-background-color', '#fff');
+            document.documentElement.style.setProperty('--preloader-text-color', '#000');
+        }
+
+        window.addEventListener('load', function () {
+            setTimeout(hidePreloader, 5000); // Call hidePreloader after 5000 milliseconds if not already called by animation
+        });
+
+        function hidePreloader() {
+            var preloader = document.querySelector('.preloader');
+            preloader.style.opacity = '0';
+            setTimeout(function () {
+                preloader.style.display = 'none';
+            }, 200);
+        }
+    </script>
+</div>
+
+<main class="page-container" id="swup">
+
+	
+
+	<div class="main-content-container flex flex-col justify-between min-h-dvh">
+		<div class="main-content-header">
+			<header class="navbar-container px-6 md:px-12">
+    <div class="navbar-content transition-navbar ">
+        <div class="left">
+            
+                <a class="logo-image h-8 w-8 sm:w-10 sm:h-10 mr-3" href="/">
+                    <img src="https://avatars.githubusercontent.com/u/148052580?v=4" class="w-full h-full rounded-xs">
+                </a>
+            
+            <a class="logo-title" href="/">
+                
+                Eviarch&#39;s blog
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    HOME
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/masonry/"
+                                        >
+                                    <i class="fa-solid fa-image fa-fw"></i>
+                                    MASONRY
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/bookmarks/"
+                                        >
+                                    <i class="fa-regular fa-bookmark fa-fw"></i>
+                                    BOOKMARKS
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/links/"
+                                        >
+                                    <i class="fa-solid fa-link fa-fw"></i>
+                                    FRIENDS
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="has-dropdown"
+                                   href="#"
+                                        onClick=&#34;return false;&#34;>
+                                    <i class="fa-regular fa-user fa-fw"></i>
+                                    ABOUT
+                                    <i class="fa-solid fa-chevron-down fa-fw"></i>
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                                    <ul class="sub-menu">
+                                        
+                                            <li>
+                                                <a target="_blank" rel="noopener" href="https://github.com/eviarch/Blooooooooooooooog">
+                                                    BLOG REPO
+                                                </a>
+                                            </li>
+                                        
+                                    </ul>
+                                
+                            </li>
+                    
+                    
+                        <li class="navbar-item search search-popup-trigger">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </li>
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                    <div class="icon-item search search-popup-trigger"><i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-dvh w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                HOME
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/masonry/"
+                        >
+                            <span>
+                                MASONRY
+                            </span>
+                            
+                                <i class="fa-solid fa-image fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/bookmarks/"
+                        >
+                            <span>
+                                BOOKMARKS
+                            </span>
+                            
+                                <i class="fa-regular fa-bookmark fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/links/"
+                        >
+                            <span>
+                                FRIENDS
+                            </span>
+                            
+                                <i class="fa-solid fa-link fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item-sub text-base my-1.5 flex flex-col w-full">
+                        
+                        <div class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary cursor-pointer text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                             navbar-data-toggle="submenu-About"
+                        >
+                            <span>
+                                ABOUT
+                            </span>
+                            
+                                <i class="fa-solid fa-chevron-right fa-sm fa-fw transition-all"></i>
+                            
+                        </div>
+                        
+
+                        
+                            <div class="flex-col items-start px-2 py-2 hidden" data-target="submenu-About">
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           target="_blank" rel="noopener" href="https://github.com/eviarch/Blooooooooooooooog">BLOG REPO</a>
+                                    </div>
+                                
+                            </div>
+                        
+                    </li>
+            
+
+            
+            
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/essays"
+                        >
+                            <span>Moments</span>
+                            <i class="fa-regular fa-comment fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/archives"
+                        >
+                            <span>Archives</span>
+                            <i class="fa-regular fa-archive fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/tags/"
+                        >
+                            <span>Tags</span>
+                            <i class="fa-regular fa-tags fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/categories/"
+                        >
+                            <span>Categories</span>
+                            <i class="fa-regular fa-folder fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">27</div>
+        <div class="label text-third-text-color text-sm">Tags</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">20</div>
+        <div class="label text-third-text-color text-sm">Categories</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">10</div>
+        <div class="label text-third-text-color text-sm">Posts</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+		</div>
+
+		<div class="main-content-body transition-fade-up">
+			
+
+			<div class="main-content">
+				<div class="post-page-container flex relative justify-between box-border w-full h-full">
+	<div class="article-content-container">
+
+		<div class="article-title relative w-full">
+			
+			
+			
+			<img src="/post_images/Strata%E4%B8%8EProjectMaya%E5%AE%89%E8%A3%85%E6%9E%84%E5%BB%BA%E5%8F%8A%E5%B1%80%E5%9F%9F%E7%BD%91%E9%83%A8%E7%BD%B2%E6%8C%87%E5%8D%97/huggingface_logo.svg" alt="Strata 与 Project Maya 安装、构建及局域网部署指南" class="w-full h-60 sm:h-72 md:h-80 object-cover sm:rounded-t-large dark:brightness-75" />
+			
+			<div class="w-full flex items-center absolute bottom-0 justify-start">
+				<h1 class="article-title-cover text-center mx-6 my-6 text-second-text-color bg-background-color-transparent px-4 py-3 text-3xl sm:text-4xl md:text-5xl font-semibold backdrop-blur-lg rounded-xl border border-border-color ">Strata 与 Project Maya 安装、构建及局域网部署指南</h1>
+			</div>
+			
+		</div>
+
+		
+		<div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+			<div class="avatar w-[46px] h-[46px] shrink-0 rounded-medium border border-border-color p-px">
+				<img src="https://avatars.githubusercontent.com/u/148052580?v=4">
+			</div>
+			<div class="info flex flex-col justify-between">
+				<div class="author flex items-center">
+					<span class="name text-default-text-color text-lg font-semibold">Eviarch</span>
+					
+					<span class="author-label ml-1.5 text-xs px-2 py-0.5 rounded-small text-third-text-color border border-shadow-color-1">Lv2</span>
+					
+				</div>
+				<div class="meta-info">
+					<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2026-10-16 00:58:50</span>
+        <span class="mobile">2026-10-16 00:58:50</span>
+        <span class="hover-info">Created</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2026-10-16 00:58:50</span>
+            <span class="mobile">2026-10-16 00:58:50</span>
+            <span class="hover-info">Updated</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/AI/">AI</a>&nbsp;
+                        </li>
+                    
+                    
+                
+                    
+                        
+                            <li>></li>
+                        
+                        <li>
+                            <a href="/categories/AI/Instruction/">Instruction</a>&nbsp;
+                        </li>
+                    
+                    
+                
+                    
+                        
+                            <li>></li>
+                        
+                        <li>
+                            <a href="/categories/AI/Instruction/Learning/">Learning</a>&nbsp;
+                        </li>
+                    
+                    
+                
+                    
+                        
+                            <li>></li>
+                        
+                        <li>
+                            <a href="/categories/AI/Instruction/Learning/Part-time-Study/">Part-time Study</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/AI/">AI</a>&nbsp;
+                    </li>
+                
+                    <li>
+                        | <a href="/tags/Instruction/">Instruction</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+        <span class="article-pv article-meta-item">
+            <i class="fa-regular fa-eye"></i>&nbsp;<span id="busuanzi_value_page_pv"></span>
+        </span>
+    
+</div>
+
+				</div>
+			</div>
+		</div>
+		
+
+		
+
+
+		<div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+			<blockquote>
+<p><strong>文档目的</strong>：在同一台 Ubuntu
+服务器上，以统一的环境隔离原则安装、构建和部署 Strata 与 Project
+Maya，包含原理说明、逐步操作、模型目录配置、服务监听、API
+Key、安全注意事项和故障排查。</p>
+<p><strong>适用环境（以部署记录为准）</strong>：Ubuntu 18.04 x86_64；8 ×
+NVIDIA RTX 4090，每张 24 GB；NVIDIA 驱动记录为 530.41.03；CUDA Toolkit
+12.0.1；独立 GCC/G++ 11.4.0 环境。</p>
+<p><strong>重要说明</strong>：各项目的启动参数会随版本变化，执行前必须检查当前仓库的帮助信息。文档明确区分历史记录、示例命令和需要在服务器上实际验证的行为。</p>
+</blockquote>
+<h2 id="目录">目录</h2>
+<ul>
+<li><a
+href="#第一部分整体架构与共同原则">第一部分：整体架构与共同原则</a>
+<ul>
+<li><a href="#11-目录规划">1.1 目录规划</a></li>
+<li><a href="#12-共同技术原理">1.2 共同技术原理</a></li>
+<li><a href="#13-两个项目不能混用的内容">1.3
+两个项目不能混用的内容</a></li>
+</ul></li>
+<li><a
+href="#第二部分project-maya-安装与局域网服务部署指南ubuntu">第二部分：Project
+Maya 安装与局域网服务部署指南（Ubuntu）</a>
+<ul>
+<li><a href="#1-当前环境与目标">1. 当前环境与目标</a></li>
+<li><a href="#2-安装原理">2. 安装原理</a></li>
+<li><a href="#3-安装前检查">3. 安装前检查</a></li>
+<li><a href="#4-安装脚本的准备与使用">4. 安装脚本的准备与使用</a></li>
+<li><a href="#5-如何选择-api-key-与-gguf-目录">5. 如何选择 API Key 与
+GGUF 目录</a></li>
+<li><a href="#6-验证服务是否启动">6. 验证服务是否启动</a></li>
+<li><a href="#7-常见问题">7. 常见问题</a></li>
+<li><a href="#8-日常使用速查">8. 日常使用速查</a></li>
+<li><a href="#9-部署完成的判断标准">9. 部署完成的判断标准</a></li>
+</ul></li>
+<li><a href="#第三部分strata-安装与部署指南">第三部分：Strata
+安装与部署指南</a>
+<ul>
+<li><a href="#1-strata-部署目标与总体原理">1. Strata
+部署目标与总体原理</a></li>
+<li><a href="#2-服务器环境与目录">2. 服务器环境与目录</a></li>
+<li><a href="#3-第一步检查项目与基础环境">3.
+第一步：检查项目与基础环境</a></li>
+<li><a href="#4-第二步为-strata-设置隔离工具链">4. 第二步：为 Strata
+设置隔离工具链</a></li>
+<li><a href="#5-第三步查看当前版本支持的安装参数">5.
+第三步：查看当前版本支持的安装参数</a></li>
+<li><a href="#6-第四步准备模型目录与模型文件">6.
+第四步：准备模型目录与模型文件</a></li>
+<li><a href="#7-第五步检查构建结果与-cmake-缓存">7.
+第五步：检查构建结果与 CMake 缓存</a></li>
+<li><a href="#8-第六步本机启动与-api-验证">8. 第六步：本机启动与 API
+验证</a></li>
+<li><a href="#9-第七步开放局域网访问">9. 第七步：开放局域网访问</a></li>
+<li><a href="#10-strata-常见问题">10. Strata 常见问题</a></li>
+<li><a href="#11-strata-部署验收清单">11. Strata 部署验收清单</a></li>
+</ul></li>
+<li><a
+href="#第四部分两个项目共存时的维护原则">第四部分：两个项目共存时的维护原则</a>
+<ul>
+<li><a href="#1-保持项目环境隔离">1. 保持项目环境隔离</a></li>
+<li><a href="#2-不要默认两个服务使用同一端口">2.
+不要默认两个服务使用同一端口</a></li>
+<li><a href="#3-日志密钥和模型数据">3. 日志、密钥和模型数据</a></li>
+</ul></li>
+<li><a href="#第五部分统一部署验收清单">第五部分：统一部署验收清单</a>
+<ul>
+<li><a href="#project-maya">Project Maya</a></li>
+<li><a href="#strata">Strata</a></li>
+<li><a href="#服务器安全与资源">服务器安全与资源</a></li>
+</ul></li>
+</ul>
+<h1 id="第一部分整体架构与共同原则">第一部分：整体架构与共同原则</h1>
+<h3 id="目录规划">1.1 目录规划</h3>
+<p>后文命令都使用
+<code>/mnt/data/ProjectMoE</code>。这里只保留部署时需要区分的目录：共享编译工具链、两个项目各自的代码与
+Python
+环境、以及与仓库分开存放的模型数据。编译器环境内部文件、仓库自带源码、备份、缓存和一次性安装包不列入。CUDA
+Toolkit 在 <code>/usr/local/cuda-12.0.1</code>，不在这个根目录下。</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">/mnt/data/ProjectMoE/                  # 两个项目的统一根目录</span><br><span class="line">├── gcc11-env/                          # 独立 GCC/G++ 11.4.0；Maya 与 Strata 共用，不替换系统编译器</span><br><span class="line">├── mamba-root/                         # Micromamba 根目录，对应 MAMBA_ROOT_PREFIX</span><br><span class="line">├── tools/bin/micromamba                # Micromamba 可执行文件，用于进入 gcc11-env</span><br><span class="line">├── project-maya/                       # Maya 源码与运行目录</span><br><span class="line">│   ├── .venv/                          # Maya 自己的 Python 环境，不要与 Strata 混用</span><br><span class="line">│   ├── maya.sh                         # Maya 的安装与启动入口</span><br><span class="line">│   ├── build-maya-gcc11.sh             # 本指南使用的 GCC 11 包装脚本</span><br><span class="line">│   └── logs/                           # 包装脚本写出的安装日志</span><br><span class="line">├── Maya-data/</span><br><span class="line">│   └── models/                         # 建议存放 Maya 的 GGUF；实际路径通过 --gguf-dir 传入</span><br><span class="line">├── Strata/                             # Strata 源码与运行目录</span><br><span class="line">│   ├── .venv/                          # Strata 自己的 Python 环境</span><br><span class="line">│   ├── setup.py                        # 安装与构建入口，参数以当前 --help 为准</span><br><span class="line">│   └── build-cuda12/                   # CUDA 构建目录；检查编译器时看其中的 CMake 缓存</span><br><span class="line">└── Strata-data/</span><br><span class="line">    └── models/                         # Strata 模型文件，与源码仓库分开存放</span><br></pre></td></tr></table></figure></div>
+<h3 id="共同技术原理">1.2 共同技术原理</h3>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 42%" />
+<col style="width: 44%" />
+</colgroup>
+<thead>
+<tr>
+<th>层级</th>
+<th>方案</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Python 依赖</td>
+<td>每个项目使用自己的 <code>.venv</code></td>
+<td>避免 Python 包版本相互污染</td>
+</tr>
+<tr>
+<td>C/C++ 编译</td>
+<td>使用独立 GCC/G++ 11.4.0</td>
+<td>避免依赖 Ubuntu 18.04 较旧的系统编译器</td>
+</tr>
+<tr>
+<td>CUDA 编译</td>
+<td>显式指定 CUDA 12.0.1 的 <code>nvcc</code></td>
+<td>避免构建时误选其他 Toolkit</td>
+</tr>
+<tr>
+<td>构建缓存</td>
+<td>检查各自的 CMake 缓存</td>
+<td>避免旧缓存继续使用错误编译器</td>
+</tr>
+<tr>
+<td>模型文件</td>
+<td>放在独立数据目录，按模型实际要求指定</td>
+<td>便于管理和避免误删</td>
+</tr>
+<tr>
+<td>服务监听</td>
+<td>本机验证后，再按需设置 <code>0.0.0.0</code></td>
+<td>控制网络暴露范围</td>
+</tr>
+<tr>
+<td>认证</td>
+<td>为可远程访问的 API 设置强 API Key</td>
+<td>降低未授权调用风险</td>
+</tr>
+</tbody>
+</table>
+<h3 id="两个项目不能混用的内容">1.3 两个项目不能混用的内容</h3>
+<ul>
+<li>不要将 Maya 的 <code>.venv</code> 与 Strata 的 <code>.venv</code>
+合并或互相安装依赖。</li>
+<li>两个项目可以引用同一套 GCC 11
+工具链，但应分别检查各自的构建缓存和参数。</li>
+<li>不要因为某个项目构建失败就修改系统默认 GCC、覆盖
+<code>/usr/local/cuda</code> 软链接或升级驱动。</li>
+<li>不要把 Strata 的 <code>setup.py</code> 参数套用到 Maya，也不要把
+Maya 的 <code>maya.sh</code> 参数套用到 Strata。</li>
+<li>模型格式、模型目录、下载源和 API 路径都以各项目当前版本为准。</li>
+<li>在构建、下载或加载模型前运行
+<code>nvidia-smi</code>；不要擅自终止已有 GPU 任务。</li>
+</ul>
+<h1
+id="第二部分project-maya-安装与局域网服务部署指南ubuntu">第二部分：Project
+Maya 安装与局域网服务部署指南（Ubuntu）</h1>
+<h2 id="当前环境与目标">1. 当前环境与目标</h2>
+<p>已知环境：</p>
+<ul>
+<li>操作系统：Ubuntu 18.04</li>
+<li>GPU：8 × NVIDIA RTX 4090，每张 24 GB 显存</li>
+<li>NVIDIA 驱动：530.41.03</li>
+<li>CUDA Toolkit：12.0.1，<code>nvcc</code> 位于
+<code>/usr/local/cuda-12.0.1/bin/nvcc</code></li>
+<li>独立 GCC/G++：11.4.0，位于
+<code>/mnt/data/ProjectMoE/gcc11-env/bin/</code></li>
+<li>Maya 项目：<code>/mnt/data/ProjectMoE/project-maya</code></li>
+<li>Maya Python
+虚拟环境：<code>/mnt/data/ProjectMoE/project-maya/.venv</code></li>
+<li>计划监听地址：<code>0.0.0.0:8080</code></li>
+</ul>
+<p>目标是：使用独立 GCC 11 和指定 CUDA Toolkit 检查并构建
+Maya，按需选择模型与 GGUF 目录，并使用 API Key 在局域网内访问服务。</p>
+<h2 id="安装原理">2. 安装原理</h2>
+<h3 id="为什么使用独立-gcc-11">2.1 为什么使用独立 GCC 11</h3>
+<p>Ubuntu 18.04 自带的系统编译器可能较旧。此前 Maya 的检查结果显示系统
+<code>g++</code> 为 7.5.0，而独立环境中已有 GCC/G++ 11.4.0。</p>
+<p>脚本通过环境变量将编译器明确指向独立环境：</p>
+<ul>
+<li><code>CC</code>：C 编译器</li>
+<li><code>CXX</code>：C++ 编译器</li>
+<li><code>CUDAHOSTCXX</code>：CUDA 编译时使用的主机 C++ 编译器</li>
+</ul>
+<p>这样做的目的是让构建系统优先使用 GCC 11，而不是系统
+<code>g++</code>。它不会修改系统默认编译器，也不会通过
+<code>update-alternatives</code> 更改全局配置。</p>
+<h3 id="cuda-toolkit驱动和-gpu-架构的区别">2.2 CUDA Toolkit、驱动和 GPU
+架构的区别</h3>
+<ul>
+<li><strong>NVIDIA 驱动</strong>负责让操作系统与 GPU 通信。</li>
+<li><strong>CUDA Toolkit / <code>nvcc</code></strong>提供 CUDA
+编译工具。</li>
+<li><strong>GPU 架构参数</strong>决定编译产物针对哪些 GPU 架构。RTX 4090
+属于 <code>sm_89</code> 架构。</li>
+</ul>
+<p>脚本指定 <code>/usr/local/cuda-12.0.1/bin/nvcc</code>，并把 GCC 11 的
+<code>g++</code> 传给 Maya 的 <code>--host-compiler</code>
+参数。此前已经成功完成了最小 C++ 编译/链接和一个 <code>sm_89</code> CUDA
+文件编译；这只证明基本工具链可用，<strong>不代表 Maya
+的完整项目一定能构建成功</strong>。</p>
+<h3 id="python-虚拟环境的作用">2.3 Python 虚拟环境的作用</h3>
+<p>Maya 的 Python 环境位于项目的 <code>.venv</code>。它将 Python
+包与系统 Python、Strata
+的环境隔离，降低依赖版本相互影响的风险。运行脚本时会把
+<code>.venv/bin</code> 放入 <code>PATH</code>。</p>
+<h3 id="setup模型下载与服务启动">2.4
+<code>--setup</code>、模型下载与服务启动</h3>
+<p>Maya 命令行帮助提供了
+<code>--setup</code>、<code>--check</code>、<code>--download-model</code>、<code>--model</code>、<code>--gguf-dir</code>、<code>--host</code>、<code>--port</code>
+和 <code>--api-key</code> 等参数。</p>
+<ul>
+<li><code>--check</code>：执行环境检查。</li>
+<li><code>--setup</code>：执行 Maya 的安装/构建配置流程。</li>
+<li><code>--download-model</code>：显式请求下载模型。</li>
+<li><code>--model</code>：选择 Maya 支持的模型标识。</li>
+<li><code>--gguf-dir</code>：指定 GGUF 模型目录。</li>
+<li><code>--host</code> / <code>--port</code>：指定监听地址和端口。</li>
+<li><code>--api-key</code>：配置 API 访问密钥。</li>
+</ul>
+<p>本指南的包装脚本<strong>不会默认添加</strong>
+<code>--download-model</code>。如需下载模型，必须明确传入该参数。模型文件来源、下载行为和所需磁盘空间应以当前
+Maya 版本的帮助信息及项目文档为准。</p>
+<h3 id="的含义与安全性">2.5 <code>0.0.0.0</code> 的含义与安全性</h3>
+<ul>
+<li><code>127.0.0.1</code>：通常只接受服务器本机的回环访问。</li>
+<li><code>0.0.0.0</code>：让服务监听所有 IPv4
+网络接口，局域网内其他设备才有机会连接。</li>
+</ul>
+<p><code>0.0.0.0</code>
+<strong>不是客户端要访问的地址</strong>。客户端应使用服务器的实际局域网
+IP，例如 <code>http://192.168.1.20:8080</code>。启用网络监听后应设置强
+API
+Key，并只向可信网络开放端口；不要未经防火墙和访问控制就直接暴露到公网。</p>
+<h2 id="安装前检查">3. 安装前检查</h2>
+<h3 id="第-1-步登录服务器并进入项目目录">第 1
+步：登录服务器并进入项目目录</h3>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssh usr@你的服务器地址</span><br><span class="line"><span class="built_in">cd</span> /mnt/data/ProjectMoE/project-maya</span><br></pre></td></tr></table></figure></div>
+<h3 id="第-2-步确认项目和脚本存在">第 2 步：确认项目和脚本存在</h3>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">pwd</span></span><br><span class="line"><span class="built_in">ls</span> -l ./maya.sh</span><br><span class="line">./maya.sh --<span class="built_in">help</span></span><br></pre></td></tr></table></figure></div>
+<p>帮助信息应列出当前版本实际支持的参数。如果 <code>maya.sh</code>
+不存在或帮助输出与本文不同，先检查仓库目录和版本，不要盲目继续。</p>
+<h3 id="第-3-步确认-gcc-11-与-cuda-路径">第 3 步：确认 GCC 11 与 CUDA
+路径</h3>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/mnt/data/ProjectMoE/gcc11-<span class="built_in">env</span>/bin/x86_64-conda-linux-gnu-gcc --version</span><br><span class="line">/mnt/data/ProjectMoE/gcc11-<span class="built_in">env</span>/bin/x86_64-conda-linux-gnu-g++ --version</span><br><span class="line">/usr/local/cuda-12.0.1/bin/nvcc --version</span><br></pre></td></tr></table></figure></div>
+<p>应能看到 GCC/G++ 11.4.0。<code>nvcc --version</code> 的 release
+行通常显示 CUDA 12.0，对应的 Toolkit 仍是
+<code>/usr/local/cuda-12.0.1</code>。若路径不存在，先修复工具链路径；不要为此直接更改系统
+GCC 或 CUDA 软链接。</p>
+<h3 id="第-4-步检查-gpu-与当前占用">第 4 步：检查 GPU 与当前占用</h3>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi</span><br></pre></td></tr></table></figure></div>
+<p>确认 GPU 可见，并检查显存占用、GPU
+利用率及运行中的进程。此前服务器上曾有 <code>./demo</code> 进程占用多张
+GPU；运行重型构建或加载模型前务必重新检查。<strong>不要为了安装 Maya
+擅自终止其他用户或任务的 GPU 进程。</strong></p>
+<h3 id="第-5-步检查-maya-环境推荐先做">第 5 步：检查 Maya
+环境（推荐先做）</h3>
+<p>将 <code>build-maya-gcc11.sh</code> 放在 Maya 项目目录后：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /mnt/data/ProjectMoE/project-maya</span><br><span class="line"><span class="built_in">chmod</span> +x ./build-maya-gcc11.sh</span><br><span class="line">./build-maya-gcc11.sh --check</span><br></pre></td></tr></table></figure></div>
+<p>包装脚本会使用指定的 GCC 11、CUDA <code>nvcc</code> 和主机编译器运行
+Maya 的
+<code>--check</code>。检查通过只说明前置条件满足，并不表示安装已经完成。</p>
+<h2 id="安装脚本的准备与使用">4. 安装脚本的准备与使用</h2>
+<h3 id="第-1-步把脚本放到服务器">第 1 步：把脚本放到服务器</h3>
+<p>如果脚本在本地电脑当前目录，可以从本地终端上传：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">scp -P ssh端口 build-maya-gcc11.sh usr@你的服务器地址:/mnt/data/ProjectMoE/project-maya/</span><br></pre></td></tr></table></figure></div>
+<p>然后在服务器上执行：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /mnt/data/ProjectMoE/project-maya</span><br><span class="line"><span class="built_in">chmod</span> +x build-maya-gcc11.sh</span><br></pre></td></tr></table></figure></div>
+<h3 id="第-2-步理解脚本默认配置">第 2 步：理解脚本默认配置</h3>
+<p>脚本默认配置如下：</p>
+<table>
+<thead>
+<tr>
+<th>配置</th>
+<th>默认值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Maya 项目目录</td>
+<td><code>/mnt/data/ProjectMoE/project-maya</code></td>
+</tr>
+<tr>
+<td>GCC 环境</td>
+<td><code>/mnt/data/ProjectMoE/gcc11-env</code></td>
+</tr>
+<tr>
+<td>CUDA Toolkit</td>
+<td><code>/usr/local/cuda-12.0.1</code></td>
+</tr>
+<tr>
+<td>GPU</td>
+<td><code>0,1,2,3,4,5,6,7</code></td>
+</tr>
+<tr>
+<td>服务监听地址</td>
+<td><code>0.0.0.0</code></td>
+</tr>
+<tr>
+<td>服务端口</td>
+<td><code>8080</code></td>
+</tr>
+<tr>
+<td>日志目录</td>
+<td><code>/mnt/data/ProjectMoE/project-maya/logs</code></td>
+</tr>
+<tr>
+<td>Python 包索引</td>
+<td>阿里云 PyPI 镜像（仅影响 pip 包安装）</td>
+</tr>
+</tbody>
+</table>
+<p>脚本不会主动杀死 GPU
+进程，不会更改系统编译器或驱动，也不会默认强制下载模型。</p>
+<h3 id="第-3-步先查看帮助与检查环境">第 3 步：先查看帮助与检查环境</h3>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./build-maya-gcc11.sh --<span class="built_in">help</span></span><br><span class="line">./build-maya-gcc11.sh --check</span><br></pre></td></tr></table></figure></div>
+<p><code>--help</code> 会转交给 Maya
+自己的帮助命令。<code>--check</code> 只执行环境检查，不要求输入 API
+Key，也不启动服务。</p>
+<h3 id="第-4-步启动安装流程">第 4 步：启动安装流程</h3>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./build-maya-gcc11.sh</span><br></pre></td></tr></table></figure></div>
+<p>正常安装运行时，脚本会提示输入 API Key 和可选 GGUF 目录。</p>
+<ul>
+<li><strong>API Key</strong>：输入时不回显；不能为空。</li>
+<li><strong>GGUF
+目录</strong>：输入已存在的目录绝对路径。直接回车表示不传
+<code>--gguf-dir</code>，由 Maya 使用自身默认配置。</li>
+<li><strong>模型下载</strong>：默认不添加
+<code>--download-model</code>。若需要下载，先确认当前 Maya
+版本支持的模型和下载方式，再显式添加对应参数。</li>
+</ul>
+<p>脚本会将安装输出保存到
+<code>logs/maya-setup-gcc11-时间戳.log</code>。如果命令失败，按终端提示查看最后
+100 行日志：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">tail</span> -n 100 /mnt/data/ProjectMoE/project-maya/logs/你的日志文件名.<span class="built_in">log</span></span><br></pre></td></tr></table></figure></div>
+<p><strong>注意：</strong> 当前包装脚本会把
+<code>--setup</code>、<code>--host 0.0.0.0</code>、<code>--port 8080</code>、<code>--api-key</code>
+及可选的 <code>--gguf-dir</code> 传给 <code>maya.sh</code>。Maya 的
+<code>--setup</code>
+在当前版本中是否会在同一流程里完成构建并启动服务，需要以实际日志和该版本文档为准。若它只完成安装而没有启动服务，不要直接假设服务已运行。</p>
+<h2 id="如何选择-api-key-与-gguf-目录">5. 如何选择 API Key 与 GGUF
+目录</h2>
+<h3 id="方式-a交互式输入推荐">方式 A：交互式输入（推荐）</h3>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./build-maya-gcc11.sh</span><br></pre></td></tr></table></figure></div>
+<p>按提示输入 API Key。然后输入 GGUF 模型目录；如果想使用 Maya
+默认目录，直接按回车。</p>
+<h3 id="方式-b使用环境变量">方式 B：使用环境变量</h3>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> MAYA_API_KEY=<span class="string">&#x27;替换为你自己生成的强随机密钥&#x27;</span></span><br><span class="line"><span class="built_in">export</span> MAYA_GGUF_DIR=<span class="string">&#x27;/实际存在的/GGUF/目录&#x27;</span></span><br><span class="line"><span class="built_in">export</span> MAYA_HOST=<span class="string">&#x27;0.0.0.0&#x27;</span></span><br><span class="line"><span class="built_in">export</span> MAYA_PORT=<span class="string">&#x27;8080&#x27;</span></span><br><span class="line"></span><br><span class="line">./build-maya-gcc11.sh</span><br></pre></td></tr></table></figure></div>
+<p>如果不想指定自定义 GGUF 目录，可以取消该变量：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">unset</span> MAYA_GGUF_DIR</span><br></pre></td></tr></table></figure></div>
+<p>安全提示：环境变量可能被同一账户下的调试工具、进程信息或 shell
+配置间接暴露。不要把真实密钥提交到
+Git、写进公开脚本或粘贴到公开日志中。交互输入可避免终端回显，但仍应保护服务器账户和日志访问权限。</p>
+<h3 id="方式-c指定模型仅在确认需要时">方式
+C：指定模型（仅在确认需要时）</h3>
+<p>先检查支持的模型：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./maya.sh --<span class="built_in">help</span></span><br></pre></td></tr></table></figure></div>
+<p>如果确认要使用某个支持的模型，例如帮助中列出的
+<code>Maya-S-v2-IQ2_XXS</code>，可按该版本的参数规则显式指定：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./build-maya-gcc11.sh --model Maya-S-v2-IQ2_XXS</span><br></pre></td></tr></table></figure></div>
+<p>只有明确希望触发下载时才添加 <code>--download-model</code>：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./build-maya-gcc11.sh --model Maya-S-v2-IQ2_XXS --download-model</span><br></pre></td></tr></table></figure></div>
+<p>上面是参数使用示例，不代表已验证模型下载源、文件完整性、模型所需显存或当前服务器可用空间。下载前应先阅读该版本文档并检查磁盘与
+GPU 资源。</p>
+<h2 id="验证服务是否启动">6. 验证服务是否启动</h2>
+<h3 id="第-1-步检查监听端口">第 1 步：检查监听端口</h3>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ss -lntp | grep <span class="string">&#x27;:8080&#x27;</span></span><br></pre></td></tr></table></figure></div>
+<p>如果服务成功监听所有 IPv4 接口，通常会看到类似
+<code>0.0.0.0:8080</code>
+的监听项。若没有输出，服务可能没有启动、启动失败，或使用了其他端口；先查看
+Maya 日志。</p>
+<h3 id="第-2-步在服务器本机测试">第 2 步：在服务器本机测试</h3>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -i http://127.0.0.1:8080/</span><br></pre></td></tr></table></figure></div>
+<p>不同 Maya 版本的根路径可能不提供网页或健康检查端点，因此
+<code>404</code> 并不必然代表服务进程没启动。应根据 Maya
+文档找到正确的健康检查或 API 路径。对需要认证的 API
+请求，应按该版本要求传递 API Key。</p>
+<h3 id="第-3-步取得服务器局域网-ip">第 3 步：取得服务器局域网 IP</h3>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hostname -I</span><br></pre></td></tr></table></figure></div>
+<p>从输出中选择与客户端电脑处于同一局域网的服务器地址。不要把
+<code>0.0.0.0</code> 当成访问地址。</p>
+<h3 id="第-4-步从另一台电脑访问">第 4 步：从另一台电脑访问</h3>
+<p>浏览器或客户端使用：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://服务器局域网IP:8080</span><br></pre></td></tr></table></figure></div>
+<p>例如（仅为格式示例）：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.1.20:8080</span><br></pre></td></tr></table></figure></div>
+<p>如果使用 API 客户端，请根据 Maya 当前版本的 API
+文档配置认证头或参数。不要把 API Key 放进公开分享的 URL。</p>
+<h3 id="第-5-步如果无法访问按顺序排查">第 5
+步：如果无法访问，按顺序排查</h3>
+<ol type="1">
+<li>在服务器执行
+<code>ss -lntp | grep ':8080'</code>，确认端口确实在监听。</li>
+<li>查看 Maya 日志，确认服务没有在启动后退出。</li>
+<li>确认客户端使用的是服务器局域网 IP，而不是 <code>0.0.0.0</code> 或
+<code>127.0.0.1</code>。</li>
+<li>检查 Ubuntu 防火墙、上游防火墙、路由器 ACL、VLAN
+或无线客户端隔离。</li>
+<li>检查 Maya 是否要求特定 API 路径或认证头。</li>
+<li>不要为排障而直接关闭全部防火墙，也不要将服务无保护地暴露到公网。</li>
+</ol>
+<h2 id="常见问题">7. 常见问题</h2>
+<h3 id="问题检查仍显示系统-g-7.5">问题：检查仍显示系统 <code>g++</code>
+7.5</h3>
+<p>先通过包装脚本运行：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./build-maya-gcc11.sh --check</span><br></pre></td></tr></table></figure></div>
+<p>查看 Maya 检查输出是否识别了 <code>--host-compiler</code> 指定的 GCC
+11。构建系统可能缓存先前的编译器选择；若日志仍显示旧编译器，应先检查
+Maya 构建目录和该版本的 CMake
+配置方式，再决定是否清理或重建。不要直接删除未知目录。</p>
+<h3 id="问题提示找不到-gcccuda-或-maya-脚本">问题：提示找不到 GCC、CUDA
+或 Maya 脚本</h3>
+<p>逐项确认以下文件存在且可执行：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">ls</span> -l /mnt/data/ProjectMoE/project-maya/maya.sh</span><br><span class="line"><span class="built_in">ls</span> -l /mnt/data/ProjectMoE/gcc11-<span class="built_in">env</span>/bin/x86_64-conda-linux-gnu-gcc</span><br><span class="line"><span class="built_in">ls</span> -l /mnt/data/ProjectMoE/gcc11-<span class="built_in">env</span>/bin/x86_64-conda-linux-gnu-g++</span><br><span class="line"><span class="built_in">ls</span> -l /usr/local/cuda-12.0.1/bin/nvcc</span><br></pre></td></tr></table></figure></div>
+<p>若项目实际安装在其他位置，可在脚本中修改默认路径，或设置相应环境变量
+<code>MAYA_ROOT</code>、<code>MAYA_GCC_ENV</code>、<code>MAYA_CUDA_HOME</code>。</p>
+<h3 id="问题gguf-目录输入后报错">问题：GGUF 目录输入后报错</h3>
+<p>脚本会检查目录是否存在，但目录存在不代表其中的模型文件一定符合 Maya
+的要求。确认文件格式、命名、分片完整性以及该 Maya 版本的目录约定。</p>
+<h3 id="问题api-key-输入后仍然无法调用-api">问题：API Key
+输入后仍然无法调用 API</h3>
+<p>API Key
+必须与服务端实际配置一致。还要确认客户端采用的认证方式、请求路径和 API
+格式符合当前 Maya 版本文档。不要把密钥贴进公共日志或问题帖。</p>
+<h3 id="问题显存不足或服务启动很慢">问题：显存不足或服务启动很慢</h3>
+<p>先运行 <code>nvidia-smi</code> 检查其他进程、显存占用和 GPU
+利用率。多 GPU
+推理的显存分配、上下文长度、并发数和模型量化都会影响资源需求。不要未经确认就终止正在运行的任务。</p>
+<h2 id="日常使用速查">8. 日常使用速查</h2>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 进入项目目录</span></span><br><span class="line"><span class="built_in">cd</span> /mnt/data/ProjectMoE/project-maya</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看 Maya 支持的参数</span></span><br><span class="line">./maya.sh --<span class="built_in">help</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 检查环境（不会要求输入 API Key）</span></span><br><span class="line">./build-maya-gcc11.sh --check</span><br><span class="line"></span><br><span class="line"><span class="comment"># 运行安装/构建流程并按提示输入 API Key 与 GGUF 目录</span></span><br><span class="line">./build-maya-gcc11.sh</span><br><span class="line"></span><br><span class="line"><span class="comment"># 显式选择模型（以当前 --help 支持的名称为准）</span></span><br><span class="line">./build-maya-gcc11.sh --model Maya-S-v2-IQ2_XXS</span><br><span class="line"></span><br><span class="line"><span class="comment"># 显式请求模型下载（确认下载源与资源需求后再执行）</span></span><br><span class="line">./build-maya-gcc11.sh --model Maya-S-v2-IQ2_XXS --download-model</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看 GPU 状态</span></span><br><span class="line">nvidia-smi</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看服务监听</span></span><br><span class="line">ss -lntp | grep <span class="string">&#x27;:8080&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看最新日志文件列表</span></span><br><span class="line"><span class="built_in">ls</span> -lt /mnt/data/ProjectMoE/project-maya/logs/</span><br></pre></td></tr></table></figure></div>
+<h2 id="部署完成的判断标准">9. 部署完成的判断标准</h2>
+<p>逐项确认：</p>
+<ul class="task-list">
+<li><label><input type="checkbox" /><code>./maya.sh --help</code>
+能正常运行，参数与当前版本一致。</label></li>
+<li><label><input
+type="checkbox" /><code>./build-maya-gcc11.sh --check</code>
+通过。</label></li>
+<li><label><input type="checkbox" />日志表明构建过程使用了预期的 GCC 11
+与 CUDA Toolkit，而不是意外回退到系统编译器。</label></li>
+<li><label><input type="checkbox" />所需模型文件已准备好，且 GGUF 路径与
+Maya 配置一致。</label></li>
+<li><label><input type="checkbox" />服务进程实际运行，<code>ss</code>
+能看到预期监听端口。</label></li>
+<li><label><input type="checkbox" />本机请求可到达正确的 API
+路径。</label></li>
+<li><label><input type="checkbox" />另一台局域网电脑能够访问，并且 API
+Key 认证按预期生效。</label></li>
+<li><label><input
+type="checkbox" />服务只开放给可信网络，日志和密钥受到保护。</label></li>
+</ul>
+<p>完成这些检查后，才可以认为 Maya
+已完成从工具链准备、构建、模型配置到局域网 API 访问的整套部署。</p>
+<h1 id="第三部分strata-安装与部署指南">第三部分：Strata
+安装与部署指南</h1>
+<h2 id="strata-部署目标与总体原理">1. Strata 部署目标与总体原理</h2>
+<p>本部分根据《Strata 环境依赖隔离与工具链配置记录》和此前的 Strata
+部署记录整理。文档中明确标注了需要以当前仓库 <code>--help</code>
+或日志再次核实的步骤，避免把历史命令当作所有版本都适用的固定接口。</p>
+<p>Strata 部署分为五个层面：</p>
+<ol type="1">
+<li><strong>Python 运行环境</strong>：使用 Strata 仓库自己的
+<code>.venv</code> 安装 Python 依赖。</li>
+<li><strong>C/C++ 编译工具链</strong>：通过独立 Micromamba 环境
+<code>gcc11-env</code> 使用 GCC/G++ 11.4.0，不替换系统编译器。</li>
+<li><strong>CUDA 编译工具链</strong>：显式指定
+<code>/usr/local/cuda-12.0.1/bin/nvcc</code>。</li>
+<li><strong>模型文件</strong>：将模型文件存放在独立的数据目录中；模型来源、模型家族、量化格式和目录参数以当前版本帮助为准。</li>
+<li><strong>服务部署</strong>：先在服务器本机验证模型和
+API，再按需要绑定 <code>0.0.0.0</code> 并配置 API
+Key，以允许可信局域网客户端访问。</li>
+</ol>
+<p>Python 虚拟环境与 GCC 环境各自解决不同问题：<code>.venv</code> 管理
+Python 包，<code>gcc11-env</code>
+提供编译器和构建工具。二者不是同一个环境。该方案也不能隔离 Linux
+内核、glibc、系统头文件或 NVIDIA 驱动。</p>
+<h2 id="服务器环境与目录">2. 服务器环境与目录</h2>
+<p>已记录的环境如下，执行前请重新检查：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>路径或版本</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>操作系统</td>
+<td>Ubuntu 18.04 x86_64</td>
+</tr>
+<tr>
+<td>Strata 仓库</td>
+<td><code>/mnt/data/ProjectMoE/Strata</code></td>
+</tr>
+<tr>
+<td>Strata 数据目录</td>
+<td><code>/mnt/data/ProjectMoE/Strata-data</code></td>
+</tr>
+<tr>
+<td>Strata Python 环境</td>
+<td><code>/mnt/data/ProjectMoE/Strata/.venv</code></td>
+</tr>
+<tr>
+<td>独立 GCC 环境</td>
+<td><code>/mnt/data/ProjectMoE/gcc11-env</code></td>
+</tr>
+<tr>
+<td>Micromamba</td>
+<td><code>/mnt/data/ProjectMoE/tools/bin/micromamba</code></td>
+</tr>
+<tr>
+<td>Micromamba 根目录</td>
+<td><code>/mnt/data/ProjectMoE/mamba-root</code></td>
+</tr>
+<tr>
+<td>CUDA Toolkit</td>
+<td><code>/usr/local/cuda-12.0.1</code></td>
+</tr>
+<tr>
+<td>CUDA 编译器</td>
+<td><code>/usr/local/cuda-12.0.1/bin/nvcc</code></td>
+</tr>
+<tr>
+<td>Python 版本记录</td>
+<td>3.12.15</td>
+</tr>
+<tr>
+<td>GCC/G++ 版本记录</td>
+<td>11.4.0</td>
+</tr>
+<tr>
+<td>构建工具记录</td>
+<td>CMake 4.4.4、Ninja</td>
+</tr>
+</tbody>
+</table>
+<p>典型目录结构：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">/mnt/data/ProjectMoE/</span><br><span class="line">├── Strata/</span><br><span class="line">│   ├── .venv/                 # Strata 的 Python 依赖</span><br><span class="line">│   ├── setup.py               # 安装/构建入口（需按当前版本确认）</span><br><span class="line">│   └── build-cuda12/          # 若存在，为 CUDA 构建目录</span><br><span class="line">├── Strata-data/</span><br><span class="line">│   └── models/                # 模型数据</span><br><span class="line">├── gcc11-env/                 # 独立 GCC 11 工具链</span><br><span class="line">├── mamba-root/                # Micromamba 环境管理目录</span><br><span class="line">└── tools/bin/micromamba</span><br></pre></td></tr></table></figure></div>
+<h2 id="第一步检查项目与基础环境">3. 第一步：检查项目与基础环境</h2>
+<h3 id="登录并进入-strata-仓库">3.1 登录并进入 Strata 仓库</h3>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ssh usr@你的服务器地址</span><br><span class="line"><span class="built_in">cd</span> /mnt/data/ProjectMoE/Strata</span><br><span class="line"><span class="built_in">pwd</span></span><br><span class="line"><span class="built_in">ls</span> -la</span><br></pre></td></tr></table></figure></div>
+<h3 id="检查-python-虚拟环境">3.2 检查 Python 虚拟环境</h3>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /mnt/data/ProjectMoE/Strata</span><br><span class="line"></span><br><span class="line"><span class="built_in">test</span> -x .venv/bin/python &amp;&amp; .venv/bin/python --version</span><br><span class="line">.venv/bin/python -m pip --version</span><br><span class="line">.venv/bin/python -c <span class="string">&#x27;import sys; print(sys.executable); print(sys.prefix)&#x27;</span></span><br></pre></td></tr></table></figure></div>
+<p>确认解释器指向
+<code>/mnt/data/ProjectMoE/Strata/.venv</code>，而不是系统 Python 或
+Maya 的 <code>.venv</code>。</p>
+<p>安装 Python 包时，优先使用项目自己的解释器：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/mnt/data/ProjectMoE/Strata/.venv/bin/python -m pip install 包名</span><br></pre></td></tr></table></figure></div>
+<p>不要把 Strata 的 Python 依赖安装到 <code>gcc11-env</code>，也不要把
+Maya 和 Strata 的 Python 虚拟环境混用。</p>
+<h3 id="检查-micromamba-与-gcc-11">3.3 检查 Micromamba 与 GCC 11</h3>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> MAMBA_EXE=<span class="string">&quot;/mnt/data/ProjectMoE/tools/bin/micromamba&quot;</span></span><br><span class="line"><span class="built_in">export</span> MAMBA_ROOT_PREFIX=<span class="string">&quot;/mnt/data/ProjectMoE/mamba-root&quot;</span></span><br><span class="line"><span class="built_in">export</span> ENV_PREFIX=<span class="string">&quot;/mnt/data/ProjectMoE/gcc11-env&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">test</span> -x <span class="string">&quot;<span class="variable">$MAMBA_EXE</span>&quot;</span> &amp;&amp; <span class="built_in">echo</span> <span class="string">&quot;Micromamba OK&quot;</span></span><br><span class="line"><span class="built_in">test</span> -d <span class="string">&quot;<span class="variable">$ENV_PREFIX</span>&quot;</span> &amp;&amp; <span class="built_in">echo</span> <span class="string">&quot;GCC 11 environment OK&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="string">&quot;<span class="variable">$MAMBA_EXE</span>&quot;</span> run -p <span class="string">&quot;<span class="variable">$ENV_PREFIX</span>&quot;</span> gcc --version</span><br><span class="line"><span class="string">&quot;<span class="variable">$MAMBA_EXE</span>&quot;</span> run -p <span class="string">&quot;<span class="variable">$ENV_PREFIX</span>&quot;</span> g++ --version</span><br><span class="line"><span class="string">&quot;<span class="variable">$MAMBA_EXE</span>&quot;</span> run -p <span class="string">&quot;<span class="variable">$ENV_PREFIX</span>&quot;</span> cmake --version</span><br><span class="line"><span class="string">&quot;<span class="variable">$MAMBA_EXE</span>&quot;</span> run -p <span class="string">&quot;<span class="variable">$ENV_PREFIX</span>&quot;</span> ninja --version</span><br></pre></td></tr></table></figure></div>
+<p>此前构建流程使用的编译器路径为：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/mnt/data/ProjectMoE/gcc11-<span class="built_in">env</span>/bin/x86_64-conda-linux-gnu-gcc</span><br><span class="line">/mnt/data/ProjectMoE/gcc11-<span class="built_in">env</span>/bin/x86_64-conda-linux-gnu-g++</span><br></pre></td></tr></table></figure></div>
+<p>检查实际文件：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">test</span> -x <span class="string">&quot;<span class="variable">$ENV_PREFIX</span>/bin/x86_64-conda-linux-gnu-gcc&quot;</span> &amp;&amp; <span class="built_in">echo</span> <span class="string">&quot;GCC wrapper OK&quot;</span></span><br><span class="line"><span class="built_in">test</span> -x <span class="string">&quot;<span class="variable">$ENV_PREFIX</span>/bin/x86_64-conda-linux-gnu-g++&quot;</span> &amp;&amp; <span class="built_in">echo</span> <span class="string">&quot;G++ wrapper OK&quot;</span></span><br></pre></td></tr></table></figure></div>
+<p>如果文件不存在，先查看 <code>$ENV_PREFIX/bin</code>
+中的实际文件名，不要直接假定路径正确。</p>
+<h3 id="检查-cuda驱动和-gpu-负载">3.4 检查 CUDA、驱动和 GPU 负载</h3>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">export</span> CUDA_HOME=<span class="string">&quot;/usr/local/cuda-12.0.1&quot;</span></span><br><span class="line"><span class="built_in">test</span> -x <span class="string">&quot;<span class="variable">$CUDA_HOME</span>/bin/nvcc&quot;</span> &amp;&amp; <span class="built_in">echo</span> <span class="string">&quot;CUDA nvcc OK&quot;</span></span><br><span class="line"><span class="string">&quot;<span class="variable">$CUDA_HOME</span>/bin/nvcc&quot;</span> --version</span><br><span class="line">nvidia-smi</span><br></pre></td></tr></table></figure></div>
+<p><code>nvcc --version</code> 检查的是 CUDA Toolkit
+编译器；<code>nvidia-smi</code> 检查驱动、GPU
+和资源占用。二者不能互相替代。</p>
+<p>在编译、下载大型模型或启动推理前，重新检查显存和进程。此前服务器曾有
+<code>./demo</code> 进程占用多张 GPU；不要为了部署 Strata
+擅自终止其他任务。</p>
+<h2 id="第二步为-strata-设置隔离工具链">4. 第二步：为 Strata
+设置隔离工具链</h2>
+<p>在当前 shell 中执行以下命令：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /mnt/data/ProjectMoE/Strata</span><br><span class="line"></span><br><span class="line"><span class="built_in">export</span> MAMBA_EXE=<span class="string">&quot;/mnt/data/ProjectMoE/tools/bin/micromamba&quot;</span></span><br><span class="line"><span class="built_in">export</span> MAMBA_ROOT_PREFIX=<span class="string">&quot;/mnt/data/ProjectMoE/mamba-root&quot;</span></span><br><span class="line"><span class="built_in">export</span> ENV_PREFIX=<span class="string">&quot;/mnt/data/ProjectMoE/gcc11-env&quot;</span></span><br><span class="line"><span class="built_in">export</span> CUDA_HOME=<span class="string">&quot;/usr/local/cuda-12.0.1&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">export</span> CC=<span class="string">&quot;<span class="variable">$ENV_PREFIX</span>/bin/x86_64-conda-linux-gnu-gcc&quot;</span></span><br><span class="line"><span class="built_in">export</span> CXX=<span class="string">&quot;<span class="variable">$ENV_PREFIX</span>/bin/x86_64-conda-linux-gnu-g++&quot;</span></span><br><span class="line"><span class="built_in">export</span> CUDAHOSTCXX=<span class="string">&quot;<span class="variable">$CXX</span>&quot;</span></span><br><span class="line"><span class="built_in">export</span> STRATA_NVCC=<span class="string">&quot;<span class="variable">$CUDA_HOME</span>/bin/nvcc&quot;</span></span><br><span class="line"><span class="built_in">export</span> STRATA_CUDA=12</span><br><span class="line"><span class="built_in">export</span> PATH=<span class="string">&quot;<span class="variable">$ENV_PREFIX</span>/bin:<span class="variable">$CUDA_HOME</span>/bin:<span class="variable">$PATH</span>&quot;</span></span><br></pre></td></tr></table></figure></div>
+<p>验证当前选择：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">printf</span> <span class="string">&#x27;CC=%s\nCXX=%s\nCUDAHOSTCXX=%s\nCUDA_HOME=%s\nSTRATA_NVCC=%s\n&#x27;</span> \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$CC</span>&quot;</span> <span class="string">&quot;<span class="variable">$CXX</span>&quot;</span> <span class="string">&quot;<span class="variable">$CUDAHOSTCXX</span>&quot;</span> <span class="string">&quot;<span class="variable">$CUDA_HOME</span>&quot;</span> <span class="string">&quot;<span class="variable">$STRATA_NVCC</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="string">&quot;<span class="variable">$CC</span>&quot;</span> --version | <span class="built_in">head</span> -n 1</span><br><span class="line"><span class="string">&quot;<span class="variable">$CXX</span>&quot;</span> --version | <span class="built_in">head</span> -n 1</span><br><span class="line"><span class="string">&quot;<span class="variable">$CUDA_HOME</span>/bin/nvcc&quot;</span> --version</span><br></pre></td></tr></table></figure></div>
+<p>这些环境变量应在构建命令所在的同一个 shell
+中设置，或写入你自己的构建脚本。<code>STRATA_NVCC</code> 和
+<code>STRATA_CUDA</code> 是项目侧变量，只有 Strata
+的脚本读取它们时才会生效。已有 CMake
+缓存也可能保留旧编译器路径，因此还要检查构建缓存。</p>
+<h2 id="第三步查看当前版本支持的安装参数">5.
+第三步：查看当前版本支持的安装参数</h2>
+<p>先确认仓库当前版本实际支持的参数：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /mnt/data/ProjectMoE/Strata</span><br><span class="line">.venv/bin/python setup.py --<span class="built_in">help</span></span><br></pre></td></tr></table></figure></div>
+<p>若当前仓库使用不同的入口或参数，应以仓库
+README、脚本帮助和当前版本代码为准，不要直接照搬旧命令。</p>
+<p>历史构建命令曾使用以下参数组合：</p>
+<ul>
+<li><code>--setup</code>：执行项目配置流程。</li>
+<li><code>--source modelscope</code>：选择脚本支持的 ModelScope
+来源。</li>
+<li><code>--family unsloth</code>：指定模型系列。</li>
+<li><code>--gguf-dir</code>：指定模型文件目录。</li>
+<li><code>--cuda 12</code>：指定 CUDA 主版本。</li>
+<li><code>--build</code>：执行构建。</li>
+<li><code>--no-start</code>：构建后不自动启动服务。</li>
+</ul>
+<p>参数名称和语义可能随版本变化；运行前必须确认
+<code>setup.py --help</code> 仍列出这些选项。</p>
+<h2 id="第四步准备模型目录与模型文件">6.
+第四步：准备模型目录与模型文件</h2>
+<h3 id="模型文件与推理程序分开管理">6.1 模型文件与推理程序分开管理</h3>
+<p>建议将仓库和模型数据分开：</p>
+<ul>
+<li>程序代码：<code>/mnt/data/ProjectMoE/Strata</code></li>
+<li>模型数据：<code>/mnt/data/ProjectMoE/Strata-data/models/</code></li>
+</ul>
+<p>这样更新或重新构建程序时，不必把模型文件放进源码仓库。模型下载前应核对模型名称、量化版本、分片数量、总磁盘空间和显存需求。</p>
+<h3 id="检查已有模型文件">6.2 检查已有模型文件</h3>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">find /mnt/data/ProjectMoE/Strata-data/models -maxdepth 3 -<span class="built_in">type</span> f \</span><br><span class="line">  \( -name <span class="string">&#x27;*.gguf&#x27;</span> -o -name <span class="string">&#x27;*.safetensors&#x27;</span> \) -<span class="built_in">printf</span> <span class="string">&#x27;%p\n&#x27;</span> 2&gt;/dev/null</span><br></pre></td></tr></table></figure></div>
+<p>如果模型是多分片
+GGUF，检查所有分片是否齐全，文件名和分片序号是否连续。目录存在不等于模型文件完整，也不保证模型格式与当前
+Strata 版本兼容。</p>
+<h3 id="历史命令示例modelscope-ud-q4_k_xl">6.3 历史命令示例：ModelScope
++ UD-Q4_K_XL</h3>
+<p>此前记录过的构建命令结构如下。它是<strong>历史配置示例</strong>，执行前请先运行
+<code>setup.py --help</code> 核对当前参数，并确认模型路径真实存在：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">ROOT=<span class="string">&quot;/mnt/data/ProjectMoE/Strata&quot;</span></span><br><span class="line">ENV_PREFIX=<span class="string">&quot;/mnt/data/ProjectMoE/gcc11-env&quot;</span></span><br><span class="line">CUDA_HOME=<span class="string">&quot;/usr/local/cuda-12.0.1&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">export</span> CC=<span class="string">&quot;<span class="variable">$ENV_PREFIX</span>/bin/x86_64-conda-linux-gnu-gcc&quot;</span></span><br><span class="line"><span class="built_in">export</span> CXX=<span class="string">&quot;<span class="variable">$ENV_PREFIX</span>/bin/x86_64-conda-linux-gnu-g++&quot;</span></span><br><span class="line"><span class="built_in">export</span> CUDAHOSTCXX=<span class="string">&quot;<span class="variable">$CXX</span>&quot;</span></span><br><span class="line"><span class="built_in">export</span> STRATA_NVCC=<span class="string">&quot;<span class="variable">$CUDA_HOME</span>/bin/nvcc&quot;</span></span><br><span class="line"><span class="built_in">export</span> STRATA_CUDA=12</span><br><span class="line"><span class="built_in">export</span> CUDA_HOME</span><br><span class="line"><span class="built_in">export</span> PATH=<span class="string">&quot;<span class="variable">$ENV_PREFIX</span>/bin:<span class="variable">$CUDA_HOME</span>/bin:<span class="variable">$PATH</span>&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="string">&quot;/mnt/data/ProjectMoE/tools/bin/micromamba&quot;</span> run -p <span class="string">&quot;<span class="variable">$ENV_PREFIX</span>&quot;</span> \</span><br><span class="line">  <span class="string">&quot;<span class="variable">$ROOT</span>/.venv/bin/python&quot;</span> <span class="string">&quot;<span class="variable">$ROOT</span>/setup.py&quot;</span> \</span><br><span class="line">  --setup \</span><br><span class="line">  --<span class="built_in">source</span> modelscope \</span><br><span class="line">  --family unsloth \</span><br><span class="line">  --gguf-dir <span class="string">&quot;/mnt/data/ProjectMoE/Strata-data/models/unsloth-UD-Q4_K_XL/&quot;</span> \</span><br><span class="line">  --cuda 12 \</span><br><span class="line">  --build \</span><br><span class="line">  --no-start</span><br></pre></td></tr></table></figure></div>
+<p>该命令中的 <code>--gguf-dir</code>
+必须改成模型实际所在的目录。<code>--source modelscope</code>
+只在当前脚本支持此参数且下载流程确实使用该来源时才有效；它不等于所有依赖都从国内源下载。若模型已下载完成，确认当前版本是否允许跳过下载步骤，再决定是否执行完整
+setup。</p>
+<h2 id="第五步检查构建结果与-cmake-缓存">7. 第五步：检查构建结果与 CMake
+缓存</h2>
+<h3 id="检查构建目录中的编译器路径">7.1 检查构建目录中的编译器路径</h3>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">grep -E <span class="string">&#x27;^(CMAKE_C_COMPILER|CMAKE_CXX_COMPILER|CMAKE_CUDA_COMPILER|CMAKE_CUDA_HOST_COMPILER):&#x27;</span> \</span><br><span class="line">  /mnt/data/ProjectMoE/Strata/build-cuda12/CMakeCache.txt 2&gt;/dev/null</span><br></pre></td></tr></table></figure></div>
+<p>检查输出是否指向预期 GCC 11 工具链和 CUDA
+Toolkit。如果构建目录不存在，说明尚未生成该缓存，不能把“没有输出”当成成功。</p>
+<h3 id="为什么设置了-gcc-11-仍可能使用系统-gcc">7.2 为什么设置了 GCC 11
+仍可能使用系统 GCC</h3>
+<p>CMake 首次配置时可能将编译器路径写入
+<code>CMakeCache.txt</code>。如果之前配置时用的是
+<code>/usr/bin/g++</code>，后续仅设置 <code>CXX</code>
+不一定会覆盖已有缓存。</p>
+<p>发现旧路径时：</p>
+<ol type="1">
+<li>备份对应的 Strata 构建目录或缓存文件。</li>
+<li>检查当前版本构建脚本支持的重建选项。</li>
+<li>只清理或重新配置 Strata 自己的构建目录。</li>
+<li>重新构建后再次检查缓存。</li>
+<li>确认工具链选择正确后，再启动服务。</li>
+</ol>
+<p>不要未经确认删除整个仓库、模型数据目录或其他项目的构建目录。</p>
+<h2 id="第六步本机启动与-api-验证">8. 第六步：本机启动与 API 验证</h2>
+<p>此前的部署记录中，Strata
+已经完成过模型部署，并有在本机回环地址运行的记录。若当前仍是这种状态，先在服务器本机验证，不要直接开放网络端口。</p>
+<h3 id="检查-strata-当前运行状态">8.1 检查 Strata 当前运行状态</h3>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi</span><br><span class="line">ps -ef | grep -E <span class="string">&#x27;[S]trata|[s]etup.py|[l]lama|[s]erver&#x27;</span></span><br><span class="line">ss -lntp</span><br></pre></td></tr></table></figure></div>
+<p>根据实际进程和监听端口判断服务是否已经运行。不要仅凭进程名称猜测 API
+端点。</p>
+<h3 id="检查当前版本启动参数">8.2 检查当前版本启动参数</h3>
+<p>查看仓库提供的启动脚本和帮助信息：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /mnt/data/ProjectMoE/Strata</span><br><span class="line"><span class="built_in">ls</span> -la</span><br></pre></td></tr></table></figure></div>
+<p>对实际使用的入口脚本运行其帮助命令。此前的部署讨论提到过
+<code>START-HERE.bat --setup --host 0.0.0.0 --api-key &lt;secret&gt;</code>
+这一类 Windows 启动说明；但在 Ubuntu 服务器上不能假设 <code>.bat</code>
+文件可以原生执行，也不能直接将 Windows 示例命令当作 Linux
+命令。应先确认仓库是否提供 Linux 对应脚本，以及当前版本支持的
+<code>--host</code>、<code>--port</code>、<code>--api-key</code>
+等参数。</p>
+<h3 id="先验证本机回环">8.3 先验证本机回环</h3>
+<p>如果通过 <code>ss -lntp</code> 确认服务监听在某个端口，例如
+<code>8080</code>，可先按当前 API 文档提供的路径进行本机测试：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -i http://127.0.0.1:端口/实际API路径</span><br></pre></td></tr></table></figure></div>
+<p>将 <code>端口</code> 和 <code>/实际API路径</code>
+替换成当前配置。根路径返回 <code>404</code>
+并不必然意味着服务未运行；应使用该版本文档规定的健康检查或 API
+路径。需要认证的接口应按当前版本要求传递 API Key。</p>
+<h2 id="第七步开放局域网访问">9. 第七步：开放局域网访问</h2>
+<h3 id="原理">9.1 原理</h3>
+<ul>
+<li><code>127.0.0.1</code>：只接受本机回环访问。</li>
+<li><code>0.0.0.0</code>：监听所有 IPv4
+网络接口，使其他设备有机会访问。</li>
+<li>客户端应连接服务器的实际局域网 IP，而不是连接
+<code>0.0.0.0</code>。</li>
+</ul>
+<p><strong>不要在尚未确认认证机制有效时就开放服务。</strong>
+先准备强随机 API Key，再按当前 Strata
+版本支持的参数或配置文件设置监听地址和密钥。</p>
+<h3 id="确认启动入口支持的参数">9.2 确认启动入口支持的参数</h3>
+<p>先在 Linux
+服务器上检查实际启动脚本的帮助。只有帮助信息明确支持时，才使用相应参数，例如：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">--host 0.0.0.0</span><br><span class="line">--port 8080</span><br><span class="line">--api-key 你的强随机密钥</span><br></pre></td></tr></table></figure></div>
+<p>这只是常见参数形式的示意，不是可直接执行的完整命令。必须将它们加到当前版本真实的
+Linux
+启动入口上；若版本通过配置文件或环境变量设置服务，则按项目文档配置。</p>
+<h3 id="检查监听状态">9.3 检查监听状态</h3>
+<p>服务启动后：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ss -lntp | grep <span class="string">&#x27;:8080&#x27;</span></span><br></pre></td></tr></table></figure></div>
+<p>如果服务使用其他端口，应替换 <code>8080</code>。若只显示
+<code>127.0.0.1:端口</code>，说明仍然只监听本机；若显示
+<code>0.0.0.0:端口</code>，则已监听所有 IPv4 接口。</p>
+<h3 id="获取服务器局域网-ip">9.4 获取服务器局域网 IP</h3>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hostname -I</span><br></pre></td></tr></table></figure></div>
+<p>从输出中选择与客户端电脑处于同一网络的地址。在另一台电脑上使用：</p>
+<div class="code-container" data-rel="Text"><figure class="iseeu highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://服务器局域网IP:端口</span><br></pre></td></tr></table></figure></div>
+<p>例如 <code>http://192.168.1.20:8080</code>
+仅为格式示例，不能直接假定它是你的服务器地址。</p>
+<h3 id="网络访问失败时的排查顺序">9.5 网络访问失败时的排查顺序</h3>
+<ol type="1">
+<li>在服务器上用 <code>ss -lntp</code> 确认端口正在监听。</li>
+<li>查看 Strata 日志，确认进程没有在启动后退出。</li>
+<li>确认客户端使用真实局域网 IP，而不是 <code>127.0.0.1</code> 或
+<code>0.0.0.0</code>。</li>
+<li>检查 Ubuntu 防火墙、上游防火墙、路由器 ACL、VLAN
+或无线客户端隔离。</li>
+<li>检查客户端的 API 路径、请求格式与认证头是否符合当前版本要求。</li>
+<li>不要为了排障直接关闭全部防火墙，也不要将未受保护的推理 API
+暴露到公网。</li>
+</ol>
+<h2 id="strata-常见问题">10. Strata 常见问题</h2>
+<h3 id="python-依赖报错">Python 依赖报错</h3>
+<p>确认使用
+<code>/mnt/data/ProjectMoE/Strata/.venv/bin/python</code>，不要混用系统
+Python 或 Maya 的 <code>.venv</code>。根据错误定位缺失包或版本冲突，再在
+Strata 的虚拟环境内处理。</p>
+<h3 id="构建仍使用系统-gcc">构建仍使用系统 GCC</h3>
+<p>检查 <code>CC</code>、<code>CXX</code>、<code>CUDAHOSTCXX</code>
+的值，并检查
+<code>build-cuda12/CMakeCache.txt</code>。已有缓存可能保存旧编译器路径。</p>
+<h3 id="cuda-编译失败">CUDA 编译失败</h3>
+<p>确认 <code>nvcc</code> 来自
+<code>/usr/local/cuda-12.0.1/bin/nvcc</code>，确认主机编译器路径存在，并依据完整报错判断是编译器兼容性、CUDA
+代码架构、系统库还是驱动问题。不要直接升级驱动作为第一步。</p>
+<h3 id="模型目录错误或模型不完整">模型目录错误或模型不完整</h3>
+<p>确认 <code>--gguf-dir</code>
+指向实际模型目录，所有模型分片都已下载，且当前 Strata
+版本支持相应模型和量化格式。不要仅根据目录名称判断模型已准备好。</p>
+<h3 id="gpu-显存不足或推理速度异常">GPU 显存不足或推理速度异常</h3>
+<p>先执行
+<code>nvidia-smi</code>，检查其他任务占用。模型量化、上下文长度、并发数、GPU
+分配方式都会影响显存与速度。不要未经确认终止已有 GPU 任务。</p>
+<h3 id="服务只能本机访问">服务只能本机访问</h3>
+<p>确认启动配置是否设置了 <code>0.0.0.0</code>，再用
+<code>ss -lntp</code> 检查。随后检查防火墙、局域网路由和认证设置。</p>
+<h2 id="strata-部署验收清单">11. Strata 部署验收清单</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" /><code>Strata/.venv/bin/python</code>
+存在且版本符合预期。</label></li>
+<li><label><input type="checkbox" />独立 GCC/G++ 11
+工具链可执行。</label></li>
+<li><label><input type="checkbox" />CUDA <code>nvcc</code>
+路径和版本符合预期。</label></li>
+<li><label><input type="checkbox" /><code>setup.py --help</code>
+或当前入口帮助已核对。</label></li>
+<li><label><input
+type="checkbox" />模型目录存在，所需文件与分片完整。</label></li>
+<li><label><input type="checkbox" />构建日志和 CMake
+缓存显示使用预期编译器。</label></li>
+<li><label><input type="checkbox" />模型能在本机成功加载并完成一次 API
+请求。</label></li>
+<li><label><input
+type="checkbox" />如需局域网访问，监听地址和端口正确。</label></li>
+<li><label><input type="checkbox" />API Key 认证已验证。</label></li>
+<li><label><input
+type="checkbox" />只向可信网络开放服务，没有无保护地暴露到公网。</label></li>
+</ul>
+<h1
+id="第四部分两个项目共存时的维护原则">第四部分：两个项目共存时的维护原则</h1>
+<h2 id="保持项目环境隔离">1. 保持项目环境隔离</h2>
+<ul>
+<li>Maya
+Python：<code>/mnt/data/ProjectMoE/project-maya/.venv</code></li>
+<li>Strata Python：<code>/mnt/data/ProjectMoE/Strata/.venv</code></li>
+<li>共享编译工具链：<code>/mnt/data/ProjectMoE/gcc11-env</code></li>
+<li>CUDA Toolkit：<code>/usr/local/cuda-12.0.1</code></li>
+</ul>
+<p>共享编译工具链不代表共享 Python
+依赖或构建缓存。每个项目的构建日志、CMake
+缓存、模型目录和启动配置都应单独管理。</p>
+<h2 id="不要默认两个服务使用同一端口">2.
+不要默认两个服务使用同一端口</h2>
+<p>本指南中 Maya 的目标端口是 <code>8080</code>。Strata
+的实际端口应以当前启动配置为准。如果两个服务同时运行，必须为它们分配不同端口，或者确认它们不会同时监听同一地址和端口。</p>
+<p>可用以下命令查看监听情况：</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ss -lntp</span><br></pre></td></tr></table></figure></div>
+<p>若端口已被占用，不要直接杀死未知进程；先用
+<code>ss</code>、<code>ps</code> 和服务日志确认其归属。</p>
+<h2 id="日志密钥和模型数据">3. 日志、密钥和模型数据</h2>
+<ul>
+<li>安装日志中可能出现路径、配置或错误信息；分享日志前先检查并移除 API
+Key、访问令牌和其他秘密。</li>
+<li>API Key 不应提交到 Git，也不应写入公开文档。</li>
+<li>模型文件通常体积很大，更新代码前先确认模型目录与仓库目录分离。</li>
+<li>不要把 <code>0.0.0.0</code>
+当作客户端地址；客户端应使用服务器的实际局域网 IP。</li>
+<li>如果服务不需要被其他电脑访问，优先保持 <code>127.0.0.1</code>
+监听。</li>
+</ul>
+<h1 id="第五部分统一部署验收清单">第五部分：统一部署验收清单</h1>
+<h2 id="project-maya">Project Maya</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" /><code>maya.sh --help</code>
+可运行，参数与当前版本一致。</label></li>
+<li><label><input
+type="checkbox" /><code>build-maya-gcc11.sh --check</code>
+通过。</label></li>
+<li><label><input type="checkbox" />构建日志确认使用预期的 GCC 11 和
+CUDA Toolkit。</label></li>
+<li><label><input type="checkbox" />GGUF 目录和模型文件符合当前 Maya
+版本要求。</label></li>
+<li><label><input
+type="checkbox" />服务实际运行，监听地址与端口符合预期。</label></li>
+<li><label><input type="checkbox" />API Key
+认证和局域网请求经过实测。</label></li>
+</ul>
+<h2 id="strata">Strata</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />Strata 自己的 <code>.venv</code>
+可运行。</label></li>
+<li><label><input type="checkbox" />GCC/G++ 11 和 CUDA 12.0.1
+路径已确认。</label></li>
+<li><label><input type="checkbox" />当前 <code>setup.py</code>
+或启动入口的帮助信息已核对。</label></li>
+<li><label><input
+type="checkbox" />模型目录存在，所需文件及分片完整。</label></li>
+<li><label><input type="checkbox" />构建缓存没有引用系统
+GCC。</label></li>
+<li><label><input type="checkbox" />本机 API 请求成功。</label></li>
+<li><label><input type="checkbox" />如需远程访问，监听地址、端口和 API
+Key 已验证。</label></li>
+</ul>
+<h2 id="服务器安全与资源">服务器安全与资源</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />执行重型任务前已检查
+<code>nvidia-smi</code>，没有误伤已有 GPU 任务。</label></li>
+<li><label><input
+type="checkbox" />两个服务没有发生端口冲突。</label></li>
+<li><label><input type="checkbox" />API 只向可信网络开放。</label></li>
+<li><label><input
+type="checkbox" />防火墙规则遵循最小开放原则。</label></li>
+<li><label><input type="checkbox" />没有修改系统默认编译器、CUDA
+软链接或驱动来绕过单个项目问题。</label></li>
+</ul>
+<hr />
+<p><strong>维护建议：</strong> 每次更新 Strata 或 Maya
+仓库后，先重新检查帮助信息和版本，再运行环境检查；不要默认旧版命令仍适用于新版本。遇到错误时，先保留完整日志并确认报错属于
+Python 依赖、C/C++ 编译、CUDA、模型文件、GPU
+资源还是网络/认证层，再针对对应层级处理。</p>
+
+		</div>
+
+		
+		<div class="post-copyright-info w-full my-8 px-2 sm:px-6 md:px-8">
+			<div class="article-copyright-info-container">
+    <ul>
+        <li><strong>Title:</strong> Strata 与 Project Maya 安装、构建及局域网部署指南</li>
+        <li><strong>Author:</strong> Eviarch</li>
+        <li><strong>Created at
+                :</strong> 2026-10-16 00:58:50</li>
+        
+            <li>
+                <strong>Updated at
+                    :</strong> 2026-10-16 00:58:50
+            </li>
+        
+        <li>
+            <strong>Link:</strong> https://blog.eviarch.com/2026/10/16/Strata与ProjectMaya安装构建及局域网部署指南/
+        </li>
+        <li>
+            <strong>
+                License:
+            </strong>
+            
+
+            
+                This work is licensed under <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0">CC BY-NC-SA 4.0</a>.
+            
+        </li>
+    </ul>
+</div>
+
+		</div>
+		
+
+		
+		<ul class="post-tags-box text-lg mt-1.5 flex-wrap justify-center flex md:hidden">
+			
+			<li class="tag-item mx-0.5">
+				<a href="/tags/AI/">#AI</a>&nbsp;
+			</li>
+			
+			<li class="tag-item mx-0.5">
+				<a href="/tags/Instruction/">#Instruction</a>&nbsp;
+			</li>
+			
+		</ul>
+		
+
+		
+
+		
+		<div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+			
+			<div class="article-prev border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="prev" rel="prev" href="/2026/10/21/%E9%9B%85%E6%80%9D%E5%8F%A3%E8%AF%AD%E9%A2%98%E7%9B%AE/">
+					<span class="left arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-left"></i>
+					</span>
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">雅思口语题目</span>
+						<span class="post-nav-item">Prev posts</span>
+					</span>
+				</a>
+			</div>
+			
+			
+			<div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="next" rel="next" href="/2025/09/18/%E4%B8%96%E7%95%8C%E8%A7%84%E5%88%99%E8%A7%82%E5%AF%9F-%E6%AD%A4%E5%B2%B8%E3%81%A8%E5%BD%BC%E5%B2%B8/">
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">世界规则观察-此岸と彼岸</span>
+						<span class="post-nav-item">Next posts</span>
+					</span>
+					<span class="right arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-right"></i>
+					</span>
+				</a>
+			</div>
+			
+		</div>
+		
+
+
+		
+		<div class="comment-container px-2 sm:px-6 md:px-8 pb-8">
+			<div class="comments-container mt-10 w-full ">
+    <div id="comment-anchor" class="w-full h-2.5"></div>
+    <div class="comment-area-title w-full my-1.5 md:my-2.5 text-xl md:text-3xl font-bold">
+        Comments
+    </div>
+    
+
+        
+            
+    <div id="giscus-container"></div>
+    <script data-swup-reload-script defer>
+        (function() {
+            const containerId = "giscus-container";
+            const mapping = "pathname";
+            const lang = "zh-CN";
+            const inputPosition = "top";
+            const reactionsEnabled = "1" === "1";
+            const emitMetadata = "1" === "1";
+            const strict = "0" === "1";
+            const loading = "lazy";
+
+            const getTerm = () => {
+                if (mapping === "pathname") return location.pathname;
+                if (mapping === "url") return location.href;
+                if (mapping === "title") return document.title;
+                if (mapping === "og:title") {
+                    const ogTitle = document.querySelector("meta[property='og:title']");
+                    return ogTitle?.content || document.title;
+                }
+                return "";
+            };
+
+            const sendUpdate = () => {
+                const iframe = document.querySelector("iframe.giscus-frame");
+                if (!iframe) {
+                    return;
+                }
+
+                const setConfig = {
+                    theme: "preferred_color_scheme",
+                    lang,
+                    inputPosition,
+                    reactionsEnabled,
+                    emitMetadata,
+                    strict,
+                };
+
+                if (mapping !== "number") {
+                    const term = getTerm();
+                    if (term) {
+                        setConfig.term = term;
+                    }
+                }
+
+                iframe.contentWindow.postMessage(
+                    { giscus: { setConfig } },
+                    "https://giscus.app",
+                );
+            };
+
+            const loadGiscus = () => {
+                const container = document.getElementById(containerId);
+                if (!container) {
+                    return;
+                }
+
+                const iframe = container.querySelector("iframe.giscus-frame");
+                if (iframe) {
+                    sendUpdate();
+                    return;
+                }
+
+                if (container.dataset.giscusInit === "true") {
+                    return;
+                }
+
+                const giscusConfig = {
+                    src: "https://giscus.app/client.js",
+                    "data-repo": "eviarch/Blooooooooooooooog",
+                    "data-repo-id": "R_kgDOO4jG4g",
+                    "data-category": "Announcements",
+                    "data-category-id": "DIC_kwDOO4jG4s4CrP-8",
+                    "data-mapping": mapping,
+                    "data-strict": "0",
+                    "data-reactions-enabled": "1",
+                    "data-emit-metadata": "1",
+                    "data-theme": "preferred_color_scheme",
+                    "data-lang": lang,
+                    "data-input-position": inputPosition,
+                    "data-loading": loading,
+                    crossorigin: "anonymous",
+                    async: true,
+                };
+
+                const giscusScript = document.createElement("script");
+                for (const key in giscusConfig) {
+                    giscusScript.setAttribute(key, giscusConfig[key]);
+                }
+                container.appendChild(giscusScript);
+                container.dataset.giscusInit = "true";
+            };
+
+            const runGiscus = () => {
+                const container = document.getElementById(containerId);
+                if (!container) {
+                    return;
+                }
+
+                if (container.querySelector("iframe.giscus-frame")) {
+                    sendUpdate();
+                    return;
+                }
+
+                loadGiscus();
+            };
+
+            runGiscus();
+        })();
+    </script>
+
+
+        
+    
+</div>
+
+		</div>
+		
+	</div>
+
+	
+	<div class="toc-content-container">
+		<div class="post-toc-wrap">
+	<div class="post-toc">
+		<div class="toc-title">On this page</div>
+		<div class="page-title">Strata 与 Project Maya 安装、构建及局域网部署指南</div>
+		<ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%AE%E5%BD%95"><span class="nav-text">目录</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E9%83%A8%E5%88%86%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E4%B8%8E%E5%85%B1%E5%90%8C%E5%8E%9F%E5%88%99"><span class="nav-text">第一部分：整体架构与共同原则</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%AE%E5%BD%95%E8%A7%84%E5%88%92"><span class="nav-text">1.1 目录规划</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B1%E5%90%8C%E6%8A%80%E6%9C%AF%E5%8E%9F%E7%90%86"><span class="nav-text">1.2 共同技术原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%A4%E4%B8%AA%E9%A1%B9%E7%9B%AE%E4%B8%8D%E8%83%BD%E6%B7%B7%E7%94%A8%E7%9A%84%E5%86%85%E5%AE%B9"><span class="nav-text">1.3 两个项目不能混用的内容</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E9%83%A8%E5%88%86project-maya-%E5%AE%89%E8%A3%85%E4%B8%8E%E5%B1%80%E5%9F%9F%E7%BD%91%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E6%8C%87%E5%8D%97ubuntu"><span class="nav-text">第二部分：Project
+Maya 安装与局域网服务部署指南（Ubuntu）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BD%93%E5%89%8D%E7%8E%AF%E5%A2%83%E4%B8%8E%E7%9B%AE%E6%A0%87"><span class="nav-text">1. 当前环境与目标</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E5%8E%9F%E7%90%86"><span class="nav-text">2. 安装原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A8%E7%8B%AC%E7%AB%8B-gcc-11"><span class="nav-text">2.1 为什么使用独立 GCC 11</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cuda-toolkit%E9%A9%B1%E5%8A%A8%E5%92%8C-gpu-%E6%9E%B6%E6%9E%84%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="nav-text">2.2 CUDA Toolkit、驱动和 GPU
+架构的区别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#python-%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-text">2.3 Python 虚拟环境的作用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#setup%E6%A8%A1%E5%9E%8B%E4%B8%8B%E8%BD%BD%E4%B8%8E%E6%9C%8D%E5%8A%A1%E5%90%AF%E5%8A%A8"><span class="nav-text">2.4
+--setup、模型下载与服务启动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9A%84%E5%90%AB%E4%B9%89%E4%B8%8E%E5%AE%89%E5%85%A8%E6%80%A7"><span class="nav-text">2.5 0.0.0.0 的含义与安全性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E5%89%8D%E6%A3%80%E6%9F%A5"><span class="nav-text">3. 安装前检查</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC-1-%E6%AD%A5%E7%99%BB%E5%BD%95%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%B9%B6%E8%BF%9B%E5%85%A5%E9%A1%B9%E7%9B%AE%E7%9B%AE%E5%BD%95"><span class="nav-text">第 1
+步：登录服务器并进入项目目录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC-2-%E6%AD%A5%E7%A1%AE%E8%AE%A4%E9%A1%B9%E7%9B%AE%E5%92%8C%E8%84%9A%E6%9C%AC%E5%AD%98%E5%9C%A8"><span class="nav-text">第 2 步：确认项目和脚本存在</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC-3-%E6%AD%A5%E7%A1%AE%E8%AE%A4-gcc-11-%E4%B8%8E-cuda-%E8%B7%AF%E5%BE%84"><span class="nav-text">第 3 步：确认 GCC 11 与 CUDA
+路径</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC-4-%E6%AD%A5%E6%A3%80%E6%9F%A5-gpu-%E4%B8%8E%E5%BD%93%E5%89%8D%E5%8D%A0%E7%94%A8"><span class="nav-text">第 4 步：检查 GPU 与当前占用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC-5-%E6%AD%A5%E6%A3%80%E6%9F%A5-maya-%E7%8E%AF%E5%A2%83%E6%8E%A8%E8%8D%90%E5%85%88%E5%81%9A"><span class="nav-text">第 5 步：检查 Maya
+环境（推荐先做）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E8%84%9A%E6%9C%AC%E7%9A%84%E5%87%86%E5%A4%87%E4%B8%8E%E4%BD%BF%E7%94%A8"><span class="nav-text">4. 安装脚本的准备与使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC-1-%E6%AD%A5%E6%8A%8A%E8%84%9A%E6%9C%AC%E6%94%BE%E5%88%B0%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-text">第 1 步：把脚本放到服务器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC-2-%E6%AD%A5%E7%90%86%E8%A7%A3%E8%84%9A%E6%9C%AC%E9%BB%98%E8%AE%A4%E9%85%8D%E7%BD%AE"><span class="nav-text">第 2 步：理解脚本默认配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC-3-%E6%AD%A5%E5%85%88%E6%9F%A5%E7%9C%8B%E5%B8%AE%E5%8A%A9%E4%B8%8E%E6%A3%80%E6%9F%A5%E7%8E%AF%E5%A2%83"><span class="nav-text">第 3 步：先查看帮助与检查环境</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC-4-%E6%AD%A5%E5%90%AF%E5%8A%A8%E5%AE%89%E8%A3%85%E6%B5%81%E7%A8%8B"><span class="nav-text">第 4 步：启动安装流程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E9%80%89%E6%8B%A9-api-key-%E4%B8%8E-gguf-%E7%9B%AE%E5%BD%95"><span class="nav-text">5. 如何选择 API Key 与 GGUF
+目录</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E5%BC%8F-a%E4%BA%A4%E4%BA%92%E5%BC%8F%E8%BE%93%E5%85%A5%E6%8E%A8%E8%8D%90"><span class="nav-text">方式 A：交互式输入（推荐）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E5%BC%8F-b%E4%BD%BF%E7%94%A8%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="nav-text">方式 B：使用环境变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E5%BC%8F-c%E6%8C%87%E5%AE%9A%E6%A8%A1%E5%9E%8B%E4%BB%85%E5%9C%A8%E7%A1%AE%E8%AE%A4%E9%9C%80%E8%A6%81%E6%97%B6"><span class="nav-text">方式
+C：指定模型（仅在确认需要时）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81%E6%9C%8D%E5%8A%A1%E6%98%AF%E5%90%A6%E5%90%AF%E5%8A%A8"><span class="nav-text">6. 验证服务是否启动</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC-1-%E6%AD%A5%E6%A3%80%E6%9F%A5%E7%9B%91%E5%90%AC%E7%AB%AF%E5%8F%A3"><span class="nav-text">第 1 步：检查监听端口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC-2-%E6%AD%A5%E5%9C%A8%E6%9C%8D%E5%8A%A1%E5%99%A8%E6%9C%AC%E6%9C%BA%E6%B5%8B%E8%AF%95"><span class="nav-text">第 2 步：在服务器本机测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC-3-%E6%AD%A5%E5%8F%96%E5%BE%97%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%B1%80%E5%9F%9F%E7%BD%91-ip"><span class="nav-text">第 3 步：取得服务器局域网 IP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC-4-%E6%AD%A5%E4%BB%8E%E5%8F%A6%E4%B8%80%E5%8F%B0%E7%94%B5%E8%84%91%E8%AE%BF%E9%97%AE"><span class="nav-text">第 4 步：从另一台电脑访问</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC-5-%E6%AD%A5%E5%A6%82%E6%9E%9C%E6%97%A0%E6%B3%95%E8%AE%BF%E9%97%AE%E6%8C%89%E9%A1%BA%E5%BA%8F%E6%8E%92%E6%9F%A5"><span class="nav-text">第 5
+步：如果无法访问，按顺序排查</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="nav-text">7. 常见问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%A3%80%E6%9F%A5%E4%BB%8D%E6%98%BE%E7%A4%BA%E7%B3%BB%E7%BB%9F-g-7.5"><span class="nav-text">问题：检查仍显示系统 g++
+7.5</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%8F%90%E7%A4%BA%E6%89%BE%E4%B8%8D%E5%88%B0-gcccuda-%E6%88%96-maya-%E8%84%9A%E6%9C%AC"><span class="nav-text">问题：提示找不到 GCC、CUDA
+或 Maya 脚本</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98gguf-%E7%9B%AE%E5%BD%95%E8%BE%93%E5%85%A5%E5%90%8E%E6%8A%A5%E9%94%99"><span class="nav-text">问题：GGUF 目录输入后报错</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98api-key-%E8%BE%93%E5%85%A5%E5%90%8E%E4%BB%8D%E7%84%B6%E6%97%A0%E6%B3%95%E8%B0%83%E7%94%A8-api"><span class="nav-text">问题：API Key
+输入后仍然无法调用 API</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%98%BE%E5%AD%98%E4%B8%8D%E8%B6%B3%E6%88%96%E6%9C%8D%E5%8A%A1%E5%90%AF%E5%8A%A8%E5%BE%88%E6%85%A2"><span class="nav-text">问题：显存不足或服务启动很慢</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A5%E5%B8%B8%E4%BD%BF%E7%94%A8%E9%80%9F%E6%9F%A5"><span class="nav-text">8. 日常使用速查</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%83%A8%E7%BD%B2%E5%AE%8C%E6%88%90%E7%9A%84%E5%88%A4%E6%96%AD%E6%A0%87%E5%87%86"><span class="nav-text">9. 部署完成的判断标准</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E9%83%A8%E5%88%86strata-%E5%AE%89%E8%A3%85%E4%B8%8E%E9%83%A8%E7%BD%B2%E6%8C%87%E5%8D%97"><span class="nav-text">第三部分：Strata
+安装与部署指南</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#strata-%E9%83%A8%E7%BD%B2%E7%9B%AE%E6%A0%87%E4%B8%8E%E6%80%BB%E4%BD%93%E5%8E%9F%E7%90%86"><span class="nav-text">1. Strata 部署目标与总体原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%8E%AF%E5%A2%83%E4%B8%8E%E7%9B%AE%E5%BD%95"><span class="nav-text">2. 服务器环境与目录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E6%AD%A5%E6%A3%80%E6%9F%A5%E9%A1%B9%E7%9B%AE%E4%B8%8E%E5%9F%BA%E7%A1%80%E7%8E%AF%E5%A2%83"><span class="nav-text">3. 第一步：检查项目与基础环境</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%99%BB%E5%BD%95%E5%B9%B6%E8%BF%9B%E5%85%A5-strata-%E4%BB%93%E5%BA%93"><span class="nav-text">3.1 登录并进入 Strata 仓库</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A3%80%E6%9F%A5-python-%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83"><span class="nav-text">3.2 检查 Python 虚拟环境</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A3%80%E6%9F%A5-micromamba-%E4%B8%8E-gcc-11"><span class="nav-text">3.3 检查 Micromamba 与 GCC 11</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A3%80%E6%9F%A5-cuda%E9%A9%B1%E5%8A%A8%E5%92%8C-gpu-%E8%B4%9F%E8%BD%BD"><span class="nav-text">3.4 检查 CUDA、驱动和 GPU 负载</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E6%AD%A5%E4%B8%BA-strata-%E8%AE%BE%E7%BD%AE%E9%9A%94%E7%A6%BB%E5%B7%A5%E5%85%B7%E9%93%BE"><span class="nav-text">4. 第二步：为 Strata
+设置隔离工具链</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E6%AD%A5%E6%9F%A5%E7%9C%8B%E5%BD%93%E5%89%8D%E7%89%88%E6%9C%AC%E6%94%AF%E6%8C%81%E7%9A%84%E5%AE%89%E8%A3%85%E5%8F%82%E6%95%B0"><span class="nav-text">5.
+第三步：查看当前版本支持的安装参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%9B%9B%E6%AD%A5%E5%87%86%E5%A4%87%E6%A8%A1%E5%9E%8B%E7%9B%AE%E5%BD%95%E4%B8%8E%E6%A8%A1%E5%9E%8B%E6%96%87%E4%BB%B6"><span class="nav-text">6.
+第四步：准备模型目录与模型文件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E6%96%87%E4%BB%B6%E4%B8%8E%E6%8E%A8%E7%90%86%E7%A8%8B%E5%BA%8F%E5%88%86%E5%BC%80%E7%AE%A1%E7%90%86"><span class="nav-text">6.1 模型文件与推理程序分开管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A3%80%E6%9F%A5%E5%B7%B2%E6%9C%89%E6%A8%A1%E5%9E%8B%E6%96%87%E4%BB%B6"><span class="nav-text">6.2 检查已有模型文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%86%E5%8F%B2%E5%91%BD%E4%BB%A4%E7%A4%BA%E4%BE%8Bmodelscope-ud-q4_k_xl"><span class="nav-text">6.3 历史命令示例：ModelScope
++ UD-Q4_K_XL</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%BA%94%E6%AD%A5%E6%A3%80%E6%9F%A5%E6%9E%84%E5%BB%BA%E7%BB%93%E6%9E%9C%E4%B8%8E-cmake-%E7%BC%93%E5%AD%98"><span class="nav-text">7. 第五步：检查构建结果与 CMake
+缓存</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A3%80%E6%9F%A5%E6%9E%84%E5%BB%BA%E7%9B%AE%E5%BD%95%E4%B8%AD%E7%9A%84%E7%BC%96%E8%AF%91%E5%99%A8%E8%B7%AF%E5%BE%84"><span class="nav-text">7.1 检查构建目录中的编译器路径</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%AE%BE%E7%BD%AE%E4%BA%86-gcc-11-%E4%BB%8D%E5%8F%AF%E8%83%BD%E4%BD%BF%E7%94%A8%E7%B3%BB%E7%BB%9F-gcc"><span class="nav-text">7.2 为什么设置了 GCC 11
+仍可能使用系统 GCC</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E5%85%AD%E6%AD%A5%E6%9C%AC%E6%9C%BA%E5%90%AF%E5%8A%A8%E4%B8%8E-api-%E9%AA%8C%E8%AF%81"><span class="nav-text">8. 第六步：本机启动与 API 验证</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A3%80%E6%9F%A5-strata-%E5%BD%93%E5%89%8D%E8%BF%90%E8%A1%8C%E7%8A%B6%E6%80%81"><span class="nav-text">8.1 检查 Strata 当前运行状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A3%80%E6%9F%A5%E5%BD%93%E5%89%8D%E7%89%88%E6%9C%AC%E5%90%AF%E5%8A%A8%E5%8F%82%E6%95%B0"><span class="nav-text">8.2 检查当前版本启动参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%88%E9%AA%8C%E8%AF%81%E6%9C%AC%E6%9C%BA%E5%9B%9E%E7%8E%AF"><span class="nav-text">8.3 先验证本机回环</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AC%AC%E4%B8%83%E6%AD%A5%E5%BC%80%E6%94%BE%E5%B1%80%E5%9F%9F%E7%BD%91%E8%AE%BF%E9%97%AE"><span class="nav-text">9. 第七步：开放局域网访问</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E7%90%86"><span class="nav-text">9.1 原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A1%AE%E8%AE%A4%E5%90%AF%E5%8A%A8%E5%85%A5%E5%8F%A3%E6%94%AF%E6%8C%81%E7%9A%84%E5%8F%82%E6%95%B0"><span class="nav-text">9.2 确认启动入口支持的参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A3%80%E6%9F%A5%E7%9B%91%E5%90%AC%E7%8A%B6%E6%80%81"><span class="nav-text">9.3 检查监听状态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%8E%B7%E5%8F%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%B1%80%E5%9F%9F%E7%BD%91-ip"><span class="nav-text">9.4 获取服务器局域网 IP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E5%A4%B1%E8%B4%A5%E6%97%B6%E7%9A%84%E6%8E%92%E6%9F%A5%E9%A1%BA%E5%BA%8F"><span class="nav-text">9.5 网络访问失败时的排查顺序</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#strata-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="nav-text">10. Strata 常见问题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#python-%E4%BE%9D%E8%B5%96%E6%8A%A5%E9%94%99"><span class="nav-text">Python 依赖报错</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E5%BB%BA%E4%BB%8D%E4%BD%BF%E7%94%A8%E7%B3%BB%E7%BB%9F-gcc"><span class="nav-text">构建仍使用系统 GCC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#cuda-%E7%BC%96%E8%AF%91%E5%A4%B1%E8%B4%A5"><span class="nav-text">CUDA 编译失败</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E7%9B%AE%E5%BD%95%E9%94%99%E8%AF%AF%E6%88%96%E6%A8%A1%E5%9E%8B%E4%B8%8D%E5%AE%8C%E6%95%B4"><span class="nav-text">模型目录错误或模型不完整</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#gpu-%E6%98%BE%E5%AD%98%E4%B8%8D%E8%B6%B3%E6%88%96%E6%8E%A8%E7%90%86%E9%80%9F%E5%BA%A6%E5%BC%82%E5%B8%B8"><span class="nav-text">GPU 显存不足或推理速度异常</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%8F%AA%E8%83%BD%E6%9C%AC%E6%9C%BA%E8%AE%BF%E9%97%AE"><span class="nav-text">服务只能本机访问</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#strata-%E9%83%A8%E7%BD%B2%E9%AA%8C%E6%94%B6%E6%B8%85%E5%8D%95"><span class="nav-text">11. Strata 部署验收清单</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%AC%E5%9B%9B%E9%83%A8%E5%88%86%E4%B8%A4%E4%B8%AA%E9%A1%B9%E7%9B%AE%E5%85%B1%E5%AD%98%E6%97%B6%E7%9A%84%E7%BB%B4%E6%8A%A4%E5%8E%9F%E5%88%99"><span class="nav-text">第四部分：两个项目共存时的维护原则</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BF%9D%E6%8C%81%E9%A1%B9%E7%9B%AE%E7%8E%AF%E5%A2%83%E9%9A%94%E7%A6%BB"><span class="nav-text">1. 保持项目环境隔离</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8D%E8%A6%81%E9%BB%98%E8%AE%A4%E4%B8%A4%E4%B8%AA%E6%9C%8D%E5%8A%A1%E4%BD%BF%E7%94%A8%E5%90%8C%E4%B8%80%E7%AB%AF%E5%8F%A3"><span class="nav-text">2.
+不要默认两个服务使用同一端口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E5%AF%86%E9%92%A5%E5%92%8C%E6%A8%A1%E5%9E%8B%E6%95%B0%E6%8D%AE"><span class="nav-text">3. 日志、密钥和模型数据</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%AC%E4%BA%94%E9%83%A8%E5%88%86%E7%BB%9F%E4%B8%80%E9%83%A8%E7%BD%B2%E9%AA%8C%E6%94%B6%E6%B8%85%E5%8D%95"><span class="nav-text">第五部分：统一部署验收清单</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#project-maya"><span class="nav-text">Project Maya</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#strata"><span class="nav-text">Strata</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%AE%89%E5%85%A8%E4%B8%8E%E8%B5%84%E6%BA%90"><span class="nav-text">服务器安全与资源</span></a></li></ol></li></ol>
+
+	</div>
+</div>
+	</div>
+	
+</div>
+
+			</div>
+
+			
+		</div>
+
+		<div class="main-content-footer">
+			<footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+              <span>2025</span>
+              -
+            
+            2026&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">Eviarch</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        10 posts in total
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+            <script data-swup-reload-script src="https://cn.vercount.one/js"></script>
+            <div class="relative text-center lg:absolute lg:right-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-right">
+                
+                    <span id="busuanzi_container_site_uv" class="lg:!block">
+                        <span class="text-sm">VISITOR COUNT</span>
+                        <span id="busuanzi_value_site_uv"></span>
+                    </span>
+                
+                
+                    <span id="busuanzi_container_site_pv" class="lg:!block">
+                        <span class="text-sm">TOTAL PAGE VIEWS</span>
+                        <span id="busuanzi_value_site_pv"></span>
+                    </span>
+                
+            </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">POWERED BY <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a></span>
+            <span class="text-sm lg:block">THEME&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.9.0</a></span>
+        </div>
+        
+        
+            <div>
+                Blog up for <span class="odometer" id="runtime_days" ></span> days <span class="odometer" id="runtime_hours"></span> hrs <span class="odometer" id="runtime_minutes"></span> Min <span class="odometer" id="runtime_seconds"></span> Sec
+            </div>
+        
+        
+            <script data-swup-reload-script>
+                try {
+                    function odometer_init() {
+                    const elements = document.querySelectorAll('.odometer');
+                    elements.forEach(el => {
+                        new Odometer({
+                            el,
+                            format: '( ddd).dd',
+                            duration: 200
+                        });
+                    });
+                    }
+                    odometer_init();
+                } catch (error) {}
+            </script>
+        
+        
+        
+    </div>  
+</footer>
+		</div>
+	</div>
+
+	
+	<div class="post-tools">
+		<div class="post-tools-container">
+	<ul class="article-tools-list">
+		<!-- TOC aside toggle -->
+		
+		<li class="right-bottom-tools page-aside-toggle">
+			<i class="fa-regular fa-outdent"></i>
+		</li>
+		
+
+		<!-- go comment -->
+		
+		<li class="go-comment">
+			<i class="fa-regular fa-comments"></i>
+		</li>
+		
+	</ul>
+</div>
+	</div>
+	
+
+	<div class="right-side-tools-container">
+		<div class="side-tools-container">
+	<ul class="hidden-tools-list">
+		<li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-plus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-minus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+			<i class="fa-regular fa-moon"></i>
+		</li>
+
+		<!-- rss -->
+		
+
+		
+
+		<li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+			<i class="fa-regular fa-arrow-down"></i>
+		</li>
+	</ul>
+
+	<ul class="visible-tools-list">
+		<li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+			<i class="fa-regular fa-cog fa-spin"></i>
+		</li>
+		
+		<li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+			<i class="arrow-up fas fa-arrow-up"></i>
+			<span class="percent"></span>
+		</li>
+		
+		
+	</ul>
+</div>
+	</div>
+
+	<div class="image-viewer-container" role="dialog" aria-modal="true" aria-label="Image viewer">
+	<button class="image-viewer-close" type="button" aria-label="Close">
+		<i class="fa-solid fa-xmark"></i>
+	</button>
+	<button class="image-viewer-prev" type="button" aria-label="Prev">
+		<i class="fa-solid fa-chevron-left"></i>
+	</button>
+	<div class="image-viewer-frame">
+		<img src="" alt="">
+	</div>
+	<div class="image-viewer-exif-panel hidden absolute left-1/2 bottom-20 -translate-x-1/2 w-[min(92vw,420px)] max-h-[60vh] overflow-hidden rounded-2xl bg-background-color-transparent-80 p-4 text-left shadow-redefine-flat backdrop-blur-md" role="dialog" aria-label="EXIF" aria-hidden="true">
+		<div class="flex items-center justify-between mb-3">
+			<span class="text-sm font-semibold text-first-text-color">EXIF</span>
+			<button class="image-viewer-exif-close flex h-8 w-8 items-center justify-center rounded-full bg-background-color-transparent-80 text-first-text-color transition hover:bg-background-color-transparent-40" type="button" aria-label="Close">
+				<i class="fa-solid fa-xmark text-[0.65rem]"></i>
+			</button>
+		</div>
+		<div class="image-viewer-exif-cards grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pr-1 scrollbar-hide"></div>
+		<template class="image-viewer-exif-card-template">
+			<div class="rounded-lg bg-background-color-transparent-40 px-3 py-2">
+				<div class="image-viewer-exif-card-header flex items-center gap-2 mb-1">
+					<i class="image-viewer-exif-card-icon fa-solid fa-circle-info text-xs text-third-text-color"></i>
+					<div class="image-viewer-exif-card-title text-xs font-semibold text-first-text-color"></div>
+				</div>
+				<div class="image-viewer-exif-card-items flex flex-col gap-1"></div>
+			</div>
+		</template>
+	</div>
+	<button class="image-viewer-exif-toggle flex items-center gap-2 hidden absolute left-1/2 bottom-6 -translate-x-1/2 rounded-full border border-border-color bg-background-color-transparent-80 px-4 py-2 text-first-text-color backdrop-blur-md transition hover:bg-background-color-transparent-40" type="button" aria-label="EXIF" aria-expanded="false">
+		<i class="fa-solid fa-circle-info text-xs"></i>
+		<span class="text-xs font-semibold uppercase tracking-wider">EXIF</span>
+	</button>
+	<button class="image-viewer-next" type="button" aria-label="Next">
+		<i class="fa-solid fa-chevron-right"></i>
+	</button>
+</div>
+
+
+	
+	<div class="search-pop-overlay">
+	<div class="popup search-popup">
+		<div class="search-header">
+			<span class="search-input-field-pre">
+				<i class="fa-solid fa-keyboard"></i>
+			</span>
+			<div class="search-input-container">
+				<input autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="Search..." spellcheck="false" type="search" class="search-input">
+			</div>
+			<span class="popup-btn-close">
+				<i class="fa-solid fa-times"></i>
+			</span>
+		</div>
+		<div id="search-result">
+			<div id="no-result">
+				<i class="fa-solid fa-spinner fa-spin-pulse fa-5x fa-fw"></i>
+			</div>
+		</div>
+	</div>
+</div>
+	
+
+</main>
+
+
+
+<script src="/js/build/libs/Swup.min.js"></script>
+
+<script src="/js/build/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/build/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    window.swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+
+    window.dispatchEvent(
+        new CustomEvent("redefine:swup:ready", {
+            detail: {
+                swup: window.swup,
+            },
+        }),
+    );
+</script>
+
+
+
+
+	
+<script src="/js/build/main.js" type="module"></script>
+
+
+
+    
+<script src="/js/build/libs/odometer.min.js"></script>
+
+    
+<link rel="stylesheet" href="/assets/odometer-theme-minimal.css">
+
+
+
+
+
+
+
+  
+<script src="/js/build/libs/Typed.min.js"></script>
+
+
+
+
+
+
+
+
+    
+<script src="/js/build/libs/minimasonry.min.js" data-swup-reload-script=""></script>
+
+
+
+
+<script src="/js/build/libs/moment-with-locales.min.js" data-swup-reload-script=""></script>
+
+
+
+	
+</body>
+
+</html>
